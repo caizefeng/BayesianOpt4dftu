@@ -122,6 +122,7 @@ class vasp_init(object):
             calc = Vasp(self.atoms, directory=directory,
                         kpts=self.struct_info['kgrid_' + xc], gamma=True, **flags)
             calc.write_input(self.atoms)
+            # random exception (Ni2O2)
             if str(self.atoms.symbols) in ['Ni2O2']:
                 mom_list = {'Ni': 2, 'Mn': 5, 'Co': 3, 'Fe': 4}
                 s = str(self.atoms.symbols[0])
@@ -579,7 +580,7 @@ class bayesOpt_DFTU(plot_bo):
         return self.target
 
 
-def calculate(command, outfilename, method, import_kpath):
+def calculate(command: str, outfilename: str, method: str, import_kpath: bool, is_dry: bool):
     olddir = os.getcwd()
     calc = vasp_init(olddir + '/input.json')
     calc.init_atoms()
@@ -598,6 +599,10 @@ def calculate(command, outfilename, method, import_kpath):
                             method, 'scf', 'hse', import_kpath)
         if not os.path.exists(olddir + '/%s/band' % method):
             os.mkdir(olddir + '/%s/band' % method)
+
+    # exit if dry run
+    if is_dry:
+        return
 
     try:
         os.chdir(olddir + '/%s/scf' % method)
