@@ -6,7 +6,7 @@ import argparse
 VASP_RUN_COMMAND = 'srun -n 54 vasp_ncl'
 # Define the name for output file.
 OUTFILENAME = 'vasp.out'
-# Define the path direct to the VASP pesudopotential.
+# Define the path direct to the VASP pseudopotential.
 VASP_PP_PATH = '/home/maituoy/pp_vasp/'
 
 

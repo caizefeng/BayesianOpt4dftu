@@ -119,9 +119,9 @@ I will use `/example/2d` as an example:
       
       OUTFILENAME = 'vasp.out'
       
-  Define the path direct to the VASP pesudoopotential. (P.S. It should be the directory containing the `potpaw_PBE` folder)
+  Define the path direct to the VASP pseudopotential. (P.S. It should be the directory containing the `potpaw_PBE` folder)
       
-      VASP_PP_PATH = '/PATH/TO/THE/PESUDOPOTENTIAL/'
+      VASP_PP_PATH = '/PATH/TO/THE/PSEUDOPOTENTIAL/'
       
 #### 2. Arguments options
 
