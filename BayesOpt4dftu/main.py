@@ -1,7 +1,15 @@
 from BayesOpt4dftu.core import *
+from BayesOpt4dftu.BoLogging import BoLogging
 
 
 def main():
+    logging_generator = BoLogging()
+    driver_logger = logging_generator.get_logger("Driver")
+    dft_logger = logging_generator.get_logger("DFT")
+    bo_logger = logging_generator.get_logger("BayesianOptimization")
+
+    driver_logger.info("Task begins.")
+    driver_logger.info("Loading configuration from file input.json ...")
     with open("input.json", "r") as f:
         data = json.load(f)
 
@@ -28,27 +36,42 @@ def main():
 
     os.environ['VASP_PP_PATH'] = vasp_pp_path
 
-    header = []
-    for i, u in enumerate(which_u):
-        header.append('U_ele_%s' % str(i + 1))
+    driver_logger.info("Configuration loaded.")
 
-    if os.path.exists('./u_tmp.txt'):
-        os.remove('./u_tmp.txt')
-
-    with open('./u_tmp.txt', 'w+') as f:
-        f.write('%s band_gap delta_band \n' % (' '.join(header)))
+    driver_logger.info("DFT calculations begin.")
 
     if dry_run:
+        dft_logger.info("Dry run set to True.")
         calculate(command=vasp_run_command, outfilename=out_file_name, method='hse', import_kpath=import_kpath,
                   is_dry=True)
         calculate(command=vasp_run_command, outfilename=out_file_name, method='dftu', import_kpath=import_kpath,
                   is_dry=True)
-        print("Dry run executed. No actual calculations were performed. ")
-        print("Review the input files before proceeding.")
-
+        dft_logger.info("No actual calculations were performed. Review the input files before proceeding.")
+        driver_logger.info("Dry run executed.")
     else:
+        dft_logger.info("Dry run set to False.")
+
+        header = []
+        for i, u in enumerate(which_u):
+            header.append('U_ele_%s' % str(i + 1))
+
+        if os.path.exists('./u_tmp.txt'):
+            os.remove('./u_tmp.txt')
+
+        with open('./u_tmp.txt', 'w+') as f:
+            f.write('%s band_gap delta_band \n' % (' '.join(header)))
+
+        dft_logger.info("Production run initiated.")
+        dft_logger.info("Hybrid DFT calculation begins.")
+
         calculate(command=vasp_run_command, outfilename=out_file_name, method='hse', import_kpath=import_kpath,
                   is_dry=False)
+
+        dft_logger.info("Hybrid DFT calculation finished.")
+
+        driver_logger.info("Bayesian Optimization begins.")
+        dft_logger.info("GGA+U calculations begin.")
+
         obj = 0
         for i in range(iteration):
             calculate(command=vasp_run_command, outfilename=out_file_name, method='dftu', import_kpath=import_kpath,
@@ -60,14 +83,23 @@ def main():
                                          elements=elements)
             obj_next = bayesian_opt.bo()
             if abs(obj_next - obj) <= threshold:
-                print("Optimization has been finished!")
+                bo_logger.info("Convergence reached, exiting.")
                 break
             obj = obj_next
 
+        dft_logger.info("GGA+U calculations finished.")
+        driver_logger.info("DFT calculations finished.")
         bayesian_opt.plot()
-        print(bayesian_opt.optimal)
+
+        tmp_tuple = bayesian_opt.optimal
+        bo_logger.info(f"Optimal U value: {tmp_tuple[0]}")
+        bo_logger.info(f"Optimal objective function: {tmp_tuple[1]}")
+
+        driver_logger.info("Bayesian Optimization finished.")
 
         os.system('mv ./u_tmp.txt ./u_kappa_%s_a1_%s_a2_%s.txt' % (k, a1, a2))
+
+    driver_logger.info("Task completed.")
 
 
 if __name__ == "__main__":
