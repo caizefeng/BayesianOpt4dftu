@@ -39,7 +39,7 @@ class vasp_init(object):
     def init_atoms(self):
         lattice_param = self.struct_info['lattice_param']
         cell = np.array(self.struct_info['cell'])
-        self.atoms = Atoms(cell=cell*lattice_param)
+        self.atoms = Atoms(cell=cell * lattice_param)
         for atom in self.struct_info['atoms']:
             self.atoms.append(Atom(atom[0], atom[1], magmom=atom[2]))
 
@@ -69,7 +69,7 @@ class vasp_init(object):
             kptset.append(special_kpoints[labels[0]])
             lbs.append(labels[0])
 
-        for i in range(1, len(labels)-1):
+        for i in range(1, len(labels) - 1):
             if labels[i] in special_kpoints.keys():
                 kptset.append(special_kpoints[labels[i]])
                 lbs.append(labels[i])
@@ -85,31 +85,31 @@ class vasp_init(object):
 
         kpt = Kpoints(comment='band', kpts=kptset, num_kpts=num_kpts,
                       style='Line_mode', coord_type="Reciprocal", labels=lbs)
-        kpt.write_file(path+'/KPOINTS')
+        kpt.write_file(path + '/KPOINTS')
 
     def kpt4hseband(self, path, import_kpath):
-        ibz = open(path+'/IBZKPT', 'r')
+        ibz = open(path + '/IBZKPT', 'r')
         num_kpts = self.struct_info['num_kpts']
         labels = self.struct_info['kpath']
         ibzlist = ibz.readlines()
-        ibzlist[1] = str(num_kpts*(len(labels)-1) +
+        ibzlist[1] = str(num_kpts * (len(labels) - 1) +
                          int(ibzlist[1].split('\n')[0])) + '\n'
         if import_kpath:
             special_kpoints = kpath_dict
         else:
             special_kpoints = get_special_points(self.atoms.cell)
-        for i in range(len(labels)-1):
+        for i in range(len(labels) - 1):
             k_head = special_kpoints[labels[i]]
-            k_tail = special_kpoints[labels[i+1]]
-            increment = (k_tail-k_head)/(num_kpts-1)
+            k_tail = special_kpoints[labels[i + 1]]
+            increment = (k_tail - k_head) / (num_kpts - 1)
             ibzlist.append(' '.join(map(str, k_head)) +
                            ' 0 ' + labels[i] + '\n')
-            for j in range(1, num_kpts-1):
-                k_next = k_head + increment*j
+            for j in range(1, num_kpts - 1):
+                k_next = k_head + increment * j
                 ibzlist.append(' '.join(map(str, k_next)) + ' 0\n')
             ibzlist.append(' '.join(map(str, k_tail)) +
-                           ' 0 ' + labels[i+1] + '\n')
-        with open(path+'/KPOINTS', 'w') as f:
+                           ' 0 ' + labels[i + 1] + '\n')
+        with open(path + '/KPOINTS', 'w') as f:
             f.writelines(ibzlist)
 
     def generate_input(self, directory, step, xc, import_kpath):
@@ -120,14 +120,14 @@ class vasp_init(object):
             if xc == 'pbe':
                 flags.update(self.input_dict[xc])
             calc = Vasp(self.atoms, directory=directory,
-                            kpts=self.struct_info['kgrid_'+xc], gamma=True, **flags)
+                        kpts=self.struct_info['kgrid_' + xc], gamma=True, **flags)
             calc.write_input(self.atoms)
             if str(self.atoms.symbols) in ['Ni2O2']:
                 mom_list = {'Ni': 2, 'Mn': 5, 'Co': 3, 'Fe': 4}
                 s = str(self.atoms.symbols[0])
-                incar_scf = Incar.from_file(directory+'/INCAR')
+                incar_scf = Incar.from_file(directory + '/INCAR')
                 incar_scf['MAGMOM'] = '%s -%s 0 0' % (mom_list[s], mom_list[s])
-                incar_scf.write_file(directory+'/INCAR')
+                incar_scf.write_file(directory + '/INCAR')
 
             self.modify_poscar(path=directory)
         elif step == 'band':
@@ -142,7 +142,7 @@ class vasp_init(object):
 
 
 class delta_band(object):
-    def __init__(self, bandrange=(5,5), path='./', iteration=1, interpolate=False):
+    def __init__(self, bandrange=(5, 5), path='./', iteration=1, interpolate=False):
         self.path = path
         self.br_vb = bandrange[0]
         self.br_cb = bandrange[1]
@@ -157,7 +157,8 @@ class delta_band(object):
         tree = ET.parse(filepath)
         root = tree.getroot()
         ispin = int(root.findall(
-            './parameters/separator/.[@name="electronic"]/separator/.[@name="electronic spin"]/i/.[@name="ISPIN"]')[0].text)
+            './parameters/separator/.[@name="electronic"]/separator/.[@name="electronic spin"]/i/.[@name="ISPIN"]')[
+                        0].text)
         nbands = int(root.findall(
             './parameters/separator/.[@name="electronic"]/i/.[@name="NBANDS"]')[0].text)
         nkpts = len(root.findall('./kpoints/varray/.[@name="kpointlist"]/v'))
@@ -206,7 +207,6 @@ class delta_band(object):
         ispin_hse, nbands_hse, nkpts_hse = self.readInfo(self.vasprun_hse)
         ispin_dftu, nbands_dftu, nkpts_dftu = self.readInfo(self.vasprun_dftu)
 
-        
         if nbands_hse != nbands_dftu:
             raise Exception('The band number of HSE and GGA+U are not match!')
 
@@ -245,9 +245,9 @@ class delta_band(object):
             shifted_dftu = self.locate_and_shift_bands(eigenvalues_dftu)
 
             n = shifted_hse.shape[0] * shifted_hse.shape[1]
-            delta_band = sum((1/n)*sum((shifted_hse - shifted_dftu)**2))**(1/2)
+            delta_band = sum((1 / n) * sum((shifted_hse - shifted_dftu) ** 2)) ** (1 / 2)
 
-            bg = BandGap(folder=os.path.join(self.path, 'dftu/band'), method=1, spin='both',).bg
+            bg = BandGap(folder=os.path.join(self.path, 'dftu/band'), method=1, spin='both', ).bg
 
             incar = Incar.from_file('./dftu/band/INCAR')
             u = incar['LDAUU']
@@ -301,7 +301,7 @@ class delta_band(object):
             shifted_dftu_up = self.locate_and_shift_bands(eigenvalues_dftu_up)
 
             n_up = shifted_hse_up.shape[0] * shifted_hse_up.shape[1]
-            delta_band_up = sum((1/n_up)*sum((shifted_hse_up - shifted_dftu_up)**2))**(1/2)
+            delta_band_up = sum((1 / n_up) * sum((shifted_hse_up - shifted_dftu_up) ** 2)) ** (1 / 2)
 
             eigenvalues_hse_down = self.access_eigen(band_hse_down, interpolate=self.interpolate)
             eigenvalues_dftu_down = self.access_eigen(band_dftu_down, interpolate=self.interpolate)
@@ -310,11 +310,11 @@ class delta_band(object):
             shifted_dftu_down = self.locate_and_shift_bands(eigenvalues_dftu_down)
 
             n_down = shifted_hse_down.shape[0] * shifted_hse_down.shape[1]
-            delta_band_down = sum((1/n_down)*sum((shifted_hse_down - shifted_dftu_down)**2))**(1/2)
+            delta_band_down = sum((1 / n_down) * sum((shifted_hse_down - shifted_dftu_down) ** 2)) ** (1 / 2)
 
             delta_band = np.mean([delta_band_up, delta_band_down])
 
-            bg = BandGap(folder=os.path.join(self.path, 'dftu/band'), method=1, spin='both',).bg
+            bg = BandGap(folder=os.path.join(self.path, 'dftu/band'), method=1, spin='both', ).bg
 
             incar = Incar.from_file('./dftu/band/INCAR')
             u = incar['LDAUU']
@@ -331,6 +331,7 @@ class delta_band(object):
         else:
             raise Exception('The spin number of HSE and GGA+U are not match!')
 
+
 class get_optimizer:
     def __init__(self, utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa):
         data = pd.read_csv(utxt_path, header=0, delimiter="\s", engine='python')
@@ -346,20 +347,20 @@ class get_optimizer:
 
     def loss(self, y, y_hat, delta_band, alpha_1, alpha_2):
         return -alpha_1 * (y - y_hat) ** 2 - alpha_2 * delta_band ** 2
-    
+
     def set_bounds(self):
         # Set up the number of variables are going to be optimized.
         num_variables = int(sum(self.opt_u_index))
-        variables_string = ['u_'+ str(i) for i, o in enumerate(self.opt_u_index) if o]
+        variables_string = ['u_' + str(i) for i, o in enumerate(self.opt_u_index) if o]
 
         # Set up the U ranges for each variable.
         pbounds = {}
         for variable in variables_string:
             pbounds[variable] = self.u_range
         return pbounds
-    
-    def optimizer(self):   
-        pbounds = self.set_bounds()  
+
+    def optimizer(self):
+        pbounds = self.set_bounds()
         optimizer = BayesianOptimization(
             f=None,
             pbounds=pbounds,
@@ -377,10 +378,10 @@ class get_optimizer:
             params = {}
             for (value, variable) in zip(values, v_strings):
                 params[variable] = value
-            target = self.loss(self.gap_hse, 
-                               self.data.iloc[i].band_gap, 
-                               self.data.iloc[i].delta_band, 
-                               self.a1, 
+            target = self.loss(self.gap_hse,
+                               self.data.iloc[i].band_gap,
+                               self.data.iloc[i].delta_band,
+                               self.a1,
                                self.a2)
 
             optimizer.register(
@@ -388,7 +389,7 @@ class get_optimizer:
                 target=target,
             )
         return optimizer, target
-        
+
 
 class plot_bo(get_optimizer):
     def __init__(self, utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa, elements):
@@ -398,23 +399,23 @@ class plot_bo(get_optimizer):
         self.target = target
         self.elements = elements
         self.optimal = 0
-    
+
     def get_optimal(self, x, mu):
         best_obj = mu.max()
         best_index = np.where(mu == mu.max())[0][0]
         best_u = x[best_index]
         optimal = (best_u, best_obj)
         return optimal
-        
+
     def predict(self, ratio=1):
         u = list(self.optimizer.res[0]["params"].keys())
         dim = len(u)
-        plot_size = len(self.optimizer.res)*ratio
+        plot_size = len(self.optimizer.res) * ratio
         if dim == 1:
             x = np.linspace(self.u_range[0], self.u_range[1], 10000).reshape(-1, 1)
-            x_obs = np.array([res["params"][u[0]] for res in self.optimizer.res]).reshape(-1,1)[:plot_size]
+            x_obs = np.array([res["params"][u[0]] for res in self.optimizer.res]).reshape(-1, 1)[:plot_size]
             y_obs = np.array([res["target"] for res in self.optimizer.res])[:plot_size]
-            
+
             self.optimizer._gp.fit(x_obs, y_obs)
             mu, sigma = self.optimizer._gp.predict(x, return_std=True)
             self.optimal = self.get_optimal(x, mu)
@@ -426,7 +427,7 @@ class plot_bo(get_optimizer):
                          'y_obs': y_obs}
 
             return data4plot
-        
+
         if dim == 2:
             x = y = np.linspace(self.u_range[0], self.u_range[1], 300)
             X, Y = np.meshgrid(x, y)
@@ -453,10 +454,10 @@ class plot_bo(get_optimizer):
                          'X': X}
 
             return data4plot
-        
+
         if dim == 3:
             x = y = z = np.linspace(self.u_range[0], self.u_range[1], 100)
-            X, Y, Z= np.meshgrid(x, y, z)
+            X, Y, Z = np.meshgrid(x, y, z)
             x = X.ravel()
             y = Y.ravel()
             z = Z.ravel()
@@ -477,80 +478,79 @@ class plot_bo(get_optimizer):
     def plot(self, ratio=1):
         u = list(self.optimizer.res[0]["params"].keys())
         dim = len(u)
-        plot_size = len(self.optimizer.res)*ratio
+        plot_size = len(self.optimizer.res) * ratio
         opt_eles = [ele for i, ele in enumerate(self.elements) if self.opt_u_index[i]]
 
         if dim == 1:
             d = self.predict()
             fig = plt.figure()
-            gs = gridspec.GridSpec(2, 1) 
+            gs = gridspec.GridSpec(2, 1)
             axis = plt.subplot(gs[0])
             acq = plt.subplot(gs[1])
             axis.plot(d['x_obs'].flatten(), d['y_obs'], 'D', markersize=8, label=u'Observations', color='r')
             axis.plot(d['x'], d['mu'], '--', color='k', label='Prediction')
-            axis.fill(np.concatenate([d['x'], d['x'][::-1]]), 
-                    np.concatenate([d['mu'] - 1.9600 * d['sigma'], (d['mu'] + 1.9600 * d['sigma'])[::-1]]),
-                    alpha=.6, fc='c', ec='None', label='95% confidence interval')
-                
+            axis.fill(np.concatenate([d['x'], d['x'][::-1]]),
+                      np.concatenate([d['mu'] - 1.9600 * d['sigma'], (d['mu'] + 1.9600 * d['sigma'])[::-1]]),
+                      alpha=.6, fc='c', ec='None', label='95% confidence interval')
+
             axis.set_xlim(self.u_range)
             axis.set_ylim((None, None))
             axis.set_ylabel('f(x)')
 
             utility = self.utility_function.utility(d['x'], self.optimizer._gp, 0)
             acq.plot(d['x'], utility, label='Acquisition Function', color='purple')
-            acq.plot(d['x'][np.argmax(utility)], np.max(utility), '*', markersize=15, 
-                    label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
+            acq.plot(d['x'][np.argmax(utility)], np.max(utility), '*', markersize=15,
+                     label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
             acq.set_xlim(self.u_range)
-            acq.set_ylim((np.min(utility)-0.5,np.max(utility)+0.5))
+            acq.set_ylim((np.min(utility) - 0.5, np.max(utility) + 0.5))
             acq.set_ylabel('Acquisition')
             acq.set_xlabel('U (eV)')
             axis.legend(loc=4, borderaxespad=0.)
             acq.legend(loc=4, borderaxespad=0.)
 
-            plt.savefig('1D_kappa_%s_a1_%s_a2_%s.png' %(self.kappa, self.a1, self.a2), dpi = 400)
+            plt.savefig('1D_kappa_%s_a1_%s_a2_%s.png' % (self.kappa, self.a1, self.a2), dpi=400)
 
         if dim == 2:
-            
             d = self.predict()
-            fig, axis = plt.subplots(1, 2, figsize=(15,5))
-            plt.subplots_adjust(wspace = 0.2)
-            
+            fig, axis = plt.subplots(1, 2, figsize=(15, 5))
+            plt.subplots_adjust(wspace=0.2)
+
             axis[0].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
-            axis[0].set_title('Gaussian Process Predicted Mean',pad=10)
+            axis[0].set_title('Gaussian Process Predicted Mean', pad=10)
             im1 = axis[0].hexbin(d['x'], d['y'], C=d['mu'], cmap=cm.jet, bins=None)
             axis[0].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
-            axis[0].set_xlabel(r'U_%s (eV)' %opt_eles[0],labelpad=5)
-            axis[0].set_ylabel(r'U_%s (eV)' %opt_eles[1],labelpad=10,va='center')
-            cbar1 = plt.colorbar(im1, ax = axis[0])
+            axis[0].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
+            axis[0].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
+            cbar1 = plt.colorbar(im1, ax=axis[0])
 
             utility = self.utility_function.utility(d['X'], self.optimizer._gp, self.optimizer.max)
             axis[1].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
-            axis[1].set_title('Acquisition Function',pad=10)
-            axis[1].set_xlabel(r'U_%s (eV)' %opt_eles[0],labelpad=5)
-            axis[1].set_ylabel(r'U_%s (eV)' %opt_eles[1],labelpad=10,va='center')
+            axis[1].set_title('Acquisition Function', pad=10)
+            axis[1].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
+            axis[1].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
             im2 = axis[1].hexbin(d['x'], d['y'], C=utility, cmap=cm.jet, bins=None)
             axis[1].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
-            cbar2 = plt.colorbar(im2, ax = axis[1])
+            cbar2 = plt.colorbar(im2, ax=axis[1])
 
-            plt.savefig('2D_kappa_%s_a1_%s_a2_%s.png' %(self.kappa, self.a1, self.a2), dpi = 400)
+            plt.savefig('2D_kappa_%s_a1_%s_a2_%s.png' % (self.kappa, self.a1, self.a2), dpi=400)
+
 
 class bayesOpt_DFTU(plot_bo):
-    def __init__(self, 
-                 path, 
-                 opt_u_index=(1, 1, 0), 
-                 u_range=(0, 10), 
-                 a1=0.25, 
-                 a2=0.75, 
+    def __init__(self,
+                 path,
+                 opt_u_index=(1, 1, 0),
+                 u_range=(0, 10),
+                 a1=0.25,
+                 a2=0.75,
                  kappa=2.5,
-                 elements=['ele1','ele2','ele3'],
+                 elements=['ele1', 'ele2', 'ele3'],
                  plot=False):
-        gap_hse = BandGap(folder=os.path.join(path, 'hse/band'), method=1, spin='both',).bg
+        gap_hse = BandGap(folder=os.path.join(path, 'hse/band'), method=1, spin='both', ).bg
         if plot:
-            upath = "./u_kappa_%s_a1_%s_a2_%s.txt" %(kappa, a1, a2)
+            upath = "./u_kappa_%s_a1_%s_a2_%s.txt" % (kappa, a1, a2)
         if not plot:
             upath = './u_tmp.txt'
         plot_bo.__init__(self, upath, opt_u_index, u_range, gap_hse, a1, a2, kappa, elements)
-
 
     def bo(self):
         next_point_to_probe = self.optimizer.suggest(self.utility_function)
@@ -566,50 +566,49 @@ class bayesOpt_DFTU(plot_bo):
                 if self.opt_u_index[i]:
                     try:
                         data["pbe"]["ldau_luj"][self.elements[i]
-                                                ]["U"] = round(float(U[i]), 6)
+                        ]["U"] = round(float(U[i]), 6)
                     except:
                         data["pbe"]["ldau_luj"][self.elements[i]
-                                                ]["U"] = round(float(U[i-1]), 6)
+                        ]["U"] = round(float(U[i - 1]), 6)
             f.close()
 
         with open('input.json', 'w') as f:
             json.dump(data, f, indent=4)
             f.close()
-            
+
         return self.target
-    
 
 
 def calculate(command, outfilename, method, import_kpath):
     olddir = os.getcwd()
-    calc = vasp_init(olddir+'/input.json')
+    calc = vasp_init(olddir + '/input.json')
     calc.init_atoms()
 
     if method == 'dftu':
-        calc.generate_input(olddir+'/%s/scf' %
+        calc.generate_input(olddir + '/%s/scf' %
                             method, 'scf', 'pbe', import_kpath)
-        calc.generate_input(olddir+'/%s/band' %
+        calc.generate_input(olddir + '/%s/band' %
                             method, 'band', 'pbe', import_kpath)
 
     if os.path.isfile(f'{olddir}/{method}/band/eigenvalues.npy'):
         os.remove(f'{olddir}/{method}/band/eigenvalues.npy')
 
     elif method == 'hse':
-        calc.generate_input(olddir+'/%s/scf' %
+        calc.generate_input(olddir + '/%s/scf' %
                             method, 'scf', 'hse', import_kpath)
-        if not os.path.exists(olddir+'/%s/band' % method):
-            os.mkdir(olddir+'/%s/band' % method)
+        if not os.path.exists(olddir + '/%s/band' % method):
+            os.mkdir(olddir + '/%s/band' % method)
 
     try:
-        os.chdir(olddir+'/%s/scf' % method)
+        os.chdir(olddir + '/%s/scf' % method)
         errorcode_scf = subprocess.call(
             '%s > %s' % (command, outfilename), shell=True)
         os.system('cp CHG* WAVECAR IBZKPT %s/%s/band' % (olddir, method))
         if method == 'hse':
-            calc.generate_input(olddir+'/%s/band' %
+            calc.generate_input(olddir + '/%s/band' %
                                 method, 'band', 'hse', import_kpath)
     finally:
-        os.chdir(olddir+'/%s/band' % method)
+        os.chdir(olddir + '/%s/band' % method)
         errorcode_band = subprocess.call(
             '%s > %s' % (command, outfilename), shell=True)
         os.chdir(olddir)
