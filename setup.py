@@ -6,12 +6,18 @@ with open("README.md", "r") as fh:
 setup(
     name='BayesOpt4dftu',
     version='0.1.4',
-#    description='???',
+    #    description='???',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Maituo Yu',
-#    author_email="???",
+    #    author_email="???",
     url='https://github.com/maituoy/BayesianOpt4dftu',
     packages=['BayesOpt4dftu'],
-    install_requires=['numpy', 'ase==3.22.0', 'pymatgen==2022.0.16', 'bayesian-optimization==1.2.0', 'pandas','vaspvis==1.2.2'],
+    install_requires=['numpy', 'ase==3.22.0', 'pymatgen==2022.0.16', 'bayesian-optimization==1.2.0', 'pandas',
+                      'vaspvis==1.2.2'],
+    entry_points={
+        'console_scripts': [
+            'bo_dftu=BayesOpt4dftu.main:main',
+        ],
+    },
 )
