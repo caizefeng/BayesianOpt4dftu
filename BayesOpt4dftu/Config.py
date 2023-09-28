@@ -23,6 +23,7 @@ class Config:
         # Define the path direct to the VASP pseudopotential.
         self.vasp_pp_path = vasp_env_params.get('vasp_pp_path', '/home/maituoy/pp_vasp/')
         self.dry_run = vasp_env_params.get('dry_run', False)
+        self.dftu_only = vasp_env_params.get('dftu_only', False)
 
         os.environ['VASP_PP_PATH'] = self.vasp_pp_path
 

@@ -20,9 +20,10 @@ def main():
 
     if config.dry_run:
         dft_logger.info("Dry run set to True.")
-        calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='hse',
-                  import_kpath=config.import_kpath,
-                  is_dry=True)
+        if not config.dftu_only:
+            calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='hse',
+                      import_kpath=config.import_kpath,
+                      is_dry=True)
         calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='dftu',
                   import_kpath=config.import_kpath,
                   is_dry=True)
@@ -42,13 +43,13 @@ def main():
             f.write('%s band_gap delta_band \n' % (' '.join(header)))
 
         dft_logger.info("Production run initiated.")
-        dft_logger.info("Hybrid DFT calculation begins.")
 
-        calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='hse',
-                  import_kpath=config.import_kpath,
-                  is_dry=False)
-
-        dft_logger.info("Hybrid DFT calculation finished.")
+        if not config.dftu_only:
+            dft_logger.info("Hybrid DFT calculation begins.")
+            calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='hse',
+                      import_kpath=config.import_kpath,
+                      is_dry=False)
+            dft_logger.info("Hybrid DFT calculation finished.")
 
         driver_logger.info("Bayesian Optimization begins.")
         dft_logger.info("GGA+U calculations begin.")
