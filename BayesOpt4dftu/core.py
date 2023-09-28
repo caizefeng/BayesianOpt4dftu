@@ -117,10 +117,13 @@ class vasp_init(object):
         flags.update(self.general_flags)
         flags.update(self.input_dict[step])
         if step == 'scf':
-            if xc == 'pbe':
-                flags.update(self.input_dict[xc])
-            calc = Vasp(self.atoms, directory=directory,
-                        kpts=self.struct_info['kgrid_' + xc], gamma=True, **flags)
+            flags.update(self.input_dict[xc])
+            calc = Vasp(self.atoms,
+                        directory=directory,
+                        kpts=self.struct_info['kgrid_' + xc],
+                        gamma=True,
+                        setups='recommended',
+                        **flags)
             calc.write_input(self.atoms)
             # random exception (Ni2O2)
             if str(self.atoms.symbols) in ['Ni2O2']:
@@ -133,7 +136,11 @@ class vasp_init(object):
             self.modify_poscar(path=directory)
         elif step == 'band':
             flags.update(self.input_dict[xc])
-            calc = Vasp(self.atoms, directory=directory, gamma=True, **flags)
+            calc = Vasp(self.atoms,
+                        directory=directory,
+                        gamma=True,
+                        setups='recommended',
+                        **flags)
             calc.write_input(self.atoms)
             self.modify_poscar(path=directory)
             if xc == 'pbe':
