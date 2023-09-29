@@ -21,10 +21,12 @@ def main():
     if config.dry_run:
         dft_logger.info("Dry run set to True.")
         if not config.dftu_only:
-            calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='hse',
+            calculate(command=config.vasp_run_command, config_file_name=config.config_file_name,
+                      outfilename=config.out_file_name, method='hse',
                       import_kpath=config.import_kpath,
                       is_dry=True)
-        calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='dftu',
+        calculate(command=config.vasp_run_command, config_file_name=config.config_file_name,
+                  outfilename=config.out_file_name, method='dftu',
                   import_kpath=config.import_kpath,
                   is_dry=True)
         dft_logger.info("No actual calculations were performed. Review the input files before proceeding.")
@@ -46,7 +48,8 @@ def main():
 
         if not config.dftu_only:
             dft_logger.info("Hybrid DFT calculation begins.")
-            calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='hse',
+            calculate(command=config.vasp_run_command, config_file_name=config.config_file_name,
+                      outfilename=config.out_file_name, method='hse',
                       import_kpath=config.import_kpath,
                       is_dry=False)
             dft_logger.info("Hybrid DFT calculation finished.")
@@ -56,15 +59,17 @@ def main():
 
         obj = 0
         for i in range(config.iteration):
-            calculate(command=config.vasp_run_command, outfilename=config.out_file_name, method='dftu',
+            calculate(command=config.vasp_run_command, config_file_name=config.config_file_name,
+                      outfilename=config.out_file_name, method='dftu',
                       import_kpath=config.import_kpath,
                       is_dry=False)
-            db = delta_band(bandrange=config.br, path='./')
-            db.deltaBand()
+            db = DeltaBand(bandrange=config.br, path='./')
+            db.delta_band()
 
-            bayesian_opt = bayesOpt_DFTU(path='./', opt_u_index=config.which_u, u_range=config.urange, kappa=config.k,
-                                         a1=config.a1, a2=config.a2,
-                                         elements=config.elements)
+            bayesian_opt = BayesOptDftu(path='./', config_file_name=config.config_file_name, opt_u_index=config.which_u,
+                                        u_range=config.urange, kappa=config.k,
+                                        a1=config.a1, a2=config.a2,
+                                        elements=config.elements)
             obj_next = bayesian_opt.bo()
             if abs(obj_next - obj) <= config.threshold:
                 bo_logger.info("Convergence reached, exiting.")
