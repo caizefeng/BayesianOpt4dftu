@@ -1,3 +1,4 @@
+import shutil
 from BayesOpt4dftu.core import *
 from BayesOpt4dftu.BoLogging import BoLogging
 from BayesOpt4dftu.Config import Config
@@ -34,6 +35,11 @@ def main():
     else:
         dft_logger.info("Dry run set to False.")
 
+        # Temporary config
+        config_path = os.path.join(os.getcwd(), config.config_file_name)
+        tmp_config_path = os.path.join(os.getcwd(), config.tmp_config_file_name)
+        shutil.copyfile(config_path, tmp_config_path)
+        # Temporary Bayesian optimization log
         header = []
         for i, u in enumerate(config.which_u):
             header.append('U_ele_%s' % str(i + 1))
@@ -48,7 +54,7 @@ def main():
 
         if not config.dftu_only:
             dft_logger.info("Hybrid DFT calculation begins.")
-            calculate(command=config.vasp_run_command, config_file_name=config.config_file_name,
+            calculate(command=config.vasp_run_command, config_file_name=config.tmp_config_file_name,
                       outfilename=config.out_file_name, method='hse',
                       import_kpath=config.import_kpath,
                       is_dry=False)
@@ -59,14 +65,15 @@ def main():
 
         obj = 0
         for i in range(config.iteration):
-            calculate(command=config.vasp_run_command, config_file_name=config.config_file_name,
+            calculate(command=config.vasp_run_command, config_file_name=config.tmp_config_file_name,
                       outfilename=config.out_file_name, method='dftu',
                       import_kpath=config.import_kpath,
                       is_dry=False)
             db = DeltaBand(bandrange=config.br, path='./')
             db.delta_band()
 
-            bayesian_opt = BayesOptDftu(path='./', config_file_name=config.config_file_name, opt_u_index=config.which_u,
+            bayesian_opt = BayesOptDftu(path='./', config_file_name=config.tmp_config_file_name,
+                                        opt_u_index=config.which_u,
                                         u_range=config.urange, kappa=config.k,
                                         a1=config.a1, a2=config.a2,
                                         elements=config.elements)
@@ -87,6 +94,8 @@ def main():
         driver_logger.info("Bayesian Optimization finished.")
 
         os.system('mv ./u_tmp.txt ./u_kappa_%s_a1_%s_a2_%s.txt' % (config.k, config.a1, config.a2))
+        os.remove(tmp_config_path)
+        driver_logger.info("Temporary files removed.")
 
     driver_logger.info("Task completed.")
 
