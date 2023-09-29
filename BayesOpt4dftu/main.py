@@ -8,7 +8,7 @@ def main():
     logging_generator = BoLogging()
     driver_logger = logging_generator.get_logger("Driver")
     dft_logger = logging_generator.get_logger("DFT")
-    bo_logger = logging_generator.get_logger("BayesianOptimization")
+    bo_logger = logging_generator.get_logger("Bayesian Optimization")
 
     driver_logger.info("Task begins.")
     driver_logger.info("Loading configuration from file input.json ...")
@@ -17,7 +17,7 @@ def main():
     config = Config("input.json")
 
     driver_logger.info("Configuration loaded.")
-    driver_logger.info("DFT calculations begin.")
+    dft_logger.info("DFT calculations begin.")
 
     if config.dry_run:
         dft_logger.info("Dry run set to True.")
@@ -31,7 +31,7 @@ def main():
                   import_kpath=config.import_kpath,
                   is_dry=True)
         dft_logger.info("No actual calculations were performed. Review the input files before proceeding.")
-        driver_logger.info("Dry run executed.")
+        dft_logger.info("Dry run executed.")
     else:
         dft_logger.info("Dry run set to False.")
 
@@ -50,7 +50,7 @@ def main():
         with open('./u_tmp.txt', 'w+') as f:
             f.write('%s band_gap delta_band \n' % (' '.join(header)))
 
-        dft_logger.info("Production run initiated.")
+        driver_logger.info("Temporary files initiated.")
 
         if not config.dftu_only:
             dft_logger.info("Hybrid DFT calculation begins.")
@@ -60,8 +60,8 @@ def main():
                       is_dry=False)
             dft_logger.info("Hybrid DFT calculation finished.")
 
-        driver_logger.info("Bayesian Optimization begins.")
         dft_logger.info("GGA+U calculations begin.")
+        bo_logger.info("Bayesian Optimization begins.")
 
         obj = 0
         for i in range(config.iteration):
@@ -84,14 +84,14 @@ def main():
             obj = obj_next
 
         dft_logger.info("GGA+U calculations finished.")
-        driver_logger.info("DFT calculations finished.")
+        dft_logger.info("DFT calculations finished.")
         bayesian_opt.plot()
 
         tmp_tuple = bayesian_opt.optimal
         bo_logger.info(f"Optimal U value: {tmp_tuple[0]}")
         bo_logger.info(f"Optimal objective function: {tmp_tuple[1]}")
 
-        driver_logger.info("Bayesian Optimization finished.")
+        bo_logger.info("Bayesian Optimization finished.")
 
         os.system('mv ./u_tmp.txt ./u_kappa_%s_a1_%s_a2_%s.txt' % (config.k, config.a1, config.a2))
         os.remove(tmp_config_path)
