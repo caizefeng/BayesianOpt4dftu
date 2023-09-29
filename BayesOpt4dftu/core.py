@@ -1,24 +1,17 @@
 import os
 import json
-import bayes_opt
 import subprocess
-import numpy as np
 import pandas as pd
-import pymatgen as mg
 import xml.etree.ElementTree as ET
 
 from ase import Atoms, Atom
 from ase.calculators.vasp.vasp import Vasp
 from ase.dft.kpoints import *
 
-from pymatgen.io.vasp.inputs import Incar, Kpoints, Potcar, Poscar
-from pymatgen.core.lattice import Lattice
-from pymatgen.core.structure import Structure, Molecule
-from pymatgen.io.vasp.outputs import BSVasprun, Vasprun
+from pymatgen.io.vasp.inputs import Incar, Kpoints
 
 from bayes_opt import UtilityFunction
 from bayes_opt import BayesianOptimization
-from string import ascii_lowercase
 from BayesOpt4dftu.special_kpath import kpath_dict
 
 from vaspvis import Band
@@ -28,7 +21,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm, gridspec
 
 
-class vasp_init(object):
+class VaspInit(object):
     def __init__(self, input_path):
         with open(input_path, 'r') as f:
             self.input_dict = json.load(f)
@@ -45,7 +38,8 @@ class vasp_init(object):
 
         return self.atoms
 
-    def modify_poscar(self, path='./'):
+    @staticmethod
+    def modify_poscar_direct(path='./'):
         with open(path + '/POSCAR', 'r') as f:
             poscar = f.readlines()
             poscar[7] = 'Direct\n'
@@ -133,7 +127,7 @@ class vasp_init(object):
                 incar_scf['MAGMOM'] = '%s -%s 0 0' % (mom_list[s], mom_list[s])
                 incar_scf.write_file(directory + '/INCAR')
 
-            self.modify_poscar(path=directory)
+            VaspInit.modify_poscar_direct(path=directory)
         elif step == 'band':
             flags.update(self.input_dict[xc])
             calc = Vasp(self.atoms,
@@ -142,14 +136,14 @@ class vasp_init(object):
                         setups='recommended',
                         **flags)
             calc.write_input(self.atoms)
-            self.modify_poscar(path=directory)
+            VaspInit.modify_poscar_direct(path=directory)
             if xc == 'pbe':
                 self.kpt4pbeband(directory, import_kpath)
             elif xc == 'hse':
                 self.kpt4hseband(directory, import_kpath)
 
 
-class delta_band(object):
+class DeltaBand(object):
     def __init__(self, bandrange=(5, 5), path='./', iteration=1, interpolate=False):
         self.path = path
         self.br_vb = bandrange[0]
@@ -161,7 +155,8 @@ class delta_band(object):
         self.kpoints_dftu = os.path.join(path, 'dftu/band/KPOINTS')
         self.iteration = iteration
 
-    def readInfo(self, filepath):
+    @staticmethod
+    def read_ispin_nbands_nkpts(filepath):
         tree = ET.parse(filepath)
         root = tree.getroot()
         ispin = int(root.findall(
@@ -173,7 +168,8 @@ class delta_band(object):
 
         return ispin, nbands, nkpts
 
-    def access_eigen(self, b, interpolate=False):
+    @staticmethod
+    def access_eigen(b: Band, interpolate=False):
         wave_vectors = b._get_k_distance()
         eigenvalues = b.eigenvalues
 
@@ -211,9 +207,9 @@ class delta_band(object):
 
         return shifted_bands
 
-    def deltaBand(self):
-        ispin_hse, nbands_hse, nkpts_hse = self.readInfo(self.vasprun_hse)
-        ispin_dftu, nbands_dftu, nkpts_dftu = self.readInfo(self.vasprun_dftu)
+    def delta_band(self):
+        ispin_hse, nbands_hse, nkpts_hse = DeltaBand.read_ispin_nbands_nkpts(self.vasprun_hse)
+        ispin_dftu, nbands_dftu, nkpts_dftu = DeltaBand.read_ispin_nbands_nkpts(self.vasprun_dftu)
 
         if nbands_hse != nbands_dftu:
             raise Exception('The band number of HSE and GGA+U are not match!')
@@ -246,8 +242,8 @@ class delta_band(object):
                 projected=False,
             )
 
-            eigenvalues_hse = self.access_eigen(band_hse, interpolate=self.interpolate)
-            eigenvalues_dftu = self.access_eigen(band_dftu, interpolate=self.interpolate)
+            eigenvalues_hse = DeltaBand.access_eigen(band_hse, interpolate=self.interpolate)
+            eigenvalues_dftu = DeltaBand.access_eigen(band_dftu, interpolate=self.interpolate)
 
             shifted_hse = self.locate_and_shift_bands(eigenvalues_hse)
             shifted_dftu = self.locate_and_shift_bands(eigenvalues_dftu)
@@ -265,7 +261,7 @@ class delta_band(object):
 
             with open('u_tmp.txt', 'a') as f:
                 f.write(output + '\n')
-                f.close
+                f.close()
 
             return delta_band
 
@@ -302,8 +298,8 @@ class delta_band(object):
                 projected=False,
             )
 
-            eigenvalues_hse_up = self.access_eigen(band_hse_up, interpolate=self.interpolate)
-            eigenvalues_dftu_up = self.access_eigen(band_dftu_up, interpolate=self.interpolate)
+            eigenvalues_hse_up = DeltaBand.access_eigen(band_hse_up, interpolate=self.interpolate)
+            eigenvalues_dftu_up = DeltaBand.access_eigen(band_dftu_up, interpolate=self.interpolate)
 
             shifted_hse_up = self.locate_and_shift_bands(eigenvalues_hse_up)
             shifted_dftu_up = self.locate_and_shift_bands(eigenvalues_dftu_up)
@@ -311,8 +307,8 @@ class delta_band(object):
             n_up = shifted_hse_up.shape[0] * shifted_hse_up.shape[1]
             delta_band_up = sum((1 / n_up) * sum((shifted_hse_up - shifted_dftu_up) ** 2)) ** (1 / 2)
 
-            eigenvalues_hse_down = self.access_eigen(band_hse_down, interpolate=self.interpolate)
-            eigenvalues_dftu_down = self.access_eigen(band_dftu_down, interpolate=self.interpolate)
+            eigenvalues_hse_down = DeltaBand.access_eigen(band_hse_down, interpolate=self.interpolate)
+            eigenvalues_dftu_down = DeltaBand.access_eigen(band_dftu_down, interpolate=self.interpolate)
 
             shifted_hse_down = self.locate_and_shift_bands(eigenvalues_hse_down)
             shifted_dftu_down = self.locate_and_shift_bands(eigenvalues_dftu_down)
@@ -333,14 +329,14 @@ class delta_band(object):
 
             with open('u_tmp.txt', 'a') as f:
                 f.write(output + '\n')
-                f.close
+                f.close()
 
             return delta_band
         else:
             raise Exception('The spin number of HSE and GGA+U are not match!')
 
 
-class get_optimizer:
+class OptimizerGenerator:
     def __init__(self, utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa):
         data = pd.read_csv(utxt_path, header=0, delimiter="\s", engine='python')
         self.opt_u_index = opt_u_index
@@ -399,7 +395,7 @@ class get_optimizer:
         return optimizer, target
 
 
-class plot_bo(get_optimizer):
+class PlotBO(OptimizerGenerator):
     def __init__(self, utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa, elements):
         super().__init__(utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa)
         optimizer, target = self.optimizer()
@@ -543,9 +539,10 @@ class plot_bo(get_optimizer):
             plt.savefig('2D_kappa_%s_a1_%s_a2_%s.png' % (self.kappa, self.a1, self.a2), dpi=400)
 
 
-class bayesOpt_DFTU(plot_bo):
+class BayesOptDftu(PlotBO):
     def __init__(self,
                  path,
+                 config_file_name,
                  opt_u_index=(1, 1, 0),
                  u_range=(0, 10),
                  a1=0.25,
@@ -553,12 +550,14 @@ class bayesOpt_DFTU(plot_bo):
                  kappa=2.5,
                  elements=['ele1', 'ele2', 'ele3'],
                  plot=False):
+        self.path = path
+        self.config_file_name = config_file_name
         gap_hse = BandGap(folder=os.path.join(path, 'hse/band'), method=1, spin='both', ).bg
         if plot:
             upath = "./u_kappa_%s_a1_%s_a2_%s.txt" % (kappa, a1, a2)
         if not plot:
             upath = './u_tmp.txt'
-        plot_bo.__init__(self, upath, opt_u_index, u_range, gap_hse, a1, a2, kappa, elements)
+        super().__init__(upath, opt_u_index, u_range, gap_hse, a1, a2, kappa, elements)
 
     def bo(self):
         next_point_to_probe = self.optimizer.suggest(self.utility_function)
@@ -567,29 +566,27 @@ class bayesOpt_DFTU(plot_bo):
         points = [round(elem, 6) for elem in points]
 
         U = [str(x) for x in points]
-        with open('input.json', 'r') as f:
+        os.chdir(self.path)
+        with open(self.config_file_name, 'r') as f:
             data = json.load(f)
-            elements = list(data["pbe"]["ldau_luj"].keys())
             for i in range(len(self.opt_u_index)):
                 if self.opt_u_index[i]:
                     try:
-                        data["pbe"]["ldau_luj"][self.elements[i]
-                        ]["U"] = round(float(U[i]), 6)
+                        data["pbe"]["ldau_luj"][self.elements[i]]["U"] = round(float(U[i]), 6)
                     except:
-                        data["pbe"]["ldau_luj"][self.elements[i]
-                        ]["U"] = round(float(U[i - 1]), 6)
+                        data["pbe"]["ldau_luj"][self.elements[i]]["U"] = round(float(U[i - 1]), 6)
             f.close()
 
-        with open('input.json', 'w') as f:
+        with open(self.config_file_name, 'w') as f:
             json.dump(data, f, indent=4)
             f.close()
 
         return self.target
 
 
-def calculate(command: str, outfilename: str, method: str, import_kpath: bool, is_dry: bool):
+def calculate(command: str, config_file_name: str, outfilename: str, method: str, import_kpath: bool, is_dry: bool):
     olddir = os.getcwd()
-    calc = vasp_init(olddir + '/input.json')
+    calc = VaspInit(f"{olddir}/{config_file_name}")
     calc.init_atoms()
 
     if method == 'dftu':
