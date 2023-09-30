@@ -1,4 +1,35 @@
 {
+    "vasp_env": {
+        "vasp_run_command": "mpirun -np 64 /trace/home/zefengc/soft/vasp.5.4.4.optcell/bin/vasp_std",
+        "out_file_name": "slurm-vasp.out",
+        "vasp_pp_path": "/trace/home/zefengc/soft/Pseudopotentials/",
+        "dry_run": false,
+        "dftu_only": false
+    },
+    "bo": {
+        "which_u": [
+            1,
+            1
+        ],
+        "br": [
+            5,
+            5
+        ],
+        "kappa": 5,
+        "alpha1": 0.25,
+        "alpha2": 0.75,
+        "threshold": 0.0001,
+        "urange": [
+            -10,
+            10
+        ],
+        "import_kpath": false,
+        "elements": [
+            "In",
+            "As"
+        ],
+        "iteration": 50
+    },
     "structure_info": {
         "lattice_param": 6.0584,
         "cell": [
