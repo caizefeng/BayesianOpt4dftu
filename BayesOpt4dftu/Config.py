@@ -16,7 +16,7 @@ class Config:
             data = json.load(f)
 
         self.config_file_name = config_file
-        self.tmp_config_file_name = f"tmp_{config_file}"
+        self.tmp_config_file_name = f"{config_file.split('.')[0]}_tmp.{config_file.split('.')[1]}"
         vasp_env_params = data['vasp_env']
         # Command to run VASP executable.
         self.vasp_run_command = vasp_env_params.get('vasp_run_command', 'srun -n 54 vasp_ncl')
