@@ -370,6 +370,7 @@ class OptimizerGenerator:
             pbounds=pbounds,
             verbose=2,
             random_state=1,
+            allow_duplicate_points=True
         )
 
         v_strings = list(pbounds.keys())

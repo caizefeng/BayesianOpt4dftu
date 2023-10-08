@@ -20,7 +20,7 @@ setup(
                       'pyvista==0.37.0',
                       'pyprocar==5.6.6',
                       'pymatgen==2022.0.16',
-                      'bayesian-optimization==1.3.0',
+                      'bayesian-optimization==1.4.2',
                       'pandas',
                       'vaspvis==1.2.2',
                       ],
