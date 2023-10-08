@@ -560,6 +560,9 @@ class BayesOptDftu(PlotBO):
             upath = './u_tmp.txt'
         super().__init__(upath, opt_u_index, u_range, gap_hse, a1, a2, kappa, elements)
 
+    def get_gap_hse(self):
+        return self.gap_hse
+
     def bo(self):
         next_point_to_probe = self.optimizer.suggest(self.utility_function)
 

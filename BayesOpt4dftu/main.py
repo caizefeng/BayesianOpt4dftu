@@ -77,6 +77,10 @@ def main():
                                         u_range=config.urange, kappa=config.k,
                                         a1=config.a1, a2=config.a2,
                                         elements=config.elements)
+
+            if i == 0:
+                dft_logger.info(f"Band gap from hybrid DFT calculation: {bayesian_opt.get_gap_hse()} eV")
+
             obj_next = bayesian_opt.bo()
             if abs(obj_next - obj) <= config.threshold:
                 bo_logger.info("Convergence reached, exiting.")
