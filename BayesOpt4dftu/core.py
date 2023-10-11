@@ -567,18 +567,17 @@ class BayesOptDftu(PlotBO):
         next_point_to_probe = self.optimizer.suggest(self.utility_function)
 
         points = list(next_point_to_probe.values())
-        points = [round(elem, 6) for elem in points]
 
-        U = [str(x) for x in points]
+        U = points
         os.chdir(self.path)
         with open(self.config_file_name, 'r') as f:
             data = json.load(f)
             for i in range(len(self.opt_u_index)):
                 if self.opt_u_index[i]:
                     try:
-                        data["pbe"]["ldau_luj"][self.elements[i]]["U"] = round(float(U[i]), 6)
+                        data["pbe"]["ldau_luj"][self.elements[i]]["U"] = U[i]
                     except:
-                        data["pbe"]["ldau_luj"][self.elements[i]]["U"] = round(float(U[i - 1]), 6)
+                        data["pbe"]["ldau_luj"][self.elements[i]]["U"] = U[i - 1]
             f.close()
 
         with open(self.config_file_name, 'w') as f:
