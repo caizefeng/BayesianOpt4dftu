@@ -1,29 +1,55 @@
-from setuptools import setup
+import codecs
+import os
+
+import setuptools
+
+
+# Helper Functions
+
+def get_required_packages():
+    """Retrieve the list of required packages from requirements.txt."""
+    with open('requirements.txt', 'r') as f:
+        return f.read().splitlines()
+
+
+def read(rel_path):
+    """Read the content of a file at a relative path."""
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    """Extract the version string from a Python file."""
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
+# Setup Configuration
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setup(
+setuptools.setup(
     name='BayesOpt4dftu',
-    version='0.1.4',
-    #    description='???',
+    version=get_version("BayesOpt4dftu/__init__.py"),
+    description='Bayesian optimization package for DFT+U',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Maituo Yu',
     #    author_email="???",
     url='https://github.com/caizefeng/BayesianOpt4dftu',
-    packages=['BayesOpt4dftu'],
-    install_requires=['numpy',
-                      'matplotlib',
-                      'ase==3.22.0',
-                      'monty==2022.1.12.1',
-                      'pyvista==0.37.0',
-                      'pyprocar==5.6.6',
-                      'pymatgen==2022.0.16',
-                      'bayesian-optimization==1.4.2',
-                      'pandas',
-                      'vaspvis==1.2.2',
-                      ],
+    license='MIT',
+    classifiers=[
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+    ],
+    packages=setuptools.find_packages(),
+    install_requires=get_required_packages(),
     entry_points={
         'console_scripts': [
             'bo_dftu=BayesOpt4dftu.main:main',
