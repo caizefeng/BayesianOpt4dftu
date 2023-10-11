@@ -1,7 +1,9 @@
 import shutil
-from BayesOpt4dftu.core import *
-from BayesOpt4dftu.BoLogging import BoLogging
-from BayesOpt4dftu.Config import Config
+from BayesOpt4dftu.bo import *
+from BayesOpt4dftu.logging import BoLogging
+from BayesOpt4dftu.configuration import Config
+from BayesOpt4dftu.delta_band import DeltaBand
+from BayesOpt4dftu.dft import calculate
 
 
 def main():
