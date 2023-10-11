@@ -1,6 +1,7 @@
 import os
 from xml.etree import ElementTree as ET
 
+import numpy as np
 from pymatgen.io.vasp import Incar
 from vaspvis import Band
 from vaspvis.utils import BandGap

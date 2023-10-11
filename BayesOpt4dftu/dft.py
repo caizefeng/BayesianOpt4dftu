@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 
+import numpy as np
 from ase import Atoms, Atom
 from ase.calculators.vasp import Vasp
 from ase.dft.kpoints import get_special_points
