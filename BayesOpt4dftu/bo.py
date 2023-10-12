@@ -12,6 +12,8 @@ from vaspvis.utils import BandGap
 from matplotlib import pyplot as plt
 from matplotlib import cm, gridspec
 
+from BayesOpt4dftu.io_helpers import SuppressPrints
+
 
 class OptimizerGenerator:
     def __init__(self, utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa):
@@ -66,10 +68,13 @@ class OptimizerGenerator:
                                self.a1,
                                self.a2)
 
-            optimizer.register(
-                params=params,
-                target=target,
-            )
+            # Suppress non-unique data point registration messages
+            with SuppressPrints():
+                optimizer.register(
+                    params=params,
+                    target=target,
+                )
+
         return optimizer, target
 
 
@@ -262,5 +267,3 @@ class BayesOptDftu(PlotBO):
             f.close()
 
         return self.target
-
-
