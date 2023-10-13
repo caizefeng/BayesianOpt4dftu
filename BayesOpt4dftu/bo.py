@@ -57,7 +57,7 @@ class OptimizerGenerator:
 
         for i in range(self.n_obs):
             values = list()
-            for j in range(len(opt_index)):
+            for j in opt_index:
                 values.append(self.data.iloc[i][j])
             params = {}
             for (value, variable) in zip(values, v_strings):
@@ -254,12 +254,11 @@ class BayesOptDftu(PlotBO):
         os.chdir(self.path)
         with open(self.config_file_name, 'r') as f:
             data = json.load(f)
-            for i in range(len(self.opt_u_index)):
-                if self.opt_u_index[i]:
-                    try:
-                        data["pbe"]["ldau_luj"][self.elements[i]]["U"] = U[i]
-                    except:
-                        data["pbe"]["ldau_luj"][self.elements[i]]["U"] = U[i - 1]
+            u_pointer = 0
+            for i, opt_u_on in enumerate(self.opt_u_index):
+                if opt_u_on:
+                    data["pbe"]["ldau_luj"][self.elements[i]]["U"] = U[u_pointer]
+                    u_pointer += 1
             f.close()
 
         with open(self.config_file_name, 'w') as f:
