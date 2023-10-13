@@ -1,6 +1,6 @@
 {
     "vasp_env": {
-        "vasp_run_command": "mpirun -np 64 /trace/home/zefengc/soft/vasp.5.4.4.optcell/bin/vasp_std",
+        "vasp_run_command": "mpirun -np 54 /trace/home/zefengc/soft/vasp.5.4.4.optcell/bin/vasp_std",
         "out_file_name": "slurm-vasp.out",
         "vasp_pp_path": "/trace/home/zefengc/soft/Pseudopotentials/",
         "dry_run": false,
