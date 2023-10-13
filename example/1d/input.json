@@ -121,6 +121,8 @@
         "lmaxmix": 2
     },
     "hse": {
+        "istart": 0,
+        "icharg": 2,
         "xc": "hse06",
         "aexx": 0.25,
         "time": 0.4,

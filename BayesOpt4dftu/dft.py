@@ -138,35 +138,35 @@ def calculate(command: str, config_file_name: str, outfilename: str, method: str
     calc = VaspInit(f"{olddir}/{config_file_name}")
     calc.init_atoms()
 
+    if not os.path.exists(olddir + '/%s/band' % method):
+        os.mkdir(olddir + '/%s/band' % method)
+
     if method == 'dftu':
+        # Only DFT+U calcs need SCF step
+        if not os.path.exists(olddir + '/%s/scf' % method):
+            os.mkdir(olddir + '/%s/scf' % method)
         calc.generate_input(olddir + '/%s/scf' %
                             method, 'scf', 'pbe', import_kpath)
         calc.generate_input(olddir + '/%s/band' %
                             method, 'band', 'pbe', import_kpath)
+    elif method == 'hse':
+        calc.generate_input(olddir + '/%s/band' %
+                            method, 'band', 'hse', import_kpath)
 
     if os.path.isfile(f'{olddir}/{method}/band/eigenvalues.npy'):
         os.remove(f'{olddir}/{method}/band/eigenvalues.npy')
-
-    elif method == 'hse':
-        calc.generate_input(olddir + '/%s/scf' %
-                            method, 'scf', 'hse', import_kpath)
-        if not os.path.exists(olddir + '/%s/band' % method):
-            os.mkdir(olddir + '/%s/band' % method)
 
     # exit if dry run
     if is_dry:
         return
 
-    try:
+    if method == 'dftu':
         os.chdir(olddir + '/%s/scf' % method)
         errorcode_scf = subprocess.call(
             '%s > %s' % (command, outfilename), shell=True)
-        os.system('cp CHG* WAVECAR IBZKPT %s/%s/band' % (olddir, method))
-        if method == 'hse':
-            calc.generate_input(olddir + '/%s/band' %
-                                method, 'band', 'hse', import_kpath)
-    finally:
-        os.chdir(olddir + '/%s/band' % method)
-        errorcode_band = subprocess.call(
-            '%s > %s' % (command, outfilename), shell=True)
-        os.chdir(olddir)
+        os.system('cp CHG* WAVECAR %s/%s/band' % (olddir, method))
+
+    os.chdir(olddir + '/%s/band' % method)
+    errorcode_band = subprocess.call(
+        '%s > %s' % (command, outfilename), shell=True)
+    os.chdir(olddir)
