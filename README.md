@@ -66,7 +66,7 @@ The input file contains these parts:
         - Examples: `"alpha1": 0.25` and `"alpha2": 0.75`.
 
     - **`threshold`**:
-        - Description: Specifies the accuracy at which you'd like to stop the BO process. Note: Note: A threshold of 0 will disable convergence assessment.
+        - Description: Specifies the accuracy at which you'd like to stop the BO process. Note: A threshold of 0 will disable convergence assessment.
         - Example: `"threshold": 0.0001`.
 
     - **`urange`**:
