@@ -84,8 +84,8 @@ def main():
                 dft_logger.info(f"Band gap from hybrid DFT calculation: {bayesian_opt.get_gap_hse()} eV")
 
             obj_next = bayesian_opt.bo()
-            if abs(obj_next - obj) <= config.threshold:
-                bo_logger.info("Convergence reached, exiting.")
+            if config.threshold != 0 and abs(obj_next - obj) <= config.threshold:
+                bo_logger.info(f"Convergence reached at iteration {i + 1}, exiting.")
                 break
             obj = obj_next
 
