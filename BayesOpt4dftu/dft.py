@@ -164,7 +164,8 @@ def calculate(command: str, config_file_name: str, outfilename: str, method: str
         os.chdir(olddir + '/%s/scf' % method)
         errorcode_scf = subprocess.call(
             '%s > %s' % (command, outfilename), shell=True)
-        os.system('cp CHG* WAVECAR %s/%s/band' % (olddir, method))
+        for filename in ["CHG", "CHGCAR", "WAVECAR"]:
+            shutil.copy(filename, olddir + '/%s/band' % method)
 
     os.chdir(olddir + '/%s/band' % method)
     errorcode_band = subprocess.call(

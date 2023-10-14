@@ -109,7 +109,7 @@ def main():
         dft_logger.info("GGA+U calculations finished.")
         dft_logger.info("All DFT calculations finished.")
 
-        os.system('mv ./u_tmp.txt ./u_kappa_%s_a1_%s_a2_%s.txt' % (config.k, config.a1, config.a2))
+        shutil.move('./u_tmp.txt', f'./u_kappa_{config.k}_a1_{config.a1}_a2_{config.a2}.txt')
         os.remove(tmp_config_path)
         driver_logger.info("Temporary files removed.")
 
