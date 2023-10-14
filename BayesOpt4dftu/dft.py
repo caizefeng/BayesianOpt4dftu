@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import subprocess
 
 import numpy as np
@@ -138,13 +139,12 @@ def calculate(command: str, config_file_name: str, outfilename: str, method: str
     calc = VaspInit(f"{olddir}/{config_file_name}")
     calc.init_atoms()
 
-    if not os.path.exists(olddir + '/%s/band' % method):
-        os.mkdir(olddir + '/%s/band' % method)
+    # Recursive directory creation; it won't raise an error if the directory already exists
+    os.makedirs(olddir + '/%s/band' % method, exist_ok=True)
 
     if method == 'dftu':
         # Only DFT+U calcs need SCF step
-        if not os.path.exists(olddir + '/%s/scf' % method):
-            os.mkdir(olddir + '/%s/scf' % method)
+        os.makedirs(olddir + '/%s/scf' % method, exist_ok=True)
         calc.generate_input(olddir + '/%s/scf' %
                             method, 'scf', 'pbe', import_kpath)
         calc.generate_input(olddir + '/%s/band' %
