@@ -102,7 +102,8 @@ class VaspInit(object):
         flags.update(self.general_flags)
         flags.update(self.input_dict[step])
         if step == 'scf':
-            flags.update(self.input_dict[xc])
+            # `scf` dir under `hse` is just used to generate IBZKPT, so xc=pbe is enough.
+            flags.update(self.input_dict['pbe'])
             calc = Vasp(self.atoms,
                         directory=directory,
                         kpts=self.struct_info['kgrid_' + xc],
@@ -140,34 +141,35 @@ def calculate(command: str, config_file_name: str, outfilename: str, method: str
     calc.init_atoms()
 
     # Recursive directory creation; it won't raise an error if the directory already exists
+    os.makedirs(olddir + '/%s/scf' % method, exist_ok=True)
     os.makedirs(olddir + '/%s/band' % method, exist_ok=True)
-
-    if method == 'dftu':
-        # Only DFT+U calcs need SCF step
-        os.makedirs(olddir + '/%s/scf' % method, exist_ok=True)
-        calc.generate_input(olddir + '/%s/scf' %
-                            method, 'scf', 'pbe', import_kpath)
-        calc.generate_input(olddir + '/%s/band' %
-                            method, 'band', 'pbe', import_kpath)
-    elif method == 'hse':
-        calc.generate_input(olddir + '/%s/band' %
-                            method, 'band', 'hse', import_kpath)
-
     if os.path.isfile(f'{olddir}/{method}/band/eigenvalues.npy'):
         os.remove(f'{olddir}/{method}/band/eigenvalues.npy')
+
+    if method == 'dftu':
+        calc.generate_input(olddir + '/%s/scf' % method, 'scf', 'pbe', import_kpath)
+        calc.generate_input(olddir + '/%s/band' % method, 'band', 'pbe', import_kpath)
+    elif method == 'hse':
+        calc.generate_input(olddir + '/%s/scf' % method, 'scf', 'pbe', import_kpath)
 
     # exit if dry run
     if is_dry:
         return
 
+    # calc in `scf` dir
+    os.chdir(olddir + '/%s/scf' % method)
+    errorcode_scf = subprocess.call('%s > %s' % (command, outfilename), shell=True)
+
     if method == 'dftu':
-        os.chdir(olddir + '/%s/scf' % method)
-        errorcode_scf = subprocess.call(
-            '%s > %s' % (command, outfilename), shell=True)
         for filename in ["CHG", "CHGCAR", "WAVECAR"]:
             shutil.copy(filename, olddir + '/%s/band' % method)
+    elif method == 'hse':
+        # `scf` dir under `hse` is just used to generate IBZKPT
+        for filename in ["IBZKPT"]:
+            shutil.copy(filename, olddir + '/%s/band' % method)
+        calc.generate_input(olddir + '/%s/band' % method, 'band', 'hse', import_kpath)
 
+    # calc in `band` dir
     os.chdir(olddir + '/%s/band' % method)
-    errorcode_band = subprocess.call(
-        '%s > %s' % (command, outfilename), shell=True)
+    errorcode_band = subprocess.call('%s > %s' % (command, outfilename), shell=True)
     os.chdir(olddir)

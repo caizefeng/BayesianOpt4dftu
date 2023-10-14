@@ -41,6 +41,7 @@ def main():
         config_path = os.path.join(os.getcwd(), config.config_file_name)
         tmp_config_path = os.path.join(os.getcwd(), config.tmp_config_file_name)
         shutil.copyfile(config_path, tmp_config_path)
+
         # Temporary Bayesian optimization log
         header = []
         for i, u in enumerate(config.which_u):
@@ -71,6 +72,7 @@ def main():
                       outfilename=config.out_file_name, method='dftu',
                       import_kpath=config.import_kpath,
                       is_dry=False)
+
             db = DeltaBand(bandrange=config.br, path='./')
             db.delta_band()
 
