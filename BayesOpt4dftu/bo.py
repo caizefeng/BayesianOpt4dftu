@@ -248,9 +248,13 @@ class BayesOptDftu(PlotBO):
     def bo(self):
         next_point_to_probe = self.optimizer.suggest(self.utility_function)
 
-        points = list(next_point_to_probe.values())
+        U = list(next_point_to_probe.values())
 
-        U = points
+        self.update_u_config(U)
+
+        return self.target
+
+    def update_u_config(self, U):
         os.chdir(self.path)
         with open(self.config_file_name, 'r') as f:
             data = json.load(f)
@@ -260,9 +264,6 @@ class BayesOptDftu(PlotBO):
                     data["pbe"]["ldau_luj"][self.elements[i]]["U"] = U[u_pointer]
                     u_pointer += 1
             f.close()
-
         with open(self.config_file_name, 'w') as f:
             json.dump(data, f, indent=4)
             f.close()
-
-        return self.target

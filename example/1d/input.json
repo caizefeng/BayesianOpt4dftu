@@ -4,7 +4,8 @@
         "out_file_name": "slurm-vasp.out",
         "vasp_pp_path": "/trace/home/zefengc/soft/Pseudopotentials/",
         "dry_run": false,
-        "dftu_only": false
+        "dftu_only": false,
+        "get_optimal_band": false
     },
     "bo": {
         "which_u": [

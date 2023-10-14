@@ -89,15 +89,25 @@ def main():
                 break
             obj = obj_next
 
-        dft_logger.info("GGA+U calculations finished.")
-        dft_logger.info("DFT calculations finished.")
         bayesian_opt.plot()
 
         tmp_tuple = bayesian_opt.optimal
         bo_logger.info(f"Optimal U value: {tmp_tuple[0]}")
         bo_logger.info(f"Optimal objective function: {tmp_tuple[1]}")
-
         bo_logger.info("Bayesian Optimization finished.")
+
+        if config.get_optimal_band:
+            bayesian_opt.update_u_config(tmp_tuple[0])
+            calculate(command=config.vasp_run_command, config_file_name=config.tmp_config_file_name,
+                      outfilename=config.out_file_name, method='dftu',
+                      import_kpath=config.import_kpath,
+                      is_dry=False)
+            db = DeltaBand(bandrange=config.br, path='./')
+            db.delta_band()
+            dft_logger.info("An additional GGA+U calculation using optimal U values performed.")
+
+        dft_logger.info("GGA+U calculations finished.")
+        dft_logger.info("All DFT calculations finished.")
 
         os.system('mv ./u_tmp.txt ./u_kappa_%s_a1_%s_a2_%s.txt' % (config.k, config.a1, config.a2))
         os.remove(tmp_config_path)

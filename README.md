@@ -39,6 +39,10 @@ The input file contains these parts:
     - **`dftu_only`**:
         - Description: Indicate if only DFT+U is performed.
         - Example: `"dftu_only": false"`
+          
+    - **`get_optimal_band`**:
+        - Description: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization.
+          - Example: `"get_optimal_band": false"`
 
 
 - **`bo`**: Settings specific to Bayesian Optimization.
