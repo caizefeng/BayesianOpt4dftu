@@ -7,9 +7,10 @@ import numpy as np
 from ase import Atoms, Atom
 from ase.calculators.vasp import Vasp
 from ase.dft.kpoints import get_special_points
-from pymatgen.io.vasp import Kpoints, Incar
+from pymatgen.io.vasp import Kpoints, Incar, Poscar
 
 from BayesOpt4dftu.special_kpath import kpath_dict
+from collections import defaultdict
 
 
 class VaspInit(object):
@@ -133,6 +134,46 @@ class VaspInit(object):
                 self.kpt4pbeband(directory, import_kpath)
             elif xc == 'hse':
                 self.kpt4hseband(directory, import_kpath)
+        # Rewrite LDAU flags to reflect correct numerical precision
+        self.rewrite_ldau(directory)
+
+    def rewrite_ldau(self, directory):
+
+        # Load the JSON data
+        params = self.input_dict["pbe"]
+
+        # Check if LDAU should be applied
+        if params["ldau"]:
+
+            # Load the current INCAR and POSCAR
+            incar = Incar.from_file(directory + '/INCAR')
+            poscar = Poscar.from_file(directory + '/POSCAR')
+
+            # Extract LDAU parameters from JSON
+            ldau_luj = params["ldau_luj"]
+            elements = [site.specie.name for site in poscar.structure]
+
+            # Defaults
+            ldaul = defaultdict(lambda: -1)
+            ldauu = defaultdict(lambda: 0)
+            ldauj = defaultdict(lambda: 0)
+
+            # Update defaults with provided values
+            for element, values in ldau_luj.items():
+                ldaul[element] = values["L"]
+                ldauu[element] = values["U"]
+                ldauj[element] = values["J"]
+
+            # Order values by appearance of elements in POSCAR
+            incar["LDAUL"] = [ldaul[el] for el in elements]
+            incar["LDAUU"] = [ldauu[el] for el in elements]
+            incar["LDAUJ"] = [ldauj[el] for el in elements]
+
+            # Write the modified INCAR back to file
+            incar.write_file(directory + '/INCAR')
+
+        else:
+            print("LDAU not set in the provided JSON data.")
 
 
 def calculate(command: str, config_file_name: str, outfilename: str, method: str, import_kpath: bool, is_dry: bool):
