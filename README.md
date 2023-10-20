@@ -42,7 +42,7 @@ The input file contains these parts:
           
     - **`get_optimal_band`**:
         - Description: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization.
-          - Example: `"get_optimal_band": false"`
+        - Example: `"get_optimal_band": false"`
 
 
 - **`bo`**: Settings specific to Bayesian Optimization.
@@ -96,7 +96,7 @@ The input file contains these parts:
 
 
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,
-  etc) of the target materials.
+  etc.) of the target materials.
   #### Example based on InAs:
     - **`lattice_param`** and **`cell`**: define the 2nd to 5th rows in your POSCAR.
         ```json
