@@ -1,12 +1,19 @@
+import argparse
 import shutil
 from BayesOpt4dftu.bo import *
 from BayesOpt4dftu.logging import BoLogging
 from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.delta_band import DeltaBand
 from BayesOpt4dftu.dft import calculate
+from . import __version__
 
 
 def main():
+    parser = argparse.ArgumentParser(description="BayesOpt4dftu CLI tool")
+    parser.add_argument('--version', action='version', version=f"BayesOpt4dftu {__version__}")
+
+    args = parser.parse_args()  # This will print version and exit if --version is provided
+
     logging_generator = BoLogging()
     driver_logger = logging_generator.get_logger("Driver")
     dft_logger = logging_generator.get_logger("DFT")
