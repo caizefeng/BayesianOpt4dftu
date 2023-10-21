@@ -1,16 +1,13 @@
-import os
 import json
+import os
+
 import pandas as pd
-
 from ase.dft.kpoints import *
-
-from bayes_opt import UtilityFunction
 from bayes_opt import BayesianOptimization
-
-from vaspvis.utils import BandGap
-
-from matplotlib import pyplot as plt
+from bayes_opt import UtilityFunction
 from matplotlib import cm, gridspec
+from matplotlib import pyplot as plt
+from vaspvis.utils import BandGap
 
 from BayesOpt4dftu.io_helpers import SuppressPrints
 

@@ -1,10 +1,11 @@
 import argparse
 import shutil
+
 from BayesOpt4dftu.bo import *
-from BayesOpt4dftu.logging import BoLogging
 from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.delta_band import DeltaBand
 from BayesOpt4dftu.dft import calculate
+from BayesOpt4dftu.logging import BoLogging
 from . import __version__
 
 

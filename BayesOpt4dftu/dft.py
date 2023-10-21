@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import subprocess
+from collections import defaultdict
 
 import numpy as np
 from ase import Atoms, Atom
@@ -10,7 +11,6 @@ from ase.dft.kpoints import get_special_points
 from pymatgen.io.vasp import Kpoints, Incar, Poscar
 
 from BayesOpt4dftu.special_kpath import kpath_dict
-from collections import defaultdict
 
 
 class VaspInit(object):
