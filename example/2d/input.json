@@ -117,7 +117,8 @@
     "band": {
         "icharg": 11,
         "lcharg": false,
-        "lwave": false
+        "lwave": false,
+        "lorbit": 11
     },
     "pbe": {
         "xc": "pbe",

@@ -91,6 +91,7 @@
     },
     "general_flags": {
         "encut": 450,
+        "ismear": 0,
         "sigma": 0.05,
         "prec": "N",
         "algo": "D",
@@ -107,7 +108,7 @@
         "icharg": 11,
         "lcharg": false,
         "lwave": false,
-        "ismear": 0
+        "lorbit": 11
     },
     "pbe": {
         "xc": "pbe",
