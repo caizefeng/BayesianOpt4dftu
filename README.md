@@ -1,21 +1,21 @@
 # BayesianOpt4dftu #
 
-This code determines the Hubbard U parameters in DFT+U via Bayesian Optimization approach.
+Determine the Hubbard U parameters in DFT+U using the Bayesian optimization approach.
 
-## Requirements ##
+## Prerequisites
 
-1. Python 3.6+
+1. Python 3.6 or higher
 2. NumPy
 3. Pandas
-4. ASE (https://wiki.fysik.dtu.dk/ase/)
-5. pymatgen (https://pymatgen.org/)
-6. bayesian-optimization https://github.com/fmfn/BayesianOptimization
-7. Vienna Ab initio Simulation Package (VASP) https://www.vasp.at/
+4. ASE (https://wiki.fysik.dtu.dk/ase)
+5. pymatgen (https://pymatgen.org)
+6. bayesian-optimization (https://github.com/fmfn/BayesianOptimization)
+7. Vienna Ab initio Simulation Package (VASP) (https://www.vasp.at)
 8. Vaspvis (https://github.com/DerekDardzinski/vaspvis)
 
-## Set up the input file (`input.json`) before running the code
+## Configuration
 
-The input file contains these parts:
+Before running the program, configure the `input.json` file. It contains:
 
 - **`vasp_env`**: Environment settings for VASP.
 
@@ -197,44 +197,45 @@ The input file contains these parts:
 - **`band`**: Flags required particularly in band structure calculation.
 - **`pbe`**: Flags required when using PBE as exchange-correlation functional.
 - **`hse`**: Flags required when using HSE06 as exchange-correlation functional.
-  The flags can be added or removed. More flag keys can be found in the ASE VASP calculator.
+  
+    Check ASE VASP calculator documentation for additional flag keys.
 
 ## Installation
 
 ```shell
-pip install BayesOpt4dftu
+git clone https://github.com/caizefeng/BayesianOpt4dftu.git
+cd BayesOpt4dftu
+pip install .
 ```
 
 ## Usage
 
-I will use `/example/2d` as an example:
+For demonstration, consider the `/example/2d`:
 
-#### 1. Modifying input.json
+### 1. Edit `input.json`
 
-Navigate to the desired `example` directory
+Change to the example directory:
 
 ```shell
 cd example/2d
 ```
 
-Modify the `input.json` file with the appropriate environment settings `vasp_env` based on the specs of your system and
-VASP binary.
+Update the `input.json` file with the appropriate vasp_env settings based on your system specifications and the location of your VASP binary.
 
-#### 2. Running the code
+### 2. Execute
 
-After updating the respective sections, you can simply run the calculation by
+Run the following command:
 
 ```shell
 bo_dftu
 ```
 
-#### 4. Outputs
+### 3. Results
 
-Once the threshold or the maximum iterations is reached, you will get two output files
+Upon reaching the threshold or maximum iterations, two output files are generated:
 
-`u_xx.txt` file consists of the U parameters, band gap, and the Δband at each step.
-
-`1D_xxx.png` or `2D_xxx.png` plots showing you the Gaussian process predicted mean and the acquisition function.
+- `u_xx.txt`: Contains U parameters, band gap, and Δband for each step.
+- `1D_xxx.png` or `2D_xxx.png`: Visual representation of the Gaussian process predicted mean and acquisition function.
 
 Example of BO plots
 
@@ -242,8 +243,7 @@ Example of BO plots
 
   <img src="https://github.com/maituoy/BayesianOpt4dftu/blob/master/example/2d/2D_kappa_5_a1_0.25_a2_0.75.png" width="800" height="270">
 
-Optimal U values will be output at the end of entire process based on the interpolation from the predicted mean space.
-You can also pick up the Us that give you largest objective value from the u.txt file.
+Optimal U values are deduced from the predicted mean space interpolation. Alternatively, use the `u.txt` file to select U values with the highest objective value.
 
 ## Citation
 
