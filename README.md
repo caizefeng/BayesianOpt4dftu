@@ -220,7 +220,7 @@ Change to the example directory:
 cd example/2d
 ```
 
-Update the `input.json` file with the appropriate vasp_env settings based on your system specifications and the location of your VASP binary.
+Update the `input.json` file with the appropriate `vasp_env` settings based on your system specifications and the location of your VASP binary.
 
 ### 2. Execute
 
@@ -237,7 +237,7 @@ Upon reaching the threshold or maximum iterations, two output files are generate
 - `u_xx.txt`: Contains U parameters, band gap, and Δband for each step.
 - `1D_xxx.png` or `2D_xxx.png`: Visual representation of the Gaussian process predicted mean and acquisition function.
 
-Example of BO plots
+**Example of BO plots**:
 
   <img src="https://github.com/maituoy/BayesianOpt4dftu/blob/master/example/1d/1D_kappa_5_a1_0.5_a2_0.5.png" width="600" height="400">
 
