@@ -4,7 +4,7 @@ import shutil
 from BayesOpt4dftu.bo import *
 from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.delta_band import DeltaBand
-from BayesOpt4dftu.dft import calculate
+from BayesOpt4dftu.dft import calculate, VaspInit
 from BayesOpt4dftu.logging import BoLogging
 from . import __version__
 
@@ -70,6 +70,7 @@ def main():
                       import_kpath=config.import_kpath,
                       is_dry=False)
             dft_logger.info("Hybrid DFT calculation finished.")
+        VaspInit.remove_old_eigenvalues(root_dir='./', method_dir='hse')
 
         dft_logger.info("GGA+U calculations begin.")
         bo_logger.info("Bayesian Optimization begins.")

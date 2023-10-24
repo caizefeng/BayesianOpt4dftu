@@ -175,6 +175,11 @@ class VaspInit(object):
         else:
             print("LDAU not set in the provided JSON data.")
 
+    @staticmethod
+    def remove_old_eigenvalues(root_dir, method_dir):
+        if os.path.isfile(f'{root_dir}/{method_dir}/band/eigenvalues.npy'):
+            os.remove(f'{root_dir}/{method_dir}/band/eigenvalues.npy')
+
 
 def calculate(command: str, config_file_name: str, outfilename: str, method: str, import_kpath: bool, is_dry: bool):
     olddir = os.getcwd()
@@ -184,8 +189,7 @@ def calculate(command: str, config_file_name: str, outfilename: str, method: str
     # Recursive directory creation; it won't raise an error if the directory already exists
     os.makedirs(olddir + '/%s/scf' % method, exist_ok=True)
     os.makedirs(olddir + '/%s/band' % method, exist_ok=True)
-    if os.path.isfile(f'{olddir}/{method}/band/eigenvalues.npy'):
-        os.remove(f'{olddir}/{method}/band/eigenvalues.npy')
+    VaspInit.remove_old_eigenvalues(olddir, method)
 
     if method == 'dftu':
         calc.generate_input(olddir + '/%s/scf' % method, 'scf', 'pbe', import_kpath)
