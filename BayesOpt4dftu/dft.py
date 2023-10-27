@@ -135,7 +135,8 @@ class VaspInit(object):
             elif xc == 'hse':
                 self.kpt4hseband(directory, import_kpath)
         # Rewrite LDAU flags to reflect correct numerical precision
-        self.rewrite_ldau(directory)
+        if xc == 'pbe':
+            self.rewrite_ldau(directory)
 
     def rewrite_ldau(self, directory):
 
