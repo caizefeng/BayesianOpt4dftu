@@ -1,10 +1,11 @@
-numpy
-matplotlib
+ruamel.yaml==0.17.32
 ase==3.22.0
 monty==2022.1.12.1
 pyvista==0.37.0
 pyprocar==5.6.6
 pymatgen==2022.0.16
 bayesian-optimization==1.4.2
-pandas
 vaspvis==1.2.2
+numpy
+matplotlib
+pandas
