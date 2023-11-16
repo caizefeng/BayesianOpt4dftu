@@ -8,7 +8,7 @@ from vaspvis.utils import BandGap
 
 
 class DeltaBand(object):
-    def __init__(self, bandrange=(5, 5), path='./', baseline='hse', iteration=1, interpolate=False):
+    def __init__(self, bandrange=(5, 5), path='./', baseline='hse', interpolate=False):
         self.path = path
         self.br_vb = bandrange[0]
         self.br_cb = bandrange[1]
@@ -18,7 +18,10 @@ class DeltaBand(object):
         self.kpoints_hse = os.path.join(path, 'hse/band/KPOINTS')
         self.vasprun_dftu = os.path.join(path, 'dftu/band/vasprun.xml')
         self.kpoints_dftu = os.path.join(path, 'dftu/band/KPOINTS')
-        self.iteration = iteration
+        self._delta_band_value = 0.0  # type: float
+
+    def get_delta_band(self):
+        return self._delta_band_value
 
     @staticmethod
     def read_ispin_nbands_nkpts(filepath):
@@ -129,17 +132,6 @@ class DeltaBand(object):
         if ispin_hse != ispin_dftu:
             raise Exception('The spin number of HSE and GGA+U do not match!')
 
-    def write_output(self, delta_band):
-        bg = BandGap(folder=os.path.join(self.path, 'dftu/band'), method=1, spin='both', ).bg
-        incar = Incar.from_file(os.path.join(self.path, 'dftu/band/INCAR'))
-        u = incar['LDAUU']
-        u.append(bg)
-        u.append(delta_band)
-        output = ' '.join(str(x) for x in u)
-        with open('u_tmp.txt', 'a') as f:
-            f.write(output + '\n')
-            f.close()
-
     def delta_band(self):
         ispin_dftu, nbands_dftu, nkpts_dftu = DeltaBand.read_ispin_nbands_nkpts(self.vasprun_dftu)
 
@@ -179,7 +171,7 @@ class DeltaBand(object):
             else:
                 raise Exception('Unsupported baseline calculation!')
 
-            delta_band = sum((1 / n) * sum((shifted_baseline - shifted_dftu) ** 2)) ** (1 / 2)
+            self._delta_band_value = sum((1 / n) * sum((shifted_baseline - shifted_dftu) ** 2)) ** (1 / 2)
 
         elif ispin_dftu == 2:
             band_dftu_up = Band(
@@ -232,9 +224,7 @@ class DeltaBand(object):
 
             delta_band_up = sum((1 / n_up) * sum((shifted_baseline_up - shifted_dftu_up) ** 2)) ** (1 / 2)
             delta_band_down = sum((1 / n_down) * sum((shifted_baseline_down - shifted_dftu_down) ** 2)) ** (1 / 2)
-            delta_band = np.mean([delta_band_up, delta_band_down])
+            self._delta_band_value = np.mean([delta_band_up, delta_band_down])
 
         else:
             raise Exception('Incorrect ISPIN value!')
-
-        self.write_output(delta_band)

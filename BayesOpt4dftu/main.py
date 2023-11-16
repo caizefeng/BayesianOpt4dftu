@@ -3,6 +3,7 @@ import shutil
 
 from BayesOpt4dftu.bo import *
 from BayesOpt4dftu.configuration import Config
+from BayesOpt4dftu.delta_all import DeltaAll
 from BayesOpt4dftu.delta_band import DeltaBand
 from BayesOpt4dftu.dft import calculate, VaspInit
 from BayesOpt4dftu.logging import BoLogging
@@ -82,8 +83,8 @@ def main():
                       import_kpath=config.import_kpath,
                       is_dry=False)
 
-            db = DeltaBand(bandrange=config.br, path='./', baseline=config.baseline)
-            db.delta_band()
+            delta = DeltaAll(path='./', baseline=config.baseline, bandrange=config.br)
+            delta.write_delta()
 
             bayesian_opt = BayesOptDftu(path='./', config_file_name=config.tmp_config_file_name,
                                         opt_u_index=config.which_u,
