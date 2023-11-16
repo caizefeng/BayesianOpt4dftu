@@ -41,3 +41,4 @@ class Config:
         self.elements = bo_params.get('elements', ['In', 'As'])
         self.iteration = bo_params.get('iteration', 50)
         self.threshold = bo_params.get('threshold', 0.0001)
+        self.baseline = bo_params.get('baseline', 'hse')

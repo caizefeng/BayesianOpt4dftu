@@ -13,11 +13,11 @@ from BayesOpt4dftu.io_helpers import SuppressPrints
 
 
 class OptimizerGenerator:
-    def __init__(self, utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa):
+    def __init__(self, utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, kappa):
         data = pd.read_csv(utxt_path, header=0, delimiter="\s", engine='python')
         self.opt_u_index = opt_u_index
         self.u_range = u_range
-        self.gap_hse = gap_hse
+        self.gap_baseline = gap_baseline
         self.a1 = a1
         self.a2 = a2
         self.kappa = kappa
@@ -59,7 +59,7 @@ class OptimizerGenerator:
             params = {}
             for (value, variable) in zip(values, v_strings):
                 params[variable] = value
-            target = self.loss(self.gap_hse,
+            target = self.loss(self.gap_baseline,
                                self.data.iloc[i].band_gap,
                                self.data.iloc[i].delta_band,
                                self.a1,
@@ -76,8 +76,8 @@ class OptimizerGenerator:
 
 
 class PlotBO(OptimizerGenerator):
-    def __init__(self, utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa, elements):
-        super().__init__(utxt_path, opt_u_index, u_range, gap_hse, a1, a2, kappa)
+    def __init__(self, utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, kappa, elements):
+        super().__init__(utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, kappa)
         optimizer, target = self.optimizer()
         self.optimizer = optimizer
         self.target = target
@@ -229,18 +229,27 @@ class BayesOptDftu(PlotBO):
                  a2=0.75,
                  kappa=2.5,
                  elements=['ele1', 'ele2', 'ele3'],
+                 baseline='hse',
                  plot=False):
         self.path = path
         self.config_file_name = config_file_name
-        gap_hse = BandGap(folder=os.path.join(path, 'hse/band'), method=1, spin='both', ).bg
+
+        # TODO: band gap from GW calc
+        if baseline == 'hse':
+            gap_baseline = BandGap(folder=os.path.join(path, 'hse/band'), method=1, spin='both').bg
+        elif baseline == 'gw':
+            gap_baseline =
+        else:
+            raise Exception('Unsupported baseline calculation!')
+
         if plot:
             upath = "./u_kappa_%s_a1_%s_a2_%s.txt" % (kappa, a1, a2)
         if not plot:
             upath = './u_tmp.txt'
-        super().__init__(upath, opt_u_index, u_range, gap_hse, a1, a2, kappa, elements)
+        super().__init__(upath, opt_u_index, u_range, gap_baseline, a1, a2, kappa, elements)
 
-    def get_gap_hse(self):
-        return self.gap_hse
+    def get_gap_baseline(self):
+        return self.gap_baseline
 
     def bo(self):
         next_point_to_probe = self.optimizer.suggest(self.utility_function)

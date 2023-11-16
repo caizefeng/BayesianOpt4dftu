@@ -82,17 +82,20 @@ def main():
                       import_kpath=config.import_kpath,
                       is_dry=False)
 
-            db = DeltaBand(bandrange=config.br, path='./')
+            db = DeltaBand(bandrange=config.br, path='./', baseline=config.baseline)
             db.delta_band()
 
             bayesian_opt = BayesOptDftu(path='./', config_file_name=config.tmp_config_file_name,
                                         opt_u_index=config.which_u,
                                         u_range=config.urange, kappa=config.k,
                                         a1=config.a1, a2=config.a2,
-                                        elements=config.elements)
+                                        elements=config.elements, baseline=config.baseline)
 
             if i == 0:
-                dft_logger.info(f"Band gap from hybrid DFT calculation: {bayesian_opt.get_gap_hse()} eV")
+                if config.baseline == 'hse':
+                    dft_logger.info(f"Band gap from hybrid DFT calculation: {bayesian_opt.get_gap_baseline()} eV")
+                elif config.baseline == 'gw':
+                    dft_logger.info(f"Band gap from GW calculation: {bayesian_opt.get_gap_baseline()} eV")
 
             obj_next = bayesian_opt.bo()
             if config.threshold != 0 and abs(obj_next - obj) <= config.threshold:
@@ -113,7 +116,7 @@ def main():
                       outfilename=config.out_file_name, method='dftu',
                       import_kpath=config.import_kpath,
                       is_dry=False)
-            db = DeltaBand(bandrange=config.br, path='./')
+            db = DeltaBand(bandrange=config.br, path='./', baseline=config.baseline)
             db.delta_band()
             dft_logger.info("An additional GGA+U calculation using optimal U values performed.")
 
