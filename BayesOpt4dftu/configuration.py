@@ -42,4 +42,9 @@ class Config:
         self.iteration = bo_params.get('iteration', 50)
         self.threshold = bo_params.get('threshold', 0.0001)
         self.baseline = bo_params.get('baseline', 'hse')
+
         self.delta_mag_weight = bo_params.get('delta_mag_weight', 0.0)
+        if self.delta_mag_weight:
+            self.include_mag = True
+        else:
+            self.include_mag = False

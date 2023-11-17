@@ -82,19 +82,15 @@ def main():
         obj = 0
         for i in range(config.iteration):
             calculate(command=config.vasp_run_command, config_file_name=config.tmp_config_file_name,
-                      outfilename=config.out_file_name, method='dftu',
-                      import_kpath=config.import_kpath,
-                      is_dry=False)
+                      outfilename=config.out_file_name, method='dftu', import_kpath=config.import_kpath, is_dry=False)
 
-            delta = DeltaAll(path='./', baseline=config.baseline, bandrange=config.br)
+            delta = DeltaAll(path='./', baseline=config.baseline, bandrange=config.br, include_mag=config.include_mag)
             delta.compute_delta()
             delta.write_delta()
 
             bayesian_opt = BayesOptDftu(path='./', config_file_name=config.tmp_config_file_name,
-                                        opt_u_index=config.which_u,
-                                        u_range=config.urange, kappa=config.k,
-                                        a1=config.a1, a2=config.a2,
-                                        mag_weight=config.delta_mag_weight,
+                                        opt_u_index=config.which_u, u_range=config.urange, a1=config.a1, a2=config.a2,
+                                        delta_mag_weight=config.delta_mag_weight, kappa=config.k,
                                         elements=config.elements)
 
             if i == 0:
@@ -119,10 +115,9 @@ def main():
         if config.get_optimal_band:
             bayesian_opt.update_u_config(tmp_tuple[0])
             calculate(command=config.vasp_run_command, config_file_name=config.tmp_config_file_name,
-                      outfilename=config.out_file_name, method='dftu',
-                      import_kpath=config.import_kpath,
-                      is_dry=False)
-            delta = DeltaAll(path='./', baseline=config.baseline, bandrange=config.br)
+                      outfilename=config.out_file_name, method='dftu', import_kpath=config.import_kpath, is_dry=False)
+
+            delta = DeltaAll(path='./', baseline=config.baseline, bandrange=config.br, include_mag=config.include_mag)
             delta.compute_delta()
             delta.write_delta()
             dft_logger.info("An additional GGA+U calculation using optimal U values performed.")

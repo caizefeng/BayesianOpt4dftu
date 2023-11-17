@@ -18,14 +18,14 @@ class OptimizerGenerator:
         self.u_range = u_range
         self.a1 = a1
         self.a2 = a2
-        self.mag_weight = mag_weight
+        self.delta_mag_weight = delta_mag_weight
         self.kappa = kappa
         self.n_obs, _ = data.shape
         self.data = data
         self.utility_function = UtilityFunction(kind="ucb", kappa=kappa, xi=0)
 
-    def loss(self, delta_gap=0.0, delta_band=0.0, delta_mag=0.0, alpha_1=0.5, alpha_2=0.5, mag_weight=0.0):
-        return -alpha_1 * delta_gap ** 2 - alpha_2 * delta_band ** 2 - mag_weight * delta_mag ** 2
+    def loss(self, delta_gap=0.0, delta_band=0.0, delta_mag=0.0, alpha_1=0.5, alpha_2=0.5, delta_mag_weight=0.0):
+        return -alpha_1 * delta_gap ** 2 - alpha_2 * delta_band ** 2 - delta_mag_weight * delta_mag ** 2
 
     def set_bounds(self):
         # Set up the indices of variables that are going to be optimized.
@@ -58,20 +58,18 @@ class OptimizerGenerator:
             for (value, variable) in zip(values, v_strings):
                 params[variable] = value
 
-            if self.mag_weight:
+            if self.delta_mag_weight:
                 target = self.loss(delta_gap=self.data.iloc[i].delta_gap,
                                    delta_band=self.data.iloc[i].delta_band,
                                    delta_mag=self.data.iloc[i].delta_mag,
                                    alpha_1=self.a1,
                                    alpha_2=self.a2,
-                                   mag_weight=self.mag_weight)
+                                   delta_mag_weight=self.delta_mag_weight)
             else:
                 target = self.loss(delta_gap=self.data.iloc[i].delta_gap,
                                    delta_band=self.data.iloc[i].delta_band,
-                                   delta_mag=self.data.iloc[i].delta_mag,
                                    alpha_1=self.a1,
-                                   alpha_2=self.a2,
-                                   mag_weight=self.mag_weight)
+                                   alpha_2=self.a2)
 
             # Suppress non-unique data point registration messages
             with SuppressPrints():
@@ -84,8 +82,8 @@ class OptimizerGenerator:
 
 
 class PlotBO(OptimizerGenerator):
-    def __init__(self, utxt_path, opt_u_index, u_range, a1, a2, mag_weight, kappa, elements):
-        super().__init__(utxt_path, opt_u_index, u_range, a1, a2, mag_weight, kappa)
+    def __init__(self, utxt_path, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa, elements):
+        super().__init__(utxt_path, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa)
         optimizer, target = self.optimizer()
         self.optimizer = optimizer
         self.target = target
@@ -235,7 +233,7 @@ class BayesOptDftu(PlotBO):
                  u_range=(0, 10),
                  a1=0.25,
                  a2=0.75,
-                 mag_weight=0.0,
+                 delta_mag_weight=0.0,
                  kappa=2.5,
                  elements=['ele1', 'ele2', 'ele3'],
                  plot=False):
@@ -246,7 +244,7 @@ class BayesOptDftu(PlotBO):
             upath = "./u_kappa_%s_a1_%s_a2_%s.txt" % (kappa, a1, a2)
         if not plot:
             upath = './u_tmp.txt'
-        super().__init__(upath, opt_u_index, u_range, a1, a2, mag_weight, kappa, elements)
+        super().__init__(upath, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa, elements)
 
     def get_gap_baseline(self):
         return self.gap_baseline
