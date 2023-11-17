@@ -1,3 +1,4 @@
+import inspect
 import os
 from xml.etree import ElementTree as ET
 
@@ -36,7 +37,7 @@ class DeltaBand:
         if self.baseline == 'hse':
             new_n = 500
         else:
-            new_n = 200
+            new_n = inspect.signature(Band.__init__).parameters["new_n"]  # default value for this parameter
 
         if ispin_dftu == 1:
             band_dftu = Band(
