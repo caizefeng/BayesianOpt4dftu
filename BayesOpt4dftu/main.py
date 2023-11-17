@@ -95,9 +95,9 @@ def main():
 
             if i == 0:
                 if config.baseline == 'hse':
-                    dft_logger.info(f"Band gap from hybrid DFT calculation: {delta.dg.get_dftu_gap()} eV")
+                    dft_logger.info(f"Band gap from hybrid DFT calculation: {delta.dg.get_baseline_gap()} eV")
                 elif config.baseline == 'gw':
-                    dft_logger.info(f"Band gap from GW calculation: {delta.dg.get_dftu_gap()} eV")
+                    dft_logger.info(f"Band gap from GW calculation: {delta.dg.get_baseline_gap()} eV")
 
             obj_next = bayesian_opt.bo()
             if config.threshold != 0 and abs(obj_next - obj) <= config.threshold:

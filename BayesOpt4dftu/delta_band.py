@@ -18,6 +18,11 @@ class DeltaBand:
         self.vasprun_dftu = os.path.join(path, 'dftu/band/vasprun.xml')
         self.kpoints_dftu = os.path.join(path, 'dftu/band/KPOINTS')
         self._delta_band = 0.0  # type: float
+        self._is_first_run = False
+        self._slice_length = None
+        self._slice_weight = None
+        self._num_slices = 0  # type: int
+        self._num_kpts_each_slice = 0  # type: int
 
     def get_delta_band(self):
         return self._delta_band
@@ -35,9 +40,16 @@ class DeltaBand:
 
         return ispin, nbands, nkpts
 
-    @staticmethod
-    def access_eigen(b: Band, interpolate=False):
+    def access_eigen(self, b: Band, interpolate=False):
         wave_vectors = b._get_k_distance()
+
+        # Compute k-space length and corresponding weight of each slice
+        if not self._is_first_run:
+            self._num_slices, self._num_kpts_each_slice = wave_vectors.shape
+            self._slice_length = wave_vectors[:, -1] - wave_vectors[:, 0]
+            mean_length = np.mean(self._slice_length)
+            self._slice_weight = self._slice_length / mean_length  # normalize so that the mean equals 0
+
         eigenvalues = b.eigenvalues
 
         if interpolate:
@@ -152,7 +164,7 @@ class DeltaBand:
                 new_n=new_n,
                 projected=False,
             )
-            eigenvalues_dftu = DeltaBand.access_eigen(band_dftu, interpolate=self.interpolate)
+            eigenvalues_dftu = self.access_eigen(band_dftu, interpolate=self.interpolate)
             shifted_dftu = self.locate_and_shift_bands(eigenvalues_dftu)
             n = shifted_dftu.shape[0] * shifted_dftu.shape[1]
 
@@ -164,7 +176,7 @@ class DeltaBand:
                     new_n=new_n,
                     projected=False,
                 )
-                eigenvalues_hse = DeltaBand.access_eigen(band_hse, interpolate=self.interpolate)
+                eigenvalues_hse = self.access_eigen(band_hse, interpolate=self.interpolate)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_hse)
             elif self.baseline == 'gw':
                 eigenvalues_gw = DeltaBand.access_eigen_gw('gw/band', ispin=ispin_dftu)
@@ -172,7 +184,7 @@ class DeltaBand:
             else:
                 raise Exception('Unsupported baseline calculation!')
 
-            self._delta_band = sum((1 / n) * sum((shifted_baseline - shifted_dftu) ** 2)) ** (1 / 2)
+            self._delta_band = self.weight_delta_band_1d(n, shifted_baseline, shifted_dftu)
 
         elif ispin_dftu == 2:
             band_dftu_up = Band(
@@ -189,8 +201,8 @@ class DeltaBand:
                 new_n=new_n,
                 projected=False,
             )
-            eigenvalues_dftu_up = DeltaBand.access_eigen(band_dftu_up, interpolate=self.interpolate)
-            eigenvalues_dftu_down = DeltaBand.access_eigen(band_dftu_down, interpolate=self.interpolate)
+            eigenvalues_dftu_up = self.access_eigen(band_dftu_up, interpolate=self.interpolate)
+            eigenvalues_dftu_down = self.access_eigen(band_dftu_down, interpolate=self.interpolate)
             shifted_dftu_up = self.locate_and_shift_bands(eigenvalues_dftu_up)
             shifted_dftu_down = self.locate_and_shift_bands(eigenvalues_dftu_down)
             n_up = shifted_dftu_up.shape[0] * shifted_dftu_up.shape[1]
@@ -211,8 +223,8 @@ class DeltaBand:
                     new_n=new_n,
                     projected=False,
                 )
-                eigenvalues_hse_up = DeltaBand.access_eigen(band_hse_up, interpolate=self.interpolate)
-                eigenvalues_hse_down = DeltaBand.access_eigen(band_hse_down, interpolate=self.interpolate)
+                eigenvalues_hse_up = self.access_eigen(band_hse_up, interpolate=self.interpolate)
+                eigenvalues_hse_down = self.access_eigen(band_hse_down, interpolate=self.interpolate)
                 shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_hse_up)
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_hse_down)
 
@@ -223,9 +235,18 @@ class DeltaBand:
             else:
                 raise Exception('Unsupported baseline calculation!')
 
-            delta_band_up = sum((1 / n_up) * sum((shifted_baseline_up - shifted_dftu_up) ** 2)) ** (1 / 2)
-            delta_band_down = sum((1 / n_down) * sum((shifted_baseline_down - shifted_dftu_down) ** 2)) ** (1 / 2)
+            delta_band_up = self.weight_delta_band_1d(n_up, shifted_baseline_up, shifted_dftu_up)
+            delta_band_down = self.weight_delta_band_1d(n_down, shifted_baseline_down, shifted_dftu_down)
             self._delta_band = np.mean([delta_band_up, delta_band_down])
 
         else:
             raise Exception('Incorrect ISPIN value!')
+
+    def weight_delta_band_1d(self, n_bands, shifted_baseline, shifted_dftu):
+        """
+        Weight Δband(k) based on each k-path slice's length (i.e. density), and calculate RMSE
+        """
+        unweighted_delta_band_k = (1 / n_bands) * sum((shifted_baseline - shifted_dftu) ** 2)
+        weighted_delta_band_k_2d = (unweighted_delta_band_k.reshape(-1, self._num_kpts_each_slice)
+                                    * self._slice_weight[:, np.newaxis])
+        return sum(weighted_delta_band_k_2d.flatten()) ** (1 / 2)

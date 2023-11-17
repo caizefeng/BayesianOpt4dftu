@@ -78,8 +78,7 @@ class VaspInit:
         num_kpts = self.struct_info['num_kpts']
         labels = self.struct_info['kpath']
         ibzlist = ibz.readlines()
-        ibzlist[1] = str(num_kpts * (len(labels) - 1) +
-                         int(ibzlist[1].split('\n')[0])) + '\n'
+        ibzlist[1] = str(num_kpts * (len(labels) - 1) + int(ibzlist[1].split('\n')[0])) + '\n'
         if import_kpath:
             special_kpoints = kpath_dict
         else:
@@ -88,13 +87,11 @@ class VaspInit:
             k_head = special_kpoints[labels[i]]
             k_tail = special_kpoints[labels[i + 1]]
             increment = (k_tail - k_head) / (num_kpts - 1)
-            ibzlist.append(' '.join(map(str, k_head)) +
-                           ' 0 ' + labels[i] + '\n')
+            ibzlist.append(' '.join(map(str, k_head)) + ' 0 ' + labels[i] + '\n')
             for j in range(1, num_kpts - 1):
                 k_next = k_head + increment * j
                 ibzlist.append(' '.join(map(str, k_next)) + ' 0\n')
-            ibzlist.append(' '.join(map(str, k_tail)) +
-                           ' 0 ' + labels[i + 1] + '\n')
+            ibzlist.append(' '.join(map(str, k_tail)) + ' 0 ' + labels[i + 1] + '\n')
         with open(path + '/KPOINTS', 'w') as f:
             f.writelines(ibzlist)
 
