@@ -17,10 +17,10 @@ class DeltaBand:
         self.kpoints_hse = os.path.join(path, 'hse/band/KPOINTS')
         self.vasprun_dftu = os.path.join(path, 'dftu/band/vasprun.xml')
         self.kpoints_dftu = os.path.join(path, 'dftu/band/KPOINTS')
-        self._delta_band_value = 0.0  # type: float
+        self._delta_band = 0.0  # type: float
 
     def get_delta_band(self):
-        return self._delta_band_value
+        return self._delta_band
 
     @staticmethod
     def read_ispin_nbands_nkpts(filepath):
@@ -171,7 +171,7 @@ class DeltaBand:
             else:
                 raise Exception('Unsupported baseline calculation!')
 
-            self._delta_band_value = sum((1 / n) * sum((shifted_baseline - shifted_dftu) ** 2)) ** (1 / 2)
+            self._delta_band = sum((1 / n) * sum((shifted_baseline - shifted_dftu) ** 2)) ** (1 / 2)
 
         elif ispin_dftu == 2:
             band_dftu_up = Band(
@@ -224,7 +224,7 @@ class DeltaBand:
 
             delta_band_up = sum((1 / n_up) * sum((shifted_baseline_up - shifted_dftu_up) ** 2)) ** (1 / 2)
             delta_band_down = sum((1 / n_down) * sum((shifted_baseline_down - shifted_dftu_down) ** 2)) ** (1 / 2)
-            self._delta_band_value = np.mean([delta_band_up, delta_band_down])
+            self._delta_band = np.mean([delta_band_up, delta_band_down])
 
         else:
             raise Exception('Incorrect ISPIN value!')

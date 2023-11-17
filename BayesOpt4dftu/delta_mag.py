@@ -9,10 +9,10 @@ class DeltaMag:
         self.path = path
         self.baseline = baseline
         self.noncollinear = DeltaMag.read_lnoncollinear(os.path.join(self.path, 'dftu/band/OUTCAR'))
-        self._delta_mag_value = 0.0
+        self._delta_mag = 0.0
 
     def get_delta_mag(self):
-        return self._delta_mag_value
+        return self._delta_mag
 
     @staticmethod
     def read_lnoncollinear(outcar_path):
@@ -90,4 +90,4 @@ class DeltaMag:
         mag_array_dftu = DeltaMag.mag2array(mag_dftu, noncollinear=self.noncollinear, axis=axis, mode=mode)
         mag_array_gw = DeltaMag.mag2array(mag_baseline, noncollinear=self.noncollinear, axis=axis, mode=mode)
 
-        self._delta_mag_value = np.sqrt(np.mean((mag_array_dftu - mag_array_gw) ** 2))  # RMSE
+        self._delta_mag = np.sqrt(np.mean((mag_array_dftu - mag_array_gw) ** 2))  # RMSE
