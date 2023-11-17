@@ -28,8 +28,9 @@ class DeltaGap:
             self._baseline_gap_value = BandGap(folder=os.path.join(self.path, 'hse/band'), method=1, spin='both').bg
 
         # TODO: band gap from GW calc
+        # Now we only deal with metals in GW calc so it's fine
         elif self.baseline == 'gw':
-            self._baseline_gap_value = None
+            self._baseline_gap_value = 0.0
 
         else:
             raise Exception('Unsupported baseline calculation!')
