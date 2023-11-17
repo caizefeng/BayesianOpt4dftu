@@ -59,8 +59,12 @@ def main():
         if os.path.exists('./u_tmp.txt'):
             os.remove('./u_tmp.txt')
 
-        with open('./u_tmp.txt', 'w+') as f:
-            f.write('%s band_gap delta_band \n' % (' '.join(header)))
+        if config.delta_mag_weight:
+            with open('./u_tmp.txt', 'w+') as f:
+                f.write('%s band_gap delta_band delta_mag \n' % (' '.join(header)))
+        else:
+            with open('./u_tmp.txt', 'w+') as f:
+                f.write('%s band_gap delta_band \n' % (' '.join(header)))
 
         driver_logger.info("Temporary files initiated.")
 
@@ -90,6 +94,7 @@ def main():
                                         opt_u_index=config.which_u,
                                         u_range=config.urange, kappa=config.k,
                                         a1=config.a1, a2=config.a2,
+                                        mag_weight=config.delta_mag_weight,
                                         elements=config.elements, baseline=config.baseline)
 
             if i == 0:
@@ -117,8 +122,8 @@ def main():
                       outfilename=config.out_file_name, method='dftu',
                       import_kpath=config.import_kpath,
                       is_dry=False)
-            db = DeltaBand(bandrange=config.br, path='./', baseline=config.baseline)
-            db.delta_band()
+            delta = DeltaAll(path='./', baseline=config.baseline, bandrange=config.br)
+            delta.write_delta()
             dft_logger.info("An additional GGA+U calculation using optimal U values performed.")
 
         dft_logger.info("GGA+U calculations finished.")

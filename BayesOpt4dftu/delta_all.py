@@ -4,6 +4,7 @@ from pymatgen.io.vasp import Incar
 from vaspvis.utils import BandGap
 
 from BayesOpt4dftu.delta_band import DeltaBand
+from BayesOpt4dftu.delta_mag import DeltaMag
 
 
 class DeltaAll:
@@ -13,11 +14,11 @@ class DeltaAll:
 
         self.path = path
         self.db = DeltaBand(bandrange=bandrange, path=path, baseline=baseline)
-
-        # self.dm =
+        self.dm = DeltaMag(path=path, baseline=baseline)
 
     def calculate(self):
-        self.db.delta_band()
+        self.db.compute_delta_band()
+        self.dm.compute_delta_mag()
 
     def write_delta(self):
         bg = BandGap(folder=os.path.join(self.path, 'dftu/band'), method=1, spin='both', ).bg
@@ -31,6 +32,9 @@ class DeltaAll:
 
         # Delta band
         u.append(self.db.get_delta_band())
+
+        # Delta magnetization
+        u.append(self.dm.get_delta_mag())
 
         output = ' '.join(str(x) for x in u)
         with open('u_tmp.txt', 'a') as f:

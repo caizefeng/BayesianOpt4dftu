@@ -13,24 +13,24 @@ from BayesOpt4dftu.io_helpers import SuppressPrints
 
 
 class OptimizerGenerator:
-    def __init__(self, utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, kappa):
+    def __init__(self, utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, mag_weight, kappa):
         data = pd.read_csv(utxt_path, header=0, delimiter="\s", engine='python')
         self.opt_u_index = opt_u_index
         self.u_range = u_range
         self.gap_baseline = gap_baseline
         self.a1 = a1
         self.a2 = a2
+        self.mag_weight = mag_weight
         self.kappa = kappa
         self.n_obs, _ = data.shape
         self.data = data
         self.utility_function = UtilityFunction(kind="ucb", kappa=kappa, xi=0)
 
-    def loss(self, y, y_hat, delta_band, alpha_1, alpha_2):
-        return -alpha_1 * (y - y_hat) ** 2 - alpha_2 * delta_band ** 2
+    def loss(self, y, y_hat, delta_band=0.0, delta_mag=0.0, alpha_1=0.5, alpha_2=0.5, mag_weight=0.0):
+        return -alpha_1 * (y - y_hat) ** 2 - alpha_2 * delta_band ** 2 - mag_weight * delta_mag ** 2
 
     def set_bounds(self):
-        # Set up the number of variables are going to be optimized.
-        num_variables = int(sum(self.opt_u_index))
+        # Set up the indices of variables that are going to be optimized.
         variables_string = ['u_' + str(i) for i, o in enumerate(self.opt_u_index) if o]
 
         # Set up the U ranges for each variable.
@@ -59,11 +59,21 @@ class OptimizerGenerator:
             params = {}
             for (value, variable) in zip(values, v_strings):
                 params[variable] = value
-            target = self.loss(self.gap_baseline,
-                               self.data.iloc[i].band_gap,
-                               self.data.iloc[i].delta_band,
-                               self.a1,
-                               self.a2)
+
+            if self.mag_weight:
+                target = self.loss(y=self.gap_baseline,
+                                   y_hat=self.data.iloc[i].band_gap,
+                                   delta_band=self.data.iloc[i].delta_band,
+                                   delta_mag=self.data.iloc[i].delta_mag,
+                                   alpha_1=self.a1,
+                                   alpha_2=self.a2,
+                                   mag_weight=self.mag_weight)
+            else:
+                target = self.loss(y=self.gap_baseline,
+                                   y_hat=self.data.iloc[i].band_gap,
+                                   delta_band=self.data.iloc[i].delta_band,
+                                   alpha_1=self.a1,
+                                   alpha_2=self.a2)
 
             # Suppress non-unique data point registration messages
             with SuppressPrints():
@@ -76,8 +86,8 @@ class OptimizerGenerator:
 
 
 class PlotBO(OptimizerGenerator):
-    def __init__(self, utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, kappa, elements):
-        super().__init__(utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, kappa)
+    def __init__(self, utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, mag_weight, kappa, elements):
+        super().__init__(utxt_path, opt_u_index, u_range, gap_baseline, a1, a2, mag_weight, kappa)
         optimizer, target = self.optimizer()
         self.optimizer = optimizer
         self.target = target
@@ -227,6 +237,7 @@ class BayesOptDftu(PlotBO):
                  u_range=(0, 10),
                  a1=0.25,
                  a2=0.75,
+                 mag_weight=0.0,
                  kappa=2.5,
                  elements=['ele1', 'ele2', 'ele3'],
                  baseline='hse',
@@ -246,7 +257,7 @@ class BayesOptDftu(PlotBO):
             upath = "./u_kappa_%s_a1_%s_a2_%s.txt" % (kappa, a1, a2)
         if not plot:
             upath = './u_tmp.txt'
-        super().__init__(upath, opt_u_index, u_range, gap_baseline, a1, a2, kappa, elements)
+        super().__init__(upath, opt_u_index, u_range, gap_baseline, a1, a2, mag_weight, kappa, elements)
 
     def get_gap_baseline(self):
         return self.gap_baseline

@@ -132,7 +132,7 @@ class DeltaBand:
         if ispin_hse != ispin_dftu:
             raise Exception('The spin number of HSE and GGA+U do not match!')
 
-    def delta_band(self):
+    def compute_delta_band(self):
         ispin_dftu, nbands_dftu, nkpts_dftu = DeltaBand.read_ispin_nbands_nkpts(self.vasprun_dftu)
 
         if self.baseline == 'hse':
