@@ -37,62 +37,70 @@ Before running the program, configure the `input.json` file. It contains:
         - Example: `"dry_run": false`
 
     - **`dftu_only`**:
-        - Description: Indicate if only DFT+U is performed.
-        - Example: `"dftu_only": false"`
+        - Description: Indicates whether only DFT+U is performed. If set to true, completed calculations should be placed in the `<working dir>/<baseline>/band` directory.
+        - Example: `"dftu_only": false`
           
     - **`get_optimal_band`**:
         - Description: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization.
-        - Example: `"get_optimal_band": false"`
+        - Example: `"get_optimal_band": false`
 
 
 - **`bo`**: Settings specific to Bayesian Optimization.
+
+    - **`baseline`**:
+        - Description: Specifies the baseline calculation for Bayesian Optimization. Note: Currently, only "hse" and "gw" are supported. "gw" must be executed separately, meaning it is only supported when `"dftu_only": true`.
+        - Example: `"baseline": "hse"`
 
     - **`which_u`**:
         - Description: Defines which element you'd like to optimize the U for.
         - Format: For a unary substance, it has to be `(1,)`. For
           compounds with over 2 elements, you can set each element to 0 or 1 to switch off/on the optimization for that
           element.
-        - Example: For InAs, when optimizing for both In and As, it should be set as `"which_u": [1, 1]`.
+        - Example: For InAs, when optimizing for both In and As, it should be set as `"which_u": [1, 1]`
 
     - **`br`**:
         - Description: Specifies the band range you'd like to include in your Δband.
         - Format: A list of two integers, defining the number of valence bands and conduction bands from the Fermi
           level.
-        - Example: `"br": [5, 5]`.
+        - Example: `"br": [5, 5]`
 
     - **`kappa`**:
         - Description: Controls the exploration and exploitation when the acquisition function samples the next points.
           Exploitation 0 <--kappa --> 10 Exploration
-        - Example: `"kappa": 5`.
+        - Example: `"kappa": 5`
 
     - **`alpha1`** and **`alpha2`**:
         - Description: Specifies the weight coefficients of Δgap and Δband respectively.
-        - Examples: `"alpha1": 0.25` and `"alpha2": 0.75`.
+        - Examples: `"alpha1": 0.25` and `"alpha2": 0.75`
+
+    - **`delta_mag_weight`**:
+        - Description: Specifies the weight coefficients of Δmagnetization. Note: A `delta_mag_weight` of 0 will exclude Δmagnetization from the loss function.
+        - Example: `"delta_mag_weight": 0.1`
 
     - **`threshold`**:
-        - Description: Specifies the accuracy at which you'd like to stop the BO process. Note: A threshold of 0 will disable convergence assessment.
-        - Example: `"threshold": 0.0001`.
+        - Description: Specifies the accuracy at which you'd like to stop the BO process. Note: A `threshold` of 0 will disable convergence assessment.
+        - Example: `"threshold": 0.0001`
 
     - **`urange`**:
         - Description: Defines the U parameter range for optimization. Note: Defining different U ranges for separate
           elements is unsupported.
-        - Example: `"urange": [-10, 10]`.
+        - Example: `"urange": [-10, 10]`
 
     - **`import_kpath`**:
         - Description: Provides an external list of high-symmetry k-points if some special k coordinates aren't
           available in
           the ASE library.
-        - Example: `"import_kpath": false`.
+        - Example: `"import_kpath": false`
 
     - **`elements`**:
         - Description: Lists the elements in your system. This is used for plotting the BO results. Note: If it's a
           unary
           substance, it has to be [ele,].
-        - Example: `"elements": ["In", "As"]`.
+        - Example: `"elements": ["In", "As"]`
 
     - **`iteration`**:
         - Description: Sets the maximum steps that BO will perform.
-        - Example: `"iteration": 50`.
+        - Example: `"iteration": 50`
 
 
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,

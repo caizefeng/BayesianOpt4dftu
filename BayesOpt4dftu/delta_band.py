@@ -92,8 +92,9 @@ class DeltaBand:
             return eigenvalues
 
         elif ispin == 2:
-            data_up = open(os.path.join(gw_folder_path, 'wannier90.up_band.dat'), 'r+').readlines()
-            data_dn = open(os.path.join(gw_folder_path, 'wannier90.dn_band.dat'), 'r+').readlines()
+            # TODO: Confirm the names of GW output files
+            data_up = open(os.path.join(gw_folder_path, 'wannier90.1_band.dat'), 'r+').readlines()
+            data_dn = open(os.path.join(gw_folder_path, 'wannier90.2_band.dat'), 'r+').readlines()
             eigenvalues_up = []
             eigenvalues_down = []
             DeltaBand.clean_wannier_data(data_up, eigenvalues_up)
@@ -165,7 +166,7 @@ class DeltaBand:
                 eigenvalues_hse = DeltaBand.access_eigen(band_hse, interpolate=self.interpolate)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_hse)
             elif self.baseline == 'gw':
-                eigenvalues_gw = DeltaBand.access_eigen_gw('gw', ispin=ispin_dftu)
+                eigenvalues_gw = DeltaBand.access_eigen_gw('gw/band', ispin=ispin_dftu)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_gw)
             else:
                 raise Exception('Unsupported baseline calculation!')
@@ -215,7 +216,7 @@ class DeltaBand:
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_hse_down)
 
             elif self.baseline == 'gw':
-                eigenvalues_gw_up, eigenvalues_gw_down = DeltaBand.access_eigen_gw('gw', ispin=ispin_dftu)
+                eigenvalues_gw_up, eigenvalues_gw_down = DeltaBand.access_eigen_gw('gw/band', ispin=ispin_dftu)
                 shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_gw_up)
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_gw_down)
             else:
