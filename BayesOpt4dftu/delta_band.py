@@ -85,34 +85,35 @@ class DeltaBand:
 
         if ispin == 1:
             data = open(os.path.join(gw_folder_path, 'wannier90.band.dat'), 'r+').readlines()
-            eigenvalues = []
-            DeltaBand.clean_wannier_data(data, eigenvalues)
+            concatenated_k_e = []
+            DeltaBand.clean_wannier_data(data, concatenated_k_e)
 
-            eigenvalues = np.array(eigenvalues).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
+            eigenvalues = np.array(concatenated_k_e).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
+
             return eigenvalues
 
         elif ispin == 2:
-            # TODO: Confirm the names of GW output files
+            # TODO: compare VASP and GW line mode (GW has duplicated endpoint or not)
             data_up = open(os.path.join(gw_folder_path, 'wannier90.1_band.dat'), 'r+').readlines()
             data_dn = open(os.path.join(gw_folder_path, 'wannier90.2_band.dat'), 'r+').readlines()
-            eigenvalues_up = []
-            eigenvalues_down = []
-            DeltaBand.clean_wannier_data(data_up, eigenvalues_up)
-            DeltaBand.clean_wannier_data(data_dn, eigenvalues_down)
+            concatenated_k_e_up = []
+            concatenated_k_e_down = []
+            DeltaBand.clean_wannier_data(data_up, concatenated_k_e_up)
+            DeltaBand.clean_wannier_data(data_dn, concatenated_k_e_down)
 
-            eigenvalues_up = np.array(eigenvalues_up).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
-            eigenvalues_down = np.array(eigenvalues_down).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
+            eigenvalues_up = np.array(concatenated_k_e_up).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
+            eigenvalues_down = np.array(concatenated_k_e_down).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
             return eigenvalues_up, eigenvalues_down
 
     @staticmethod
-    def clean_wannier_data(raw_data, eigenvalues):
+    def clean_wannier_data(raw_data, concatenated_k_e):
         for line in raw_data:
             split_line = line.split('\n')[:-1][0].split(' ')
             filter_line = list(filter(None, split_line))
             if not filter_line:
                 continue
             else:
-                eigenvalues.append([float(x) for x in filter_line])
+                concatenated_k_e.append([float(x) for x in filter_line])
 
     def check_hse_compatibility(self, ispin_dftu, nbands_dftu, nkpts_dftu):
         ispin_hse, nbands_hse, nkpts_hse = DeltaBand.read_ispin_nbands_nkpts(self.vasprun_hse)
