@@ -7,7 +7,7 @@ from vaspvis import Band
 from vaspvis.utils import BandGap
 
 
-class DeltaBand(object):
+class DeltaBand:
     def __init__(self, bandrange=(5, 5), path='./', baseline='hse', interpolate=False):
         self.path = path
         self.br_vb = bandrange[0]

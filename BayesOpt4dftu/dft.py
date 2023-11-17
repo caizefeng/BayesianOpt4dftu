@@ -13,7 +13,7 @@ from pymatgen.io.vasp import Kpoints, Incar, Poscar
 from BayesOpt4dftu.special_kpath import kpath_dict
 
 
-class VaspInit(object):
+class VaspInit:
     def __init__(self, input_path):
         with open(input_path, 'r') as f:
             self.input_dict = json.load(f)
