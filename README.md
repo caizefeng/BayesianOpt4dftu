@@ -37,7 +37,7 @@ Before running the program, configure the `input.json` file. It contains:
         - Example: `"dry_run": false`
 
     - **`dftu_only`**:
-        - Description: Indicates whether only DFT+U is performed. If set to true, completed calculations should be placed in the `<working dir>/<baseline>/band` directory.
+        - Description: Indicates whether only DFT+U is performed. If set to true, completed calculations should be placed in the `<working dir>/<baseline>` directory.
         - Example: `"dftu_only": false`
           
     - **`get_optimal_band`**:
