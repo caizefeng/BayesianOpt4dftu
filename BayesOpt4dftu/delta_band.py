@@ -84,8 +84,7 @@ class DeltaBand:
 
         return shifted_bands
 
-    @staticmethod
-    def access_eigen_gw(gw_folder_path, ispin):
+    def access_eigen_gw(self, gw_folder_path, ispin):
         efermi_gw = Outcar(os.path.join(gw_folder_path, 'OUTCAR_band')).efermi
         win = open(os.path.join(gw_folder_path, 'wannier90.win'), 'r+').readlines()
 
@@ -102,7 +101,7 @@ class DeltaBand:
 
             eigenvalues = np.array(concatenated_k_e).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
 
-            return eigenvalues
+            return self.pad_gw_band(eigenvalues)
 
         elif ispin == 2:
             # TODO: compare VASP and GW line mode (GW has duplicated endpoint or not)
@@ -115,7 +114,7 @@ class DeltaBand:
 
             eigenvalues_up = np.array(concatenated_k_e_up).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
             eigenvalues_down = np.array(concatenated_k_e_down).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
-            return eigenvalues_up, eigenvalues_down
+            return self.pad_gw_band(eigenvalues_up), self.pad_gw_band(eigenvalues_down)
 
     @staticmethod
     def clean_wannier_data(raw_data, concatenated_k_e):
@@ -144,6 +143,40 @@ class DeltaBand:
 
         if ispin_hse != ispin_dftu:
             raise Exception('The spin number of HSE and GGA+U do not match!')
+
+    def pad_gw_band(self, eigenvalues):
+        """
+        Duplicate the columns of GW band data [n, k] to align with DFT+U band data
+        """
+
+        # Number of columns in the original array
+        n_col = eigenvalues.shape[1]
+
+        if n_col != self._num_slices * (self._num_kpts_each_slice - 1):
+            raise Exception(
+                "For GW baseline, `num_kpts` must be set to `(k_gw + 1)`."
+                "`k_gw` is the number of kpoints in each kpath segment of the GW calculation."
+            )
+
+        # Calculate the number of columns to be added
+        num_new_cols = n_col // (self._num_kpts_each_slice - 1)
+
+        # Create an empty array with the new shape
+        padded_eigenvalues = np.empty((eigenvalues.shape[0], n_col + num_new_cols), dtype=eigenvalues.dtype)
+
+        # Iterate over the original array and copy/duplicate columns
+        old_col = 0
+        new_col = 0
+        while old_col < n_col:
+            padded_eigenvalues[:, new_col] = eigenvalues[:, old_col]
+            new_col += 1
+            # Duplicate every m-th column
+            if (old_col + 1) % (self._num_kpts_each_slice - 1) == 0:
+                padded_eigenvalues[:, new_col] = eigenvalues[:, old_col]
+                new_col += 1
+            old_col += 1
+
+        return padded_eigenvalues
 
     def compute_delta_band(self):
         ispin_dftu, nbands_dftu, nkpts_dftu = DeltaBand.read_ispin_nbands_nkpts(self.vasprun_dftu)
@@ -179,7 +212,7 @@ class DeltaBand:
                 eigenvalues_hse = self.access_eigen(band_hse, interpolate=self.interpolate)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_hse)
             elif self.baseline == 'gw':
-                eigenvalues_gw = DeltaBand.access_eigen_gw('gw/band', ispin=ispin_dftu)
+                eigenvalues_gw = self.access_eigen_gw('gw/band', ispin=ispin_dftu)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_gw)
             else:
                 raise Exception('Unsupported baseline calculation!')
@@ -229,7 +262,7 @@ class DeltaBand:
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_hse_down)
 
             elif self.baseline == 'gw':
-                eigenvalues_gw_up, eigenvalues_gw_down = DeltaBand.access_eigen_gw('gw/band', ispin=ispin_dftu)
+                eigenvalues_gw_up, eigenvalues_gw_down = self.access_eigen_gw('gw/band', ispin=ispin_dftu)
                 shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_gw_up)
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_gw_down)
             else:
