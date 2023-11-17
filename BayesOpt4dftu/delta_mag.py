@@ -81,7 +81,7 @@ class DeltaMag:
         assert mode in ['orbit', 'total'], 'Unsupported magnetization mode!'
 
         outcar_dftu = Outcar(os.path.join(self.path, 'dftu/scf/OUTCAR'))
-        outcar_path = {'hse': 'hse/band/OUTCAR', 'gw': 'gw/OUTCAR'}
+        outcar_path = {'hse': 'hse/band/OUTCAR', 'gw': 'gw/scf/OUTCAR'}  # HSE calcs are always SCF
         outcar_baseline = Outcar(os.path.join(self.path, outcar_path[self.baseline]))
 
         mag_dftu = outcar_dftu.magnetization
