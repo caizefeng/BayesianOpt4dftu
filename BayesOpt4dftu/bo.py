@@ -12,8 +12,8 @@ from BayesOpt4dftu.io_helpers import SuppressPrints
 
 
 class OptimizerGenerator:
-    def __init__(self, utxt_path, opt_u_index, u_range, a1, a2, mag_weight, kappa):
-        data = pd.read_csv(utxt_path, header=0, delimiter="\s", engine='python')
+    def __init__(self, utxt_path, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa):
+        data = pd.read_csv(utxt_path, header=0, delimiter=r"\s+", engine="python")
         self.opt_u_index = opt_u_index
         self.u_range = u_range
         self.a1 = a1
