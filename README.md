@@ -74,7 +74,7 @@ Before running the program, configure the `input.json` file. It contains:
         - Examples: `"alpha1": 0.25` and `"alpha2": 0.75`
 
     - **`delta_mag_weight`**:
-        - Description: Specifies the weight coefficients of Δmagnetization. Note: A `delta_mag_weight` of 0 will exclude Δmagnetization from the loss function.
+        - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. Note: A `delta_mag_weight` of 0 will exclude Δmagnetization from the loss function.
         - Example: `"delta_mag_weight": 0.1`
 
     - **`threshold`**:

@@ -8,6 +8,7 @@
         "get_optimal_band": false
     },
     "bo": {
+        "baseline": "hse",
         "which_u": [
             1,
             1
@@ -19,6 +20,7 @@
         "kappa": 5,
         "alpha1": 0.25,
         "alpha2": 0.75,
+        "delta_mag_weight": 0.0,
         "threshold": 0.0001,
         "urange": [
             -10,
@@ -107,7 +109,8 @@
         "kpar": 6,
         "ncore": 3,
         "bmix": 3,
-        "amin": 0.01
+        "amin": 0.01,
+        "lorbit": 11
     },
     "scf": {
         "icharg": 2,
@@ -117,8 +120,7 @@
     "band": {
         "icharg": 11,
         "lcharg": false,
-        "lwave": false,
-        "lorbit": 11
+        "lwave": false
     },
     "pbe": {
         "xc": "pbe",
