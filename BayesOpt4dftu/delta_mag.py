@@ -14,6 +14,27 @@ class DeltaMag:
     def get_delta_mag(self):
         return self._delta_mag
 
+    def compute_delta_mag(self, component='all', mode='total'):
+
+        # Does not matter if collinear
+        assert component in ['x', 'y', 'z', 'all'], 'Unsupported magnetization component!'
+        axis_map = dict(zip(['x', 'y', 'z', 'all'], [-1, 0, 1, 2]))
+        axis = axis_map[component]
+
+        assert mode in ['orbit', 'total'], 'Unsupported magnetization mode!'
+
+        outcar_dftu = Outcar(os.path.join(self.path, 'dftu/scf/OUTCAR'))
+        outcar_path = {'hse': 'hse/band/OUTCAR', 'gw': 'gw/scf/OUTCAR'}  # HSE calcs are always SCF
+        outcar_baseline = Outcar(os.path.join(self.path, outcar_path[self.baseline]))
+
+        mag_dftu = outcar_dftu.magnetization
+        mag_baseline = outcar_baseline.magnetization
+
+        mag_array_dftu = DeltaMag.mag2array(mag_dftu, noncollinear=self.noncollinear, axis=axis, mode=mode)
+        mag_array_gw = DeltaMag.mag2array(mag_baseline, noncollinear=self.noncollinear, axis=axis, mode=mode)
+
+        self._delta_mag = np.sqrt(np.mean((mag_array_dftu - mag_array_gw) ** 2))  # RMSE
+
     @staticmethod
     def read_lnoncollinear(outcar_path):
         """
@@ -70,24 +91,3 @@ class DeltaMag:
                         mag_array[i] = mag[i][orb]
 
         return mag_array
-
-    def compute_delta_mag(self, component='all', mode='total'):
-
-        # Does not matter if collinear
-        assert component in ['x', 'y', 'z', 'all'], 'Unsupported magnetization component!'
-        axis_map = dict(zip(['x', 'y', 'z', 'all'], [-1, 0, 1, 2]))
-        axis = axis_map[component]
-
-        assert mode in ['orbit', 'total'], 'Unsupported magnetization mode!'
-
-        outcar_dftu = Outcar(os.path.join(self.path, 'dftu/scf/OUTCAR'))
-        outcar_path = {'hse': 'hse/band/OUTCAR', 'gw': 'gw/scf/OUTCAR'}  # HSE calcs are always SCF
-        outcar_baseline = Outcar(os.path.join(self.path, outcar_path[self.baseline]))
-
-        mag_dftu = outcar_dftu.magnetization
-        mag_baseline = outcar_baseline.magnetization
-
-        mag_array_dftu = DeltaMag.mag2array(mag_dftu, noncollinear=self.noncollinear, axis=axis, mode=mode)
-        mag_array_gw = DeltaMag.mag2array(mag_baseline, noncollinear=self.noncollinear, axis=axis, mode=mode)
-
-        self._delta_mag = np.sqrt(np.mean((mag_array_dftu - mag_array_gw) ** 2))  # RMSE
