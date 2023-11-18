@@ -1,13 +1,18 @@
-import os
-
 import numpy as np
 from vaspvis.utils import BandGap
 
+from BayesOpt4dftu.configuration import Config
+
 
 class DeltaGap:
-    def __init__(self, path='./', baseline='hse'):
-        self.path = path
-        self.baseline = baseline
+    _config = None  # type: Config
+
+    @classmethod
+    def init_config(cls, config: Config):
+        if cls._config is None:
+            cls._config = config
+
+    def __init__(self):
         self._dftu_gap = 0.0
         self._baseline_gap = 0.0
         self._delta_gap = 0.0
@@ -22,17 +27,19 @@ class DeltaGap:
         return self._dftu_gap
 
     def compute_delta_gap(self):
-        self._dftu_gap = BandGap(folder=os.path.join(self.path, 'dftu/band'), method=1, spin='both').bg
+        self._dftu_gap = BandGap(folder=self._config.combined_path_dict['dftu']['band'],
+                                 method=1, spin='both').bg
 
-        if self.baseline == 'hse':
-            self._baseline_gap = BandGap(folder=os.path.join(self.path, 'hse/band'), method=1, spin='both').bg
+        if self._config.baseline == 'hse':
+            self._baseline_gap = BandGap(folder=self._config.combined_path_dict['hse']['band'],
+                                         method=1, spin='both').bg
 
         # TODO: band gap from GW calc
         # Now we only deal with metals in GW calc so it's fine
-        elif self.baseline == 'gw':
+        elif self._config.baseline == 'gw':
             self._baseline_gap = 0.0
 
         else:
-            raise Exception('Unsupported baseline calculation!')
+            raise ValueError('Unsupported baseline calculation.')
 
         self._delta_gap = np.sqrt(np.mean((self._dftu_gap - self._baseline_gap) ** 2))

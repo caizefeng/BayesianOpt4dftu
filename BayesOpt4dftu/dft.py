@@ -10,45 +10,69 @@ from ase.calculators.vasp import Vasp
 from ase.dft.kpoints import get_special_points
 from pymatgen.io.vasp import Kpoints, Incar, Poscar
 
-from BayesOpt4dftu.special_kpath import kpath_dict
+from BayesOpt4dftu.configuration import Config
+from BayesOpt4dftu.kpath import BoKpath
 
 
 class VaspInit:
-    def __init__(self, input_path):
-        with open(input_path, 'r') as f:
-            self.input_dict = json.load(f)
-        self.struct_info = self.input_dict['structure_info']
-        self.general_flags = self.input_dict['general_flags']
-        self.atoms = None
+    _config = None  # type: Config
+
+    @classmethod
+    def init_config(cls, config: Config):
+        if cls._config is None:
+            cls._config = config
+
+    def __init__(self):
+        if self._config.dry_run:
+            config_path = self._config.config_path
+        else:
+            config_path = self._config.tmp_config_path
+        with open(config_path, 'r') as f:
+            self._input_dict = json.load(f)
+        self._struct_info = self._input_dict['structure_info']
+        self._general_flags = self._input_dict['general_flags']
+        self._import_kpath = self._config.import_kpath
+        self._atoms = None
 
     def init_atoms(self):
-        lattice_param = self.struct_info['lattice_param']
-        cell = np.array(self.struct_info['cell'])
-        self.atoms = Atoms(cell=cell * lattice_param)
-        for atom in self.struct_info['atoms']:
-            self.atoms.append(Atom(atom[0], atom[1], magmom=atom[2]))
+        lattice_param = self._struct_info['lattice_param']
+        cell = np.array(self._struct_info['cell'])
+        self._atoms = Atoms(cell=cell * lattice_param)
+        for atom in self._struct_info['atoms']:
+            self._atoms.append(Atom(atom[0], atom[1], magmom=atom[2]))
 
-        return self.atoms
+        return self._atoms
 
-    @staticmethod
-    def modify_poscar_direct(path='./'):
-        with open(path + '/POSCAR', 'r') as f:
-            poscar = f.readlines()
-            poscar[7] = 'Direct\n'
-            f.close()
-
-        with open(path + '/POSCAR', 'w') as d:
-            d.writelines(poscar)
-            d.close()
+    # def kpt4band(self, method):
+    #     num_kpts = self.struct_info['num_kpts']
+    #     labels = self.struct_info['kpath']
+    #
+    #     if isinstance(num_kpts, list):
+    #         if all(isinstance(elem, int) for elem in num_kpts) and len(num_kpts) == len(labels) - 1:
+    #             return "Variable is a list of integers with the required length"
+    #         else:
+    #             raise ValueError("The number of elements in `num_kpts` should be ONE less than the length of `kpath`!")
+    #     elif isinstance(num_kpts, int):
+    #         num_kpts = [num_kpts] * (len(labels) - 1)
+    #     elif num_kpts == 'auto':
+    #         if self._baseline
+    #             return "Variable is the special string 'auto'"
+    #     else:
+    #         raise TypeError("Unsupported `num_kpts` type")
+    #
+    #     if method == 'pbe':
+    #         self.kpt4pbeband(directory, import_kpath)
+    #     elif method == 'hse':
+    #         self.kpt4hseband(directory, import_kpath)
 
     def kpt4pbeband(self, path, import_kpath):
         if import_kpath:
-            special_kpoints = kpath_dict
+            special_kpoints = BoKpath.special_kpoints_dict
         else:
-            special_kpoints = get_special_points(self.atoms.cell)
+            special_kpoints = get_special_points(self._atoms.cell)
 
-        num_kpts = self.struct_info['num_kpts']
-        labels = self.struct_info['kpath']
+        num_kpts = self._struct_info['num_kpts']
+        labels = self._struct_info['kpath']
         kptset = list()
         lbs = list()
         if labels[0] in special_kpoints.keys():
@@ -66,23 +90,27 @@ class VaspInit:
             lbs.append(labels[-1])
 
         # Hardcoded for EuS and EuTe since one of the k-point is not in the special kpoints list.
-        if 'EuS' in self.atoms.symbols or 'EuTe' in self.atoms.symbols:
+        if 'EuS' in self._atoms.symbols or 'EuTe' in self._atoms.symbols:
             kptset[0] = np.array([0.5, 0.5, 1])
 
-        kpt = Kpoints(comment='band', kpts=kptset, num_kpts=num_kpts,
-                      style='Line_mode', coord_type="Reciprocal", labels=lbs)
+        kpt = Kpoints(comment='band',
+                      kpts=kptset,
+                      num_kpts=num_kpts,
+                      style='Line_mode',
+                      coord_type="Reciprocal",
+                      labels=lbs)
         kpt.write_file(path + '/KPOINTS')
 
     def kpt4hseband(self, path, import_kpath):
         ibz = open(path + '/IBZKPT', 'r')
-        num_kpts = self.struct_info['num_kpts']
-        labels = self.struct_info['kpath']
+        num_kpts = self._struct_info['num_kpts']
+        labels = self._struct_info['kpath']
         ibzlist = ibz.readlines()
         ibzlist[1] = str(num_kpts * (len(labels) - 1) + int(ibzlist[1].split('\n')[0])) + '\n'
         if import_kpath:
-            special_kpoints = kpath_dict
+            special_kpoints = BoKpath.special_kpoints_dict
         else:
-            special_kpoints = get_special_points(self.atoms.cell)
+            special_kpoints = get_special_points(self._atoms.cell)
         for i in range(len(labels) - 1):
             k_head = special_kpoints[labels[i]]
             k_tail = special_kpoints[labels[i + 1]]
@@ -95,50 +123,56 @@ class VaspInit:
         with open(path + '/KPOINTS', 'w') as f:
             f.writelines(ibzlist)
 
-    def generate_input(self, directory, step, xc, import_kpath):
+    def generate_input(self, directory, step, method, import_kpath):
         flags = {}
-        flags.update(self.general_flags)
-        flags.update(self.input_dict[step])
+        flags.update(self._general_flags)
+        flags.update(self._input_dict[step])
         if step == 'scf':
-            # `scf` dir under `hse` is just used to generate IBZKPT, so xc=pbe is enough.
-            flags.update(self.input_dict['pbe'])
-            calc = Vasp(self.atoms,
+            # `scf` dir of `hse` is only used to generate IBZKPT, so it's always `input_dict['pbe']`.
+            flags.update(self._input_dict['pbe'])
+            calc = Vasp(self._atoms,
                         directory=directory,
-                        kpts=self.struct_info['kgrid_' + xc],
+                        kpts=self._struct_info['kgrid_' + method],
                         gamma=True,
                         setups='recommended',
                         **flags)
-            calc.write_input(self.atoms)
-            # random exception (Ni2O2)
-            if str(self.atoms.symbols) in ['Ni2O2']:
+            calc.write_input(self._atoms)
+
+            # Corner case: Ni2O2
+            if str(self._atoms.symbols) in ['Ni2O2']:
                 mom_list = {'Ni': 2, 'Mn': 5, 'Co': 3, 'Fe': 4}
-                s = str(self.atoms.symbols[0])
+                s = str(self._atoms.symbols[0])
                 incar_scf = Incar.from_file(directory + '/INCAR')
                 incar_scf['MAGMOM'] = '%s -%s 0 0' % (mom_list[s], mom_list[s])
                 incar_scf.write_file(directory + '/INCAR')
 
             VaspInit.modify_poscar_direct(path=directory)
         elif step == 'band':
-            flags.update(self.input_dict[xc])
-            calc = Vasp(self.atoms,
+            flags.update(self._input_dict[method])
+            calc = Vasp(self._atoms,
                         directory=directory,
                         gamma=True,
                         setups='recommended',
                         **flags)
-            calc.write_input(self.atoms)
+
+            # INCAR POSCAR POTCAR
+            calc.write_input(self._atoms)
             VaspInit.modify_poscar_direct(path=directory)
-            if xc == 'pbe':
+
+            # KPOINTS
+            if method == 'pbe':
                 self.kpt4pbeband(directory, import_kpath)
-            elif xc == 'hse':
+            elif method == 'hse':
                 self.kpt4hseband(directory, import_kpath)
+
         # Rewrite LDAU flags to reflect correct numerical precision
-        if xc == 'pbe':
+        if method == 'pbe':
             self.rewrite_ldau(directory)
 
     def rewrite_ldau(self, directory):
 
         # Load the JSON data
-        params = self.input_dict["pbe"]
+        params = self._input_dict["pbe"]
 
         # Check if LDAU should be applied
         if params["ldau"]:
@@ -174,45 +208,71 @@ class VaspInit:
             print("LDAU not set in the provided JSON data.")
 
     @staticmethod
-    def remove_old_eigenvalues(root_dir, method_dir):
-        if os.path.isfile(f'{root_dir}/{method_dir}/band/eigenvalues.npy'):
-            os.remove(f'{root_dir}/{method_dir}/band/eigenvalues.npy')
+    def modify_poscar_direct(path='./'):
+        with open(path + '/POSCAR', 'r') as f:
+            poscar = f.readlines()
+            poscar[7] = 'Direct\n'
+
+        with open(path + '/POSCAR', 'w') as d:
+            d.writelines(poscar)
+
+    @staticmethod
+    def remove_old_eigenvalues(method):
+        eigenvalues_file = os.path.join(VaspInit._config.combined_path_dict[method]['band'],
+                                        VaspInit._config.eigen_cache_file_name)
+        if os.path.isfile(eigenvalues_file):
+            os.remove(eigenvalues_file)
 
 
-def calculate(command: str, config_file_name: str, outfilename: str, method: str, import_kpath: bool, is_dry: bool):
-    olddir = os.getcwd()
-    calc = VaspInit(f"{olddir}/{config_file_name}")
-    calc.init_atoms()
+class DftExecutor:
 
-    # Recursive directory creation; it won't raise an error if the directory already exists
-    os.makedirs(olddir + '/%s/scf' % method, exist_ok=True)
-    os.makedirs(olddir + '/%s/band' % method, exist_ok=True)
-    VaspInit.remove_old_eigenvalues(olddir, method)
+    def __init__(self, config):
+        self._config = config  # type: Config
 
-    if method == 'dftu':
-        calc.generate_input(olddir + '/%s/scf' % method, 'scf', 'pbe', import_kpath)
-        calc.generate_input(olddir + '/%s/band' % method, 'band', 'pbe', import_kpath)
-    elif method == 'hse':
-        calc.generate_input(olddir + '/%s/scf' % method, 'scf', 'pbe', import_kpath)
+    def calculate(self, method: str):
+        calc = VaspInit()
 
-    # exit if dry run
-    if is_dry:
-        return
+        calc.init_atoms()
 
-    # calc in `scf` dir
-    os.chdir(olddir + '/%s/scf' % method)
-    errorcode_scf = subprocess.call('%s > %s' % (command, outfilename), shell=True)
+        # Recursive directory creation; it won't raise an error if the directory already exists
+        os.makedirs(self._config.combined_path_dict[method]['scf'], exist_ok=True)
+        os.makedirs(self._config.combined_path_dict[method]['band'], exist_ok=True)
+        VaspInit.remove_old_eigenvalues(method)
 
-    if method == 'dftu':
-        for filename in ["CHG", "CHGCAR", "WAVECAR"]:
-            shutil.copy(filename, olddir + '/%s/band' % method)
-    elif method == 'hse':
-        # `scf` dir under `hse` is just used to generate IBZKPT
-        for filename in ["IBZKPT"]:
-            shutil.copy(filename, olddir + '/%s/band' % method)
-        calc.generate_input(olddir + '/%s/band' % method, 'band', 'hse', import_kpath)
+        if method == 'dftu':
+            calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe',
+                                self._config.import_kpath)
+            calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'pbe',
+                                self._config.import_kpath)
+        elif method == 'hse':
+            # `scf` dir of `hse` is only used to generate IBZKPT
+            calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe',
+                                self._config.import_kpath)
 
-    # calc in `band` dir
-    os.chdir(olddir + '/%s/band' % method)
-    errorcode_band = subprocess.call('%s > %s' % (command, outfilename), shell=True)
-    os.chdir(olddir)
+        # Exit if dry run
+        if self._config.dry_run:
+            return
+
+        # Calc in `scf` dir
+        os.chdir(self._config.combined_path_dict[method]['scf'])
+        errorcode_scf = subprocess.call('%s > %s' % (self._config.vasp_run_command, self._config.out_file_name),
+                                        shell=True)
+        os.chdir(self._config.abs_root_dir)
+
+        # Copy necessary files from `scf` to `band`
+        if method == 'dftu':
+            for filename in ["CHG", "CHGCAR", "WAVECAR"]:
+                shutil.copy(os.path.join(self._config.combined_path_dict[method]['scf'], filename),
+                            self._config.combined_path_dict[method]['band'])
+        elif method == 'hse':
+            for filename in ["IBZKPT"]:
+                shutil.copy(os.path.join(self._config.combined_path_dict[method]['scf'], filename),
+                            self._config.combined_path_dict[method]['band'])
+            calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'hse',
+                                self._config.import_kpath)
+
+        # Calc in `band` dir
+        os.chdir(self._config.combined_path_dict[method]['band'])
+        errorcode_band = subprocess.call('%s > %s' % (self._config.vasp_run_command, self._config.out_file_name),
+                                         shell=True)
+        os.chdir(self._config.abs_root_dir)

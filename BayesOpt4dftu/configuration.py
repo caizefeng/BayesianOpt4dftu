@@ -15,21 +15,7 @@ class Config:
         with open(config_file, "r") as f:
             data = json.load(f)
 
-        self.config_file_name = config_file
-        self.tmp_config_file_name = f"{config_file.split('.')[0]}_tmp.{config_file.split('.')[1]}"
-        vasp_env_params = data['vasp_env']
-        # Command to run VASP executable.
-        self.vasp_run_command = vasp_env_params.get('vasp_run_command', 'srun -n 54 vasp_ncl')
-        # Define the name for output file.
-        self.out_file_name = vasp_env_params.get('out_file_name', 'vasp.out')
-        # Define the path direct to the VASP pseudopotential.
-        self.vasp_pp_path = vasp_env_params.get('vasp_pp_path', '/home/maituoy/pp_vasp/')
-        self.dry_run = vasp_env_params.get('dry_run', False)
-        self.dftu_only = vasp_env_params.get('dftu_only', False)
-        self.get_optimal_band = vasp_env_params.get('get_optimal_band', False)
-
-        os.environ['VASP_PP_PATH'] = self.vasp_pp_path
-
+        # BO parameters
         bo_params = data['bo']
         self.k = float(bo_params.get('kappa', 5))
         self.a1 = bo_params.get('alpha1', 0.25)
@@ -42,9 +28,50 @@ class Config:
         self.iteration = bo_params.get('iteration', 50)
         self.threshold = bo_params.get('threshold', 0.0001)
         self.baseline = bo_params.get('baseline', 'hse')
-
         self.delta_mag_weight = bo_params.get('delta_mag_weight', 0.0)
         if self.delta_mag_weight:
             self.include_mag = True
         else:
             self.include_mag = False
+
+        # File paths
+        self.root_dir = './'
+        self.abs_root_dir = os.path.abspath(self.root_dir)
+
+        self.step_dir_dict = {'scf': 'scf', 'band': 'band'}
+        self.method_dir_dict = {'dftu': 'dftu', 'hse': 'hse', 'gw': 'gw'}
+        self.combined_path_dict = {}
+        for key in self.method_dir_dict:
+            self.combined_path_dict[key] = {k: os.path.join(self.root_dir, key, v)
+                                            for k, v in self.step_dir_dict.items()}
+
+        self.config_file_name = config_file
+        self.tmp_config_file_name = f"{config_file.split('.')[0]}_tmp.{config_file.split('.')[1]}"
+        self.u_file_name = f"u_kappa_{self.k}_a1_{self.a1}_a2_{self.a2}.txt"
+        self.tmp_u_file_name = 'u_tmp.txt'
+
+        self.config_path = os.path.join(self.root_dir, self.config_file_name)
+        self.tmp_config_path = os.path.join(self.root_dir, self.tmp_config_file_name)
+        self.u_path = os.path.join(self.root_dir, self.u_file_name)
+        self.tmp_u_path = os.path.join(self.root_dir, self.tmp_u_file_name)
+
+        self.eigen_cache_file_name = 'eigenvalues.npy'
+
+        self.column_names = {'band_gap': 'band_gap',
+                             'delta_gap': 'delta_gap',
+                             'delta_band': 'delta_band',
+                             'delta_mag': 'delta_mag'}
+
+        # VASP parameters
+        vasp_env_params = data['vasp_env']
+        # Command to run VASP executable.
+        self.vasp_run_command = vasp_env_params.get('vasp_run_command', 'srun -n 54 vasp_ncl')
+        # Define the name for output file.
+        self.out_file_name = vasp_env_params.get('out_file_name', 'vasp.out')
+        # Define the path direct to the VASP pseudopotential.
+        self.vasp_pp_path = vasp_env_params.get('vasp_pp_path', '/home/maituoy/pp_vasp/')
+        self.dry_run = vasp_env_params.get('dry_run', False)
+        self.dftu_only = vasp_env_params.get('dftu_only', False)
+        self.get_optimal_band = vasp_env_params.get('get_optimal_band', False)
+
+        os.environ['VASP_PP_PATH'] = self.vasp_pp_path

@@ -3,12 +3,23 @@ import os
 import numpy as np
 from pymatgen.io.vasp import Outcar
 
+from BayesOpt4dftu.configuration import Config
+
 
 class DeltaMag:
-    def __init__(self, path='./', baseline='hse'):
-        self.path = path
-        self.baseline = baseline
-        self.noncollinear = DeltaMag.read_lnoncollinear(os.path.join(self.path, 'dftu/band/OUTCAR'))
+    _config = None  # type: Config
+
+    @classmethod
+    def init_config(cls, config: Config):
+        if cls._config is None:
+            cls._config = config
+
+    def __init__(self):
+        self._outcar_with_mag = {'dftu': os.path.join(self._config.combined_path_dict['dftu']['scf'], 'OUTCAR'),
+                                 'hse': os.path.join(self._config.combined_path_dict['hse']['band'], 'OUTCAR'),
+                                 'gw': os.path.join(self._config.combined_path_dict['gw']['scf'], 'OUTCAR')
+                                 }
+        self._noncollinear = DeltaMag.read_lnoncollinear(self._outcar_with_mag['dftu'])
         self._delta_mag = 0.0
 
     def get_delta_mag(self):
@@ -23,15 +34,14 @@ class DeltaMag:
 
         assert mode in ['orbit', 'total'], 'Unsupported magnetization mode!'
 
-        outcar_dftu = Outcar(os.path.join(self.path, 'dftu/scf/OUTCAR'))
-        outcar_path = {'hse': 'hse/band/OUTCAR', 'gw': 'gw/scf/OUTCAR'}  # HSE calcs are always SCF
-        outcar_baseline = Outcar(os.path.join(self.path, outcar_path[self.baseline]))
+        outcar_dftu = Outcar(self._outcar_with_mag['dftu'])
+        outcar_baseline = Outcar(self._outcar_with_mag[self._config.baseline])
 
         mag_dftu = outcar_dftu.magnetization
         mag_baseline = outcar_baseline.magnetization
 
-        mag_array_dftu = DeltaMag.mag2array(mag_dftu, noncollinear=self.noncollinear, axis=axis, mode=mode)
-        mag_array_gw = DeltaMag.mag2array(mag_baseline, noncollinear=self.noncollinear, axis=axis, mode=mode)
+        mag_array_dftu = DeltaMag.mag2array(mag_dftu, noncollinear=self._noncollinear, axis=axis, mode=mode)
+        mag_array_gw = DeltaMag.mag2array(mag_baseline, noncollinear=self._noncollinear, axis=axis, mode=mode)
 
         self._delta_mag = np.sqrt(np.mean((mag_array_dftu - mag_array_gw) ** 2))  # RMSE
 

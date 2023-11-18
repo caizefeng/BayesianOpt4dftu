@@ -2,32 +2,39 @@ import os
 
 from pymatgen.io.vasp import Incar
 
+from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.delta_band import DeltaBand
 from BayesOpt4dftu.delta_gap import DeltaGap
 from BayesOpt4dftu.delta_mag import DeltaMag
 
 
 class DeltaAll:
-    def __init__(self, path='./', baseline='hse', bandrange=None, include_mag=False):
-        if bandrange is None:
-            bandrange = [5, 5]
+    _config = None  # type: Config
 
-        self.path = path
-        self.include_mag = include_mag
-        self.dg = DeltaGap(path=path, baseline=baseline)
-        self.db = DeltaBand(bandrange=bandrange, path=path, baseline=baseline)
-        if self.include_mag:
-            self.dm = DeltaMag(path=path, baseline=baseline)
+    @classmethod
+    def init_config(cls, config: Config):
+        if cls._config is None:
+            cls._config = config
+        DeltaGap.init_config(config)
+        DeltaBand.init_config(config)
+        if DeltaAll._config.include_mag:
+            DeltaMag.init_config(config)
+
+    def __init__(self):
+        self.dg = DeltaGap()
+        self.db = DeltaBand()
+        if self._config.include_mag:
+            self.dm = DeltaMag()
 
     def compute_delta(self):
         self.dg.compute_delta_gap()
         self.db.compute_delta_band()
-        if self.include_mag:
+        if self._config.include_mag:
             self.dm.compute_delta_mag()
 
     def write_delta(self):
         # U values
-        incar = Incar.from_file(os.path.join(self.path, 'dftu/band/INCAR'))
+        incar = Incar.from_file(os.path.join(self._config.combined_path_dict['dftu']['band'], 'INCAR'))
         u = incar['LDAUU']
 
         # Band gap
@@ -40,10 +47,9 @@ class DeltaAll:
         u.append(self.db.get_delta_band())
 
         # Delta magnetization
-        if self.include_mag:
+        if self._config.include_mag:
             u.append(self.dm.get_delta_mag())
 
         output = ' '.join(str(x) for x in u)
-        with open('u_tmp.txt', 'a') as f:
+        with open(self._config.tmp_u_path, 'a') as f:
             f.write(output + '\n')
-            f.close()
