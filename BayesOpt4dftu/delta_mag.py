@@ -19,7 +19,7 @@ class DeltaMag:
                                  'hse': os.path.join(self._config.combined_path_dict['hse']['band'], 'OUTCAR'),
                                  'gw': os.path.join(self._config.combined_path_dict['gw']['scf'], 'OUTCAR')
                                  }
-        self._noncollinear = DeltaMag.read_lnoncollinear(self._outcar_with_mag['dftu'])
+        self._noncollinear = DeltaMag.read_lnoncollinear(self._outcar_with_mag[self._config.baseline])
         self._delta_mag = 0.0
 
     def get_delta_mag(self):

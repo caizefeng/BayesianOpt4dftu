@@ -21,7 +21,7 @@ def main():
     config = Config("input.json")
     TempFileManager.init_config(config)
     DftExecutor.init_config(config)
-    VaspInit.init(config)
+    VaspInit.init_config(config)
     DeltaAll.init_config(config)
     BoDftuIterator.init_config(config)
 
@@ -41,10 +41,10 @@ def main():
             dft_executor.calculate(method='hse')
 
         bo_iterator = BoDftuIterator()
+        delta = DeltaAll()
         for i in range(config.iteration):
             dft_executor.calculate(method='dftu')
 
-            delta = DeltaAll()
             delta.compute_delta()
             delta.write_delta()
 
@@ -67,7 +67,6 @@ def main():
             bo_iterator.update_u_config(optimal_u)
             dft_executor.calculate(method='dftu')
 
-            delta = DeltaAll()
             delta.compute_delta()
             delta.write_delta()
             driver_logger.info("An additional DFT+U calculation using optimal U values performed.")

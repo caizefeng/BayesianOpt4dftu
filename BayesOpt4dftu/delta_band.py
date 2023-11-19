@@ -30,7 +30,7 @@ class DeltaBand:
         self._kpoints_dftu = os.path.join(self._dftu_band_path, 'KPOINTS')
 
         self._delta_band = 0.0  # type: float
-        self._is_first_run = False
+        self._first_time_run = True
         self._slice_length = None
         self._slice_weight = None
         self._num_slices = 0  # type: int
@@ -42,7 +42,7 @@ class DeltaBand:
     def compute_delta_band(self):
         ispin_dftu, nbands_dftu, nkpts_dftu = DeltaBand.read_ispin_nbands_nkpts(self._vasprun_dftu)
 
-        if self._baseline == 'hse':
+        if self._first_time_run and self._baseline == 'hse':
             self.check_hse_compatibility(ispin_dftu, nbands_dftu, nkpts_dftu)
 
         if self._baseline == 'hse':
@@ -137,11 +137,13 @@ class DeltaBand:
         else:
             raise ValueError('Incorrect ISPIN value.')
 
+        self._first_time_run = False
+
     def access_eigen(self, b: Band, interpolate=False):
         wave_vectors = b._get_k_distance()
 
         # Compute k-space length and corresponding weight of each slice
-        if not self._is_first_run:
+        if self._first_time_run:
             self._num_slices, self._num_kpts_each_slice = wave_vectors.shape
             self._slice_length = wave_vectors[:, -1] - wave_vectors[:, 0]
             # TODO: high-symmetry point: 1, only weighting intermediate points

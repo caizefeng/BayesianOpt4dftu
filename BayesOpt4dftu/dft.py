@@ -20,7 +20,7 @@ class VaspInit:
     _config = None  # type: Config
 
     @classmethod
-    def init(cls, config: Config):
+    def init_config(cls, config: Config):
         if cls._config is None:
             cls._config = config
 
