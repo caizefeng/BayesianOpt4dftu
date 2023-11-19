@@ -11,14 +11,16 @@ from ase.dft.kpoints import get_special_points
 from pymatgen.io.vasp import Kpoints, Incar, Poscar
 
 from BayesOpt4dftu.configuration import Config
-from BayesOpt4dftu.kpath import BoKpath
+from BayesOpt4dftu.logging import BoLoggerGenerator
+from BayesOpt4dftu.kpath import special_kpoints_dict
 
 
 class VaspInit:
+    _logger = BoLoggerGenerator.get_logger("VaspInit")
     _config = None  # type: Config
 
     @classmethod
-    def init_config(cls, config: Config):
+    def init(cls, config: Config):
         if cls._config is None:
             cls._config = config
 
@@ -67,7 +69,7 @@ class VaspInit:
 
     def kpt4pbeband(self, path, import_kpath):
         if import_kpath:
-            special_kpoints = BoKpath.special_kpoints_dict
+            special_kpoints = special_kpoints_dict
         else:
             special_kpoints = get_special_points(self._atoms.cell)
 
@@ -108,7 +110,7 @@ class VaspInit:
         ibzlist = ibz.readlines()
         ibzlist[1] = str(num_kpts * (len(labels) - 1) + int(ibzlist[1].split('\n')[0])) + '\n'
         if import_kpath:
-            special_kpoints = BoKpath.special_kpoints_dict
+            special_kpoints = special_kpoints_dict
         else:
             special_kpoints = get_special_points(self._atoms.cell)
         for i in range(len(labels) - 1):
@@ -225,13 +227,31 @@ class VaspInit:
 
 
 class DftExecutor:
+    _logger = BoLoggerGenerator.get_logger("DftExecutor")
+    _config = None  # type: Config
 
-    def __init__(self, config):
-        self._config = config  # type: Config
+    @classmethod
+    def init_config(cls, config: Config):
+        if cls._config is None:
+            cls._config = config
+
+    def __init__(self):
+        self._logger.info("DFT calculations begin.")
+        self._dftu_counter = 0
 
     def calculate(self, method: str):
-        calc = VaspInit()
+        # Logging
+        if not self._config.dry_run:
+            if method == 'hse':
+                self._logger.info("Baseline hybrid DFT calculation begins.")
+            elif method == 'dftu' and self._dftu_counter == 0:
+                self._logger.info("Consecutive DFT+U calculations begin.")
 
+        if not self._config.dry_run:
+            if method == 'dftu':
+                self._dftu_counter += 1
+
+        calc = VaspInit()
         calc.init_atoms()
 
         # Recursive directory creation; it won't raise an error if the directory already exists
@@ -245,12 +265,15 @@ class DftExecutor:
             calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'pbe',
                                 self._config.import_kpath)
         elif method == 'hse':
+
             # `scf` dir of `hse` is only used to generate IBZKPT
             calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe',
                                 self._config.import_kpath)
 
         # Exit if dry run
         if self._config.dry_run:
+            self._logger.info("No actual calculations were performed. Review the input files before proceeding.")
+            self._logger.info("Dry run executed.")
             return
 
         # Calc in `scf` dir
@@ -276,3 +299,9 @@ class DftExecutor:
         errorcode_band = subprocess.call('%s > %s' % (self._config.vasp_run_command, self._config.out_file_name),
                                          shell=True)
         os.chdir(self._config.abs_root_dir)
+
+        if method == 'hse':
+            self._logger.info("Baseline hybrid DFT calculation finished.")
+
+    def finalize(self):
+        self._logger.info("All DFT calculations finished.")

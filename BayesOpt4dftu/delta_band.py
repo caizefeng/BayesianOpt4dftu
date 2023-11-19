@@ -144,8 +144,9 @@ class DeltaBand:
         if not self._is_first_run:
             self._num_slices, self._num_kpts_each_slice = wave_vectors.shape
             self._slice_length = wave_vectors[:, -1] - wave_vectors[:, 0]
-            mean_length = np.mean(self._slice_length)
-            self._slice_weight = self._slice_length / mean_length  # normalize so that the mean equals 0
+            # TODO: high-symmetry point: 1, only weighting intermediate points
+            max_length = np.max(self._slice_length)
+            self._slice_weight = self._slice_length / max_length  # normalize so that the mean equals 0
 
         eigenvalues = b.eigenvalues
 
@@ -228,7 +229,6 @@ class DeltaBand:
             return self.pad_gw_band(eigenvalues)
 
         elif ispin == 2:
-            # TODO: compare VASP and GW line mode (GW has duplicated endpoint or not)
             data_up = open(os.path.join(gw_band_dir, 'wannier90.1_band.dat'), 'r+').readlines()
             data_dn = open(os.path.join(gw_band_dir, 'wannier90.2_band.dat'), 'r+').readlines()
             concatenated_k_e_up = []

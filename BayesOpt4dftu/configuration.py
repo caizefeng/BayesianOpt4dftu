@@ -1,17 +1,24 @@
 import json
 import os
 
+from BayesOpt4dftu.logging import BoLoggerGenerator
+
 
 class Config:
+    _logger = BoLoggerGenerator.get_logger("Config")
     _instance = None
 
     def __new__(cls, config_file="input.json"):
         if not cls._instance:
             cls._instance = super().__new__(cls)
             cls._instance._load_config(config_file)
+
         return cls._instance
 
     def _load_config(self, config_file):
+
+        self._logger.info(f"Loading configuration ...")
+
         with open(config_file, "r") as f:
             data = json.load(f)
 
@@ -75,3 +82,5 @@ class Config:
         self.get_optimal_band = vasp_env_params.get('get_optimal_band', False)
 
         os.environ['VASP_PP_PATH'] = self.vasp_pp_path
+
+        self._logger.info(f"Configuration loaded from file {self.config_file_name}.")

@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 
 from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.io_utils import SuppressPrints
+from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
 class OptimizerGenerator:
@@ -98,6 +99,8 @@ class OptimizerGenerator:
 
 
 class BoStepExecutor(OptimizerGenerator):
+    _logger = BoLoggerGenerator.get_logger("BoStepExecutor")
+
     def __init__(self, utxt_path, column_names, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa, elements):
         super().__init__(utxt_path, column_names, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa)
         self._elements = elements
@@ -106,6 +109,9 @@ class BoStepExecutor(OptimizerGenerator):
         self._optimal = 0
 
     def get_optimal(self):
+        optimal_u, optimal_obj = self._optimal
+        self._logger.info(f"Optimal U value: {optimal_u}")
+        self._logger.info(f"Optimal objective function: {optimal_obj}")
         return self._optimal
 
     def advance_step(self):
@@ -240,7 +246,8 @@ class BoStepExecutor(OptimizerGenerator):
             plt.savefig('2D_kappa_%s_a1_%s_a2_%s.png' % (self._kappa, self._a1, self._a2), dpi=400)
 
 
-class BayesOptDftu(BoStepExecutor):
+class BoDftuIterator(BoStepExecutor):
+    _logger = BoLoggerGenerator.get_logger("BoDftuIterator")
     _config = None  # type: Config
 
     @classmethod
@@ -257,14 +264,18 @@ class BayesOptDftu(BoStepExecutor):
                          self._config.which_u, self._config.urange,
                          self._config.a1, self._config.a2, self._config.delta_mag_weight, self._config.k,
                          self._config.elements)
+        self._logger.info("Bayesian Optimization begins.")
+        self._i_step = 0
+        self._obj_current = None
+        self._obj_next = None
+        self._exit_converged = False
 
     def next(self):
-        next_point_to_probe, next_obj = self.advance_step()
+        self._obj_current = self._obj_next
+        next_point_to_probe, self._obj_next = self.advance_step()
         u_next = list(next_point_to_probe.values())
-
         self.update_u_config(u_next)
-
-        return next_obj
+        self._i_step += 1
 
     def update_u_config(self, u_new):
         with open(self._config.tmp_config_path, 'r') as f:
@@ -277,6 +288,17 @@ class BayesOptDftu(BoStepExecutor):
         with open(self._config.tmp_config_path, 'w') as f:
             json.dump(data, f, indent=4)
 
-    @staticmethod
-    def converge(obj_next, obj_current):
-        return BayesOptDftu._config.threshold != 0 and abs(obj_next - obj_current) <= BayesOptDftu._config.threshold
+    def converge(self):
+        is_converged = (self._config.threshold != 0
+                        and abs(self._obj_next - self._obj_current) <= self._config.threshold)
+        if is_converged:
+            self._logger.info(f"Convergence reached at iteration {self._i_step + 1}, exiting.")
+            self._exit_converged = True
+        return is_converged
+
+    def finalize(self):
+        if not self._exit_converged:
+            self._logger.info("Bayesian Optimization exited without reaching convergence: "
+                              "maximum number of steps reached.")
+
+        self._logger.info("Bayesian Optimization finished.")

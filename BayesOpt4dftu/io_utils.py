@@ -1,29 +1,19 @@
-import logging
 import os
 import shutil
 import sys
 
 from BayesOpt4dftu.configuration import Config
-
-
-class BoLoggerGenerator:
-
-    def __init__(self):
-        self._root_name = "BayesOpt4dftu"
-        self._root_logger = logging.getLogger(self._root_name)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
-        self._ch = logging.StreamHandler(sys.stdout)
-        self._ch.setFormatter(formatter)
-        self._root_logger.addHandler(self._ch)
-        self._root_logger.setLevel(logging.INFO)
-
-    def get_logger(self, subname) -> logging.Logger:
-        return logging.getLogger('.'.join((self._root_name, subname)))  # child logger
+from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
 class TempFileManager:
-    def __init__(self, config):
-        self._config = config  # type: Config
+    _logger = BoLoggerGenerator.get_logger("TempFileManager")
+    _config = None  # type: Config
+
+    @classmethod
+    def init_config(cls, config: Config):
+        if cls._config is None:
+            cls._config = config
 
     def setup_temp_files(self):
         # Temporary config
@@ -51,9 +41,13 @@ class TempFileManager:
                         f"{self._config.column_names['delta_gap']} "
                         f"{self._config.column_names['delta_band']} \n")
 
+        self._logger.info("Temporary files initiated.")
+
     def clean_up_temp_files(self):
         shutil.move(self._config.tmp_u_path, self._config.u_path)
         os.remove(self._config.tmp_config_path)
+
+        self._logger.info("Temporary files removed.")
 
 
 class SuppressPrints:
