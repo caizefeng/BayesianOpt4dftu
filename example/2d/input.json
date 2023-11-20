@@ -26,7 +26,6 @@
             -10,
             10
         ],
-        "import_kpath": false,
         "elements": [
             "In",
             "As"

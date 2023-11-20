@@ -12,8 +12,9 @@ from ase.dft.kpoints import get_special_points
 from pymatgen.io.vasp import Kpoints, Incar, Poscar
 
 from BayesOpt4dftu.configuration import Config
+from BayesOpt4dftu.io_utils import deprecated
+from BayesOpt4dftu.kpath import BoBandPath
 from BayesOpt4dftu.logging import BoLoggerGenerator
-from BayesOpt4dftu.kpath import special_kpoints_dict
 
 
 class VaspInit:
@@ -93,9 +94,6 @@ class VaspInit:
             kptset.append(special_kpoints[labels[-1]])
             lbs.append(labels[-1])
 
-        # Hardcoded for EuS and EuTe since one of the k-point is not in the special kpoints list.
-        if 'EuS' in self._atoms.symbols or 'EuTe' in self._atoms.symbols:
-            kptset[0] = np.array([0.5, 0.5, 1])
 
         kpt = Kpoints(comment='band',
                       kpts=kptset,
@@ -141,15 +139,6 @@ class VaspInit:
                         setups='recommended',
                         **flags)
             calc.write_input(self._atoms)
-
-            # Corner case: Ni2O2
-            if str(self._atoms.symbols) in ['Ni2O2']:
-                mom_list = {'Ni': 2, 'Mn': 5, 'Co': 3, 'Fe': 4}
-                s = str(self._atoms.symbols[0])
-                incar_scf = Incar.from_file(directory + '/INCAR')
-                incar_scf['MAGMOM'] = '%s -%s 0 0' % (mom_list[s], mom_list[s])
-                incar_scf.write_file(directory + '/INCAR')
-
             VaspInit.modify_poscar_direct(path=directory)
         elif step == 'band':
             flags.update(self._input_dict[method])
@@ -227,6 +216,21 @@ class VaspInit:
         if os.path.isfile(eigenvalues_file):
             os.remove(eigenvalues_file)
 
+    @deprecated
+    def corner_case_kpath(self, kptset):
+        # Hardcoded for EuS and EuTe since one of the k-point is not in the special kpoints list.
+        if 'EuS' in self._atoms.symbols or 'EuTe' in self._atoms.symbols:
+            kptset[0] = np.array([0.5, 0.5, 1])
+
+    @deprecated
+    def corner_case_magmom(self, directory):
+        if str(self._atoms.symbols) in ['Ni2O2']:
+            mom_list = {'Ni': 2, 'Mn': 5, 'Co': 3, 'Fe': 4}
+            s = str(self._atoms.symbols[0])
+            incar_scf = Incar.from_file(directory + '/INCAR')
+            incar_scf['MAGMOM'] = '%s -%s 0 0' % (mom_list[s], mom_list[s])
+            incar_scf.write_file(directory + '/INCAR')
+
 
 class DftExecutor:
     _logger = BoLoggerGenerator.get_logger("DftExecutor")
@@ -262,15 +266,12 @@ class DftExecutor:
         VaspInit.remove_old_eigenvalues(method)
 
         if method == 'dftu':
-            calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe',
-                                self._config.import_kpath)
-            calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'pbe',
-                                self._config.import_kpath)
+            calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe')
+            calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'pbe')
         elif method == 'hse':
 
             # `scf` dir of `hse` is only used to generate IBZKPT
-            calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe',
-                                self._config.import_kpath)
+            calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe')
 
         # Exit if dry run
         if self._config.dry_run:
@@ -293,8 +294,7 @@ class DftExecutor:
             for filename in ["IBZKPT"]:
                 shutil.copy(os.path.join(self._config.combined_path_dict[method]['scf'], filename),
                             self._config.combined_path_dict[method]['band'])
-            calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'hse',
-                                self._config.import_kpath)
+            calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'hse')
 
         # Calc in `band` dir
         os.chdir(self._config.combined_path_dict[method]['band'])

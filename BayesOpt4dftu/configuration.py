@@ -30,7 +30,6 @@ class Config:
         self.which_u = tuple(bo_params.get('which_u', [1, 1]))
         self.urange = tuple(bo_params.get('urange', [-10.0, 10.0]))
         self.br = tuple(bo_params.get('br', [5, 5]))
-        self.import_kpath = bo_params.get('import_kpath', False)
         self.elements = bo_params.get('elements', ['In', 'As'])
         self.iteration = bo_params.get('iteration', 50)
         self.threshold = bo_params.get('threshold', 0.0001)
@@ -77,6 +76,7 @@ class Config:
         self.out_file_name = vasp_env_params.get('out_file_name', 'vasp.out')
         # Define the path direct to the VASP pseudopotential.
         self.vasp_pp_path = vasp_env_params.get('vasp_pp_path', '/home/maituoy/pp_vasp/')
+        os.environ['VASP_PP_PATH'] = self.vasp_pp_path
         self.dry_run = vasp_env_params.get('dry_run', False)
         self.dftu_only = vasp_env_params.get('dftu_only', False)
         self.get_optimal_band = vasp_env_params.get('get_optimal_band', False)

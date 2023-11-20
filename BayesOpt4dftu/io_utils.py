@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import warnings
 
 from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.logging import BoLoggerGenerator
@@ -8,7 +9,7 @@ from BayesOpt4dftu.logging import BoLoggerGenerator
 
 class TempFileManager:
     _logger = BoLoggerGenerator.get_logger("TempFileManager")
-    _config = None  # type: Config
+    _config: Config = None
 
     @classmethod
     def init_config(cls, config: Config):
@@ -58,3 +59,11 @@ class SuppressPrints:
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.close()
         sys.stdout = self._original_stdout
+
+
+def deprecated(func):
+    def wrapper(*args, **kwargs):
+        warnings.warn(f"{func.__name__} is deprecated", DeprecationWarning, stacklevel=2)
+        return func(*args, **kwargs)
+
+    return wrapper  # noqa
