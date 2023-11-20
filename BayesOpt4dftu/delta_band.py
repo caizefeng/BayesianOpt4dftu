@@ -1,8 +1,10 @@
 import inspect
 import os
+from typing import Optional
 from xml.etree import ElementTree as ET
 
 import numpy as np
+from numpy.typing import NDArray
 from pymatgen.io.vasp import Outcar
 from vaspvis import Band
 
@@ -10,7 +12,7 @@ from BayesOpt4dftu.configuration import Config
 
 
 class DeltaBand:
-    _config = None  # type: Config
+    _config: Config = None
 
     @classmethod
     def init_config(cls, config: Config):
@@ -19,22 +21,25 @@ class DeltaBand:
 
     def __init__(self, interpolate=False):
 
-        self._interpolate = interpolate
+        self._interpolate: bool = interpolate
+        self._br_vb: int
+        self._br_cb: int
         self._br_vb, self._br_cb = self._config.br
-        self._baseline = self._config.baseline
-        self._hse_band_path = self._config.combined_path_dict['hse']['band']
-        self._dftu_band_path = self._config.combined_path_dict['dftu']['band']
-        self._vasprun_hse = os.path.join(self._hse_band_path, 'vasprun.xml')
-        self._kpoints_hse = os.path.join(self._hse_band_path, 'KPOINTS')
-        self._vasprun_dftu = os.path.join(self._dftu_band_path, 'vasprun.xml')
-        self._kpoints_dftu = os.path.join(self._dftu_band_path, 'KPOINTS')
+        self._baseline: str = self._config.baseline
 
-        self._delta_band = 0.0  # type: float
-        self._first_time_run = True
-        self._slice_length = None
-        self._slice_weight = None
-        self._num_slices = 0  # type: int
-        self._num_kpts_each_slice = 0  # type: int
+        self._hse_band_path: str = self._config.combined_path_dict['hse']['band']
+        self._dftu_band_path: str = self._config.combined_path_dict['dftu']['band']
+        self._vasprun_hse: str = os.path.join(self._hse_band_path, 'vasprun.xml')
+        self._kpoints_hse: str = os.path.join(self._hse_band_path, 'KPOINTS')
+        self._vasprun_dftu: str = os.path.join(self._dftu_band_path, 'vasprun.xml')
+        self._kpoints_dftu: str = os.path.join(self._dftu_band_path, 'KPOINTS')
+
+        self._delta_band: float = 0.0
+        self._first_time_run: bool = True
+        self._slice_length: Optional[NDArray] = None
+        self._slice_weight: Optional[NDArray] = None
+        self._num_slices: int = 0
+        self._num_kpts_each_slice: int = 0
 
     def get_delta_band(self):
         return self._delta_band

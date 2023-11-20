@@ -5,7 +5,7 @@ from BayesOpt4dftu.configuration import Config
 
 
 class DeltaGap:
-    _config = None  # type: Config
+    _config: Config = None
 
     @classmethod
     def init_config(cls, config: Config):
@@ -13,9 +13,9 @@ class DeltaGap:
             cls._config = config
 
     def __init__(self):
-        self._dftu_gap = 0.0
-        self._baseline_gap = 0.0
-        self._delta_gap = 0.0
+        self._dftu_gap: float = 0.0
+        self._baseline_gap: float = 0.0
+        self._delta_gap: float = 0.0
 
     def get_delta_gap(self):
         return self._delta_gap

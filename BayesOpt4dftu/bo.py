@@ -1,4 +1,5 @@
 import json
+from typing import Optional, Tuple, Any, List, Dict
 
 import numpy as np
 import pandas as pd
@@ -15,17 +16,17 @@ from BayesOpt4dftu.logging import BoLoggerGenerator
 class OptimizerGenerator:
     def __init__(self, utxt_path, column_names, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa):
         self._utility_function = UtilityFunction(kind="ucb", kappa=kappa, xi=0)
-        self._opt_u_index = opt_u_index
-        self._u_range = u_range
-        self._a1 = a1
-        self._a2 = a2
-        self._delta_mag_weight = delta_mag_weight
-        self._kappa = kappa
+        self._opt_u_index: List[float] = opt_u_index
+        self._u_range: List[float] = u_range
+        self._a1: float = a1
+        self._a2: float = a2
+        self._delta_mag_weight: float = delta_mag_weight
+        self._kappa: float = kappa
 
-        self._utxt_path = utxt_path
-        self._column_names = column_names
-        self._n_obs = None
-        self._data = None
+        self._utxt_path: str = utxt_path
+        self._column_names: Dict[Any, str] = column_names
+        self._n_obs: Optional[int] = None
+        self._data: Optional[pd.DataFrame] = None
 
     def loss(self, delta_gap=0.0, delta_band=0.0, delta_mag=0.0, alpha_1=0.5, alpha_2=0.5, delta_mag_weight=0.0):
         return -alpha_1 * delta_gap ** 2 - alpha_2 * delta_band ** 2 - delta_mag_weight * delta_mag ** 2
@@ -103,10 +104,10 @@ class BoStepExecutor(OptimizerGenerator):
 
     def __init__(self, utxt_path, column_names, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa, elements):
         super().__init__(utxt_path, column_names, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa)
-        self._elements = elements
-        self._optimizer = None
-        self._target = None
-        self._optimal = 0
+        self._elements: List[str] = elements
+        self._optimizer: Optional[BayesianOptimization] = None
+        self._target: Optional[float] = None
+        self._optimal: Optional[Tuple[Any, Any]] = None
 
     def get_optimal(self):
         optimal_u, optimal_obj = self._optimal
@@ -248,7 +249,7 @@ class BoStepExecutor(OptimizerGenerator):
 
 class BoDftuIterator(BoStepExecutor):
     _logger = BoLoggerGenerator.get_logger("BoDftuIterator")
-    _config = None  # type: Config
+    _config: Config = None
 
     @classmethod
     def init_config(cls, config: Config):
@@ -265,10 +266,10 @@ class BoDftuIterator(BoStepExecutor):
                          self._config.a1, self._config.a2, self._config.delta_mag_weight, self._config.k,
                          self._config.elements)
         self._logger.info("Bayesian Optimization begins.")
-        self._i_step = 0
-        self._obj_current = None
-        self._obj_next = None
-        self._exit_converged = False
+        self._i_step: int = 0
+        self._obj_current: Optional[float] = None
+        self._obj_next: Optional[float] = None
+        self._exit_converged: bool = False
 
     def next(self):
         self._obj_current = self._obj_next

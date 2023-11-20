@@ -28,7 +28,7 @@ class Config:
         self.a1 = bo_params.get('alpha1', 0.25)
         self.a2 = bo_params.get('alpha2', 0.75)
         self.which_u = tuple(bo_params.get('which_u', [1, 1]))
-        self.urange = tuple(bo_params.get('urange', [-10, 10]))
+        self.urange = tuple(bo_params.get('urange', [-10.0, 10.0]))
         self.br = tuple(bo_params.get('br', [5, 5]))
         self.import_kpath = bo_params.get('import_kpath', False)
         self.elements = bo_params.get('elements', ['In', 'As'])

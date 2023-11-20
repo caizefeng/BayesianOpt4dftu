@@ -9,7 +9,7 @@ from BayesOpt4dftu.delta_mag import DeltaMag
 
 
 class DeltaAll:
-    _config = None  # type: Config
+    _config: Config = None
 
     @classmethod
     def init_config(cls, config: Config):

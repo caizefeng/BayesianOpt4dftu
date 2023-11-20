@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 from collections import defaultdict
+from typing import Optional, Dict, Any
 
 import numpy as np
 from ase import Atoms, Atom
@@ -17,7 +18,7 @@ from BayesOpt4dftu.kpath import special_kpoints_dict
 
 class VaspInit:
     _logger = BoLoggerGenerator.get_logger("VaspInit")
-    _config = None  # type: Config
+    _config: Config = None
 
     @classmethod
     def init_config(cls, config: Config):
@@ -30,11 +31,12 @@ class VaspInit:
         else:
             config_path = self._config.tmp_config_path
         with open(config_path, 'r') as f:
-            self._input_dict = json.load(f)
-        self._struct_info = self._input_dict['structure_info']
-        self._general_flags = self._input_dict['general_flags']
-        self._import_kpath = self._config.import_kpath
-        self._atoms = None
+            self._input_dict: Dict[Any, Any] = json.load(f)
+        self._struct_info: Dict[Any, Any] = self._input_dict['structure_info']
+        self._general_flags: Dict[Any, Any] = self._input_dict['general_flags']
+
+        self._atoms: Optional[Atoms] = None
+        self._kpath: Optional[BoBandPath] = None
 
     def init_atoms(self):
         lattice_param = self._struct_info['lattice_param']
@@ -228,7 +230,7 @@ class VaspInit:
 
 class DftExecutor:
     _logger = BoLoggerGenerator.get_logger("DftExecutor")
-    _config = None  # type: Config
+    _config: Config = None
 
     @classmethod
     def init_config(cls, config: Config):
@@ -237,7 +239,7 @@ class DftExecutor:
 
     def __init__(self):
         self._logger.info("DFT calculations begin.")
-        self._dftu_counter = 0
+        self._dftu_counter: int = 0
 
     def calculate(self, method: str):
         # Logging

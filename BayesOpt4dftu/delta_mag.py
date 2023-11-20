@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 
 import numpy as np
 from pymatgen.io.vasp import Outcar
@@ -7,7 +8,7 @@ from BayesOpt4dftu.configuration import Config
 
 
 class DeltaMag:
-    _config = None  # type: Config
+    _config: Config = None
 
     @classmethod
     def init_config(cls, config: Config):
@@ -15,12 +16,13 @@ class DeltaMag:
             cls._config = config
 
     def __init__(self):
-        self._outcar_with_mag = {'dftu': os.path.join(self._config.combined_path_dict['dftu']['scf'], 'OUTCAR'),
-                                 'hse': os.path.join(self._config.combined_path_dict['hse']['band'], 'OUTCAR'),
-                                 'gw': os.path.join(self._config.combined_path_dict['gw']['scf'], 'OUTCAR')
-                                 }
-        self._noncollinear = DeltaMag.read_lnoncollinear(self._outcar_with_mag[self._config.baseline])
-        self._delta_mag = 0.0
+        self._outcar_with_mag: Dict[str, str] = {
+            'dftu': os.path.join(self._config.combined_path_dict['dftu']['scf'], 'OUTCAR'),
+            'hse': os.path.join(self._config.combined_path_dict['hse']['band'], 'OUTCAR'),
+            'gw': os.path.join(self._config.combined_path_dict['gw']['scf'], 'OUTCAR')
+            }
+        self._noncollinear: bool = DeltaMag.read_lnoncollinear(self._outcar_with_mag[self._config.baseline])
+        self._delta_mag: float = 0.0
 
     def get_delta_mag(self):
         return self._delta_mag
