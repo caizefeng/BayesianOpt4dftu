@@ -74,23 +74,17 @@ Before running the program, configure the `input.json` file. It contains:
         - Examples: `"alpha1": 0.25` and `"alpha2": 0.75`
 
     - **`delta_mag_weight`**:
-        - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. Note: A `delta_mag_weight` of 0 will exclude Δmagnetization from the loss function.
+        - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `delta_mag_weight` of 0 will exclude Δmagnetization from the loss function.
         - Example: `"delta_mag_weight": 0.1`
 
     - **`threshold`**:
-        - Description: Specifies the accuracy at which you'd like to stop the BO process. Note: A `threshold` of 0 will disable convergence assessment.
+        - Description: Specifies the accuracy at which you'd like to stop the BO process. A `threshold` of 0 will disable convergence assessment.
         - Example: `"threshold": 0.0001`
 
     - **`urange`**:
-        - Description: Defines the U parameter range for optimization. Note: Defining different U ranges for separate
-          elements is unsupported.
+        - Description: Defines the U parameter range for optimization. The unit is eV. Note: Defining different U ranges for separate
+          elements is unsupported. 
         - Example: `"urange": [-10, 10]`
-
-    - **`import_kpath`**:
-        - Description: Provides an external list of high-symmetry k-points if some special k coordinates aren't
-          available in
-          the ASE library.
-        - Example: `"import_kpath": false`
 
     - **`elements`**:
         - Description: Lists the elements in your system. This is used for plotting the BO results. Note: If it's a
@@ -199,8 +193,15 @@ Before running the program, configure the `input.json` file. It contains:
       coupling is not included in your calculation, it is just an integer while otherwise it is a (3,) array of each
       element defines the initial moment of corresponding direction. If the initial moment is 0, it has to be set to a
       small number to avoid conflict in the ASE.
+    - **`kgrid_hse`** and **`kgrid_pbe`**:
+        - Description: Set the self-consistent k-point grid for HSE and PBE+U calculations, respectively.
+        - Example: `"kgrid_pbe": [7, 7, 7]` specifies a 7x7x7 k-point grid for PBE+U calculation.
+    - **`num_kpts`** and **`kpath`**:
+        - Description: Define the non-self-consistent (non-SC) k-point path for band structure calculations.
+        - Example: `"num_kpts": 50` sets the number of k-points per path segment to 50;
+                    
 
-- **`general_flags`**: Includes general flags required in the VASP calculation.
+- **`general_flags`**: Includes general INCAR flags required in the VASP calculation.
 - **`scf`**: Flags required particularly in SCF calculation.
 - **`band`**: Flags required particularly in band structure calculation.
 - **`pbe`**: Flags required when using PBE as exchange-correlation functional.
