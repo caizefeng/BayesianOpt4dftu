@@ -83,7 +83,7 @@ class DeltaBand:
             else:
                 raise ValueError("Unsupported baseline calculation: only 'hse' or 'gw' are accepted")
 
-            self._delta_band = self.weight_delta_band_1d(n, shifted_baseline, shifted_dftu)
+            self._delta_band = self.scale_delta_band(n, shifted_baseline, shifted_dftu)
 
         elif ispin_dftu == 2:
             band_dftu_up = Band(
@@ -135,8 +135,8 @@ class DeltaBand:
             else:
                 raise ValueError("Unsupported baseline calculation: only 'hse' or 'gw' are accepted")
 
-            delta_band_up = self.weight_delta_band_1d(n_up, shifted_baseline_up, shifted_dftu_up)
-            delta_band_down = self.weight_delta_band_1d(n_down, shifted_baseline_down, shifted_dftu_down)
+            delta_band_up = self.scale_delta_band(n_up, shifted_baseline_up, shifted_dftu_up)
+            delta_band_down = self.scale_delta_band(n_down, shifted_baseline_down, shifted_dftu_down)
             self._delta_band = np.mean([delta_band_up, delta_band_down])
 
         else:
@@ -151,9 +151,8 @@ class DeltaBand:
         if self._first_time_run and self._config.line_mode_kpath:
             self._num_slices, self._num_kpts_each_slice = wave_vectors.shape
             self._slice_length = wave_vectors[:, -1] - wave_vectors[:, 0]
-            # TODO: high-symmetry point: 1, only weighting intermediate points
             max_length = np.max(self._slice_length)
-            self._slice_weight = self._slice_length / max_length  # normalize so that the mean equals 0
+            self._slice_weight = self._slice_length / max_length  # normalize so that the maximum weight equals 1
 
         eigenvalues = b.eigenvalues
 
@@ -166,14 +165,31 @@ class DeltaBand:
         else:
             return eigenvalues
 
-    def weight_delta_band_1d(self, n_bands, shifted_baseline, shifted_dftu):
+    def scale_delta_band(self, n_bands, shifted_baseline, shifted_dftu):
         """
-        Weight Δband(k) based on each k-path slice's length (i.e. density), and calculate RMSE
+        Calculate RMSE between two set of bands.
+        Weight Δband(k) based on each k-path slice's length (i.e. density), needed only when type(num_kpts) = int.
         """
         unweighted_delta_band_k = (1 / n_bands) * sum((shifted_baseline - shifted_dftu) ** 2)
-        weighted_delta_band_k_2d = (unweighted_delta_band_k.reshape(-1, self._num_kpts_each_slice)
-                                    * self._slice_weight[:, np.newaxis])
-        return sum(weighted_delta_band_k_2d.flatten()) ** (1 / 2)
+
+        if self._config.line_mode_kpath:
+            weighted_delta_band_k_2d = unweighted_delta_band_k.reshape(-1, self._num_kpts_each_slice).copy()
+            weighted_delta_band_k_2d[:, 1:-1] *= self._slice_weight[:, np.newaxis]
+
+            # Trim duplicated high symmetry points, @formatter:off
+            weighted_delta_band_k = np.delete(
+                weighted_delta_band_k_2d,
+                np.s_[
+                    self._num_kpts_each_slice - 1:
+                    self._num_slices * self._num_kpts_each_slice - 1:
+                    self._num_kpts_each_slice
+                ]
+            )  # @formatter:on
+            delta_band_k = weighted_delta_band_k
+        else:
+            delta_band_k = unweighted_delta_band_k
+
+        return sum(delta_band_k) ** (1 / 2)
 
     def locate_and_shift_bands(self, eigenvalues):
         band_mean = eigenvalues.mean(axis=1)
