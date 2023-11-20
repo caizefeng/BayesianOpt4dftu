@@ -81,7 +81,7 @@ class DeltaBand:
                 eigenvalues_gw = self.access_eigen_gw(self._config.combined_path_dict['gw']['band'], ispin=ispin_dftu)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_gw)
             else:
-                raise ValueError('Unsupported baseline calculation.')
+                raise ValueError("Unsupported baseline calculation: only 'hse' or 'gw' are accepted")
 
             self._delta_band = self.weight_delta_band_1d(n, shifted_baseline, shifted_dftu)
 
@@ -133,7 +133,7 @@ class DeltaBand:
                 shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_gw_up)
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_gw_down)
             else:
-                raise ValueError('Unsupported baseline calculation.')
+                raise ValueError("Unsupported baseline calculation: only 'hse' or 'gw' are accepted")
 
             delta_band_up = self.weight_delta_band_1d(n_up, shifted_baseline_up, shifted_dftu_up)
             delta_band_down = self.weight_delta_band_1d(n_down, shifted_baseline_down, shifted_dftu_down)

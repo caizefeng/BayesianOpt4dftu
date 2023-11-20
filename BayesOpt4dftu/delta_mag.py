@@ -30,11 +30,11 @@ class DeltaMag:
     def compute_delta_mag(self, component='all', mode='total'):
 
         # Does not matter if collinear
-        assert component in ['x', 'y', 'z', 'all'], 'Unsupported magnetization component!'
+        assert component in ['x', 'y', 'z', 'all'], 'Unsupported magnetization component.'
         axis_map = dict(zip(['x', 'y', 'z', 'all'], [-1, 0, 1, 2]))
         axis = axis_map[component]
 
-        assert mode in ['orbit', 'total'], 'Unsupported magnetization mode!'
+        assert mode in ['orbit', 'total'], 'Unsupported magnetization mode.'
 
         outcar_dftu = Outcar(self._outcar_with_mag['dftu'])
         outcar_baseline = Outcar(self._outcar_with_mag[self._config.baseline])
