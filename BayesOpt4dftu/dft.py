@@ -132,6 +132,13 @@ class VaspInit:
         else:
             print("LDAU not set in the provided JSON data.")
 
+    def run_vasp(self, working_directory):
+        original_directory = os.getcwd()
+        os.chdir(working_directory)
+        errorcode = subprocess.call(f"{self._config.vasp_run_command} > {self._config.out_file_name}", shell=True)
+        os.chdir(original_directory)
+        return errorcode
+
     @staticmethod
     def modify_poscar_direct(path='./'):
         with open(path + '/POSCAR', 'r') as f:
@@ -140,13 +147,6 @@ class VaspInit:
 
         with open(path + '/POSCAR', 'w') as d:
             d.writelines(poscar)
-
-    @staticmethod
-    def remove_old_eigenvalues(method):
-        eigenvalues_file = os.path.join(VaspInit._config.combined_path_dict[method]['band'],
-                                        VaspInit._config.eigen_cache_file_name)
-        if os.path.isfile(eigenvalues_file):
-            os.remove(eigenvalues_file)
 
     @deprecated
     def corner_case_kpath(self, kptset):
@@ -164,8 +164,8 @@ class VaspInit:
             incar_scf.write_file(directory + '/INCAR')
 
 
-class DftExecutor:
-    _logger = BoLoggerGenerator.get_logger("DftExecutor")
+class DftManager:
+    _logger = BoLoggerGenerator.get_logger("DftManager")
     _config: Config = None
 
     @classmethod
@@ -175,19 +175,19 @@ class DftExecutor:
 
     def __init__(self):
         self._logger.info("DFT calculations begin.")
-        self._dftu_counter: int = 0
+        self._dftu_task_counter: int = 0
 
-    def calculate(self, method: str):
+    def run_task(self, method: str):
         # Logging
         if not self._config.dry_run:
             if method == 'hse':
                 self._logger.info("Baseline hybrid DFT calculation begins.")
-            elif method == 'dftu' and self._dftu_counter == 0:
+            elif method == 'dftu' and self._dftu_task_counter == 0:
                 self._logger.info("Consecutive DFT+U calculations begin.")
 
         if not self._config.dry_run:
             if method == 'dftu':
-                self._dftu_counter += 1
+                self._dftu_task_counter += 1
 
         calc = VaspInit()
         calc.init_atoms()
@@ -196,13 +196,12 @@ class DftExecutor:
         # Recursive directory creation; it won't raise an error if the directory already exists
         os.makedirs(self._config.combined_path_dict[method]['scf'], exist_ok=True)
         os.makedirs(self._config.combined_path_dict[method]['band'], exist_ok=True)
-        VaspInit.remove_old_eigenvalues(method)
+        DftManager.remove_old_eigenvalues(method)
 
         if method == 'dftu':
             calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe')
             calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'pbe')
         elif method == 'hse':
-
             # `scf` dir of `hse` is only used to generate IBZKPT
             calc.generate_input(self._config.combined_path_dict[method]['scf'], 'scf', 'pbe')
 
@@ -213,10 +212,7 @@ class DftExecutor:
             return
 
         # Calc in `scf` dir
-        os.chdir(self._config.combined_path_dict[method]['scf'])
-        errorcode_scf = subprocess.call('%s > %s' % (self._config.vasp_run_command, self._config.out_file_name),
-                                        shell=True)
-        os.chdir(self._config.abs_root_dir)
+        errorcode_scf = calc.run_vasp(self._config.combined_path_dict[method]['scf'])
 
         # Copy necessary files from `scf` to `band`
         if method == 'dftu':
@@ -230,13 +226,17 @@ class DftExecutor:
             calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'hse')
 
         # Calc in `band` dir
-        os.chdir(self._config.combined_path_dict[method]['band'])
-        errorcode_band = subprocess.call('%s > %s' % (self._config.vasp_run_command, self._config.out_file_name),
-                                         shell=True)
-        os.chdir(self._config.abs_root_dir)
+        errorcode_band = calc.run_vasp(self._config.combined_path_dict[method]['band'])
 
         if method == 'hse':
             self._logger.info("Baseline hybrid DFT calculation finished.")
 
     def finalize(self):
         self._logger.info("All DFT calculations finished.")
+
+    @staticmethod
+    def remove_old_eigenvalues(method):
+        eigenvalues_file = os.path.join(DftManager._config.combined_path_dict[method]['band'],
+                                        DftManager._config.eigen_cache_file_name)
+        if os.path.isfile(eigenvalues_file):
+            os.remove(eigenvalues_file)
