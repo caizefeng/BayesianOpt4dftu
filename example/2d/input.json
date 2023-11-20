@@ -23,8 +23,8 @@
         "delta_mag_weight": 0.0,
         "threshold": 0.0001,
         "urange": [
-            -10,
-            10
+            -10.0,
+            10.0
         ],
         "elements": [
             "In",
@@ -109,7 +109,8 @@
         "ncore": 3,
         "bmix": 3,
         "amin": 0.01,
-        "lorbit": 11
+        "lorbit": 11,
+        "lmaxmix": 4
     },
     "scf": {
         "icharg": 2,
@@ -135,8 +136,8 @@
                 "U": -5.69482,
                 "J": 0
             }
-        },
-        "lmaxmix": 4
+        }
+
     },
     "hse": {
         "istart": 0,
