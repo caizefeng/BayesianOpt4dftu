@@ -290,8 +290,12 @@ class BoDftuIterator(BoStepExecutor):
             json.dump(data, f, indent=4)
 
     def converge(self):
-        is_converged = (self._config.threshold != 0
-                        and abs(self._obj_next - self._obj_current) <= self._config.threshold)
+        if self._obj_current is not None:  # Can't be the 1st step
+            is_converged = (self._config.threshold != 0
+                            and abs(self._obj_next - self._obj_current) <= self._config.threshold)
+        else:
+            is_converged = False
+
         if is_converged:
             self._logger.info(f"Convergence reached at iteration {self._i_step + 1}, exiting.")
             self._exit_converged = True
