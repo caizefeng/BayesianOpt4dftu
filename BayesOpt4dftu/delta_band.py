@@ -148,7 +148,7 @@ class DeltaBand:
         wave_vectors = b._get_k_distance()
 
         # Compute k-space length and corresponding weight of each slice
-        if self._first_time_run:
+        if self._first_time_run and self._config.line_mode_kpath:
             self._num_slices, self._num_kpts_each_slice = wave_vectors.shape
             self._slice_length = wave_vectors[:, -1] - wave_vectors[:, 0]
             # TODO: high-symmetry point: 1, only weighting intermediate points
@@ -220,7 +220,7 @@ class DeltaBand:
         efermi_gw = Outcar(os.path.join(gw_band_dir, 'OUTCAR')).efermi
         win = open(os.path.join(gw_band_dir, 'wannier90.win'), 'r+').readlines()
 
-        nbands = 0  # type: int
+        nbands: int = 0
         for line in win:
             split_line = line.split('\n')[:-1][0]
             if 'num_wann' in split_line:
@@ -233,7 +233,10 @@ class DeltaBand:
 
             eigenvalues = np.array(concatenated_k_e).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
 
-            return self.pad_gw_band(eigenvalues)
+            if self._config.line_mode_kpath:
+                eigenvalues = self.pad_gw_band(eigenvalues)
+
+            return eigenvalues
 
         elif ispin == 2:
             data_up = open(os.path.join(gw_band_dir, 'wannier90.1_band.dat'), 'r+').readlines()
@@ -245,7 +248,11 @@ class DeltaBand:
 
             eigenvalues_up = np.array(concatenated_k_e_up).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
             eigenvalues_down = np.array(concatenated_k_e_down).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
-            return self.pad_gw_band(eigenvalues_up), self.pad_gw_band(eigenvalues_down)
+
+            if self._config.line_mode_kpath:
+                eigenvalues_up, eigenvalues_down = self.pad_gw_band(eigenvalues_up), self.pad_gw_band(eigenvalues_down)
+
+            return eigenvalues_up, eigenvalues_down
 
     def pad_gw_band(self, eigenvalues):
         """

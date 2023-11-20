@@ -8,8 +8,7 @@ from typing import Optional, Dict, Any
 import numpy as np
 from ase import Atoms, Atom
 from ase.calculators.vasp import Vasp
-from ase.dft.kpoints import get_special_points
-from pymatgen.io.vasp import Kpoints, Incar, Poscar
+from pymatgen.io.vasp import Incar, Poscar
 
 from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.io_utils import deprecated
@@ -46,86 +45,20 @@ class VaspInit:
         for atom in self._struct_info['atoms']:
             self._atoms.append(Atom(atom[0], atom[1], magmom=atom[2]))
 
-        return self._atoms
-
-    # def kpt4band(self, method):
-    #     num_kpts = self.struct_info['num_kpts']
-    #     labels = self.struct_info['kpath']
-    #
-    #     if isinstance(num_kpts, list):
-    #         if all(isinstance(elem, int) for elem in num_kpts) and len(num_kpts) == len(labels) - 1:
-    #             return "Variable is a list of integers with the required length"
-    #         else:
-    #             raise ValueError("The number of elements in `num_kpts` should be ONE less than the length of `kpath`!")
-    #     elif isinstance(num_kpts, int):
-    #         num_kpts = [num_kpts] * (len(labels) - 1)
-    #     elif num_kpts == 'auto':
-    #         if self._baseline
-    #             return "Variable is the special string 'auto'"
-    #     else:
-    #         raise TypeError("Unsupported `num_kpts` type")
-    #
-    #     if method == 'pbe':
-    #         self.kpt4pbeband(directory, import_kpath)
-    #     elif method == 'hse':
-    #         self.kpt4hseband(directory, import_kpath)
-
-    def kpt4pbeband(self, path, import_kpath):
-        if import_kpath:
-            special_kpoints = special_kpoints_dict
+    def init_kpath(self):
+        if self._config.auto_kpath:
+            self._kpath = BoBandPath(is_auto=True,
+                                     baseline_path=self._config.combined_path_dict[self._config.baseline]['band'])
         else:
-            special_kpoints = get_special_points(self._atoms.cell)
+            self._kpath = BoBandPath(is_auto=False,
+                                     num_kpoints=self._struct_info['num_kpts'],
+                                     k_labels=self._struct_info['kpath'],
+                                     custom_kpoints=False
+                                     )
+        self._kpath.set_atoms(self._atoms)
+        self._kpath.generate()
 
-        num_kpts = self._struct_info['num_kpts']
-        labels = self._struct_info['kpath']
-        kptset = list()
-        lbs = list()
-        if labels[0] in special_kpoints.keys():
-            kptset.append(special_kpoints[labels[0]])
-            lbs.append(labels[0])
-
-        for i in range(1, len(labels) - 1):
-            if labels[i] in special_kpoints.keys():
-                kptset.append(special_kpoints[labels[i]])
-                lbs.append(labels[i])
-                kptset.append(special_kpoints[labels[i]])
-                lbs.append(labels[i])
-        if labels[-1] in special_kpoints.keys():
-            kptset.append(special_kpoints[labels[-1]])
-            lbs.append(labels[-1])
-
-
-        kpt = Kpoints(comment='band',
-                      kpts=kptset,
-                      num_kpts=num_kpts,
-                      style='Line_mode',
-                      coord_type="Reciprocal",
-                      labels=lbs)
-        kpt.write_file(path + '/KPOINTS')
-
-    def kpt4hseband(self, path, import_kpath):
-        ibz = open(path + '/IBZKPT', 'r')
-        num_kpts = self._struct_info['num_kpts']
-        labels = self._struct_info['kpath']
-        ibzlist = ibz.readlines()
-        ibzlist[1] = str(num_kpts * (len(labels) - 1) + int(ibzlist[1].split('\n')[0])) + '\n'
-        if import_kpath:
-            special_kpoints = special_kpoints_dict
-        else:
-            special_kpoints = get_special_points(self._atoms.cell)
-        for i in range(len(labels) - 1):
-            k_head = special_kpoints[labels[i]]
-            k_tail = special_kpoints[labels[i + 1]]
-            increment = (k_tail - k_head) / (num_kpts - 1)
-            ibzlist.append(' '.join(map(str, k_head)) + ' 0 ' + labels[i] + '\n')
-            for j in range(1, num_kpts - 1):
-                k_next = k_head + increment * j
-                ibzlist.append(' '.join(map(str, k_next)) + ' 0\n')
-            ibzlist.append(' '.join(map(str, k_tail)) + ' 0 ' + labels[i + 1] + '\n')
-        with open(path + '/KPOINTS', 'w') as f:
-            f.writelines(ibzlist)
-
-    def generate_input(self, directory, step, method, import_kpath):
+    def generate_input(self, directory, step, method):
         flags = {}
         flags.update(self._general_flags)
         flags.update(self._input_dict[step])
@@ -140,6 +73,7 @@ class VaspInit:
                         **flags)
             calc.write_input(self._atoms)
             VaspInit.modify_poscar_direct(path=directory)
+
         elif step == 'band':
             flags.update(self._input_dict[method])
             calc = Vasp(self._atoms,
@@ -147,16 +81,14 @@ class VaspInit:
                         gamma=True,
                         setups='recommended',
                         **flags)
-
-            # INCAR POSCAR POTCAR
-            calc.write_input(self._atoms)
+            calc.write_input(self._atoms)  # INCAR POSCAR POTCAR
             VaspInit.modify_poscar_direct(path=directory)
 
             # KPOINTS
             if method == 'pbe':
-                self.kpt4pbeband(directory, import_kpath)
+                self._kpath.write_kpoints(directory)
             elif method == 'hse':
-                self.kpt4hseband(directory, import_kpath)
+                self._kpath.write_kpoints(directory, concat_ibzkpt=True)
 
         # Rewrite LDAU flags to reflect correct numerical precision
         if method == 'pbe':
@@ -259,6 +191,7 @@ class DftExecutor:
 
         calc = VaspInit()
         calc.init_atoms()
+        calc.init_kpath()
 
         # Recursive directory creation; it won't raise an error if the directory already exists
         os.makedirs(self._config.combined_path_dict[method]['scf'], exist_ok=True)

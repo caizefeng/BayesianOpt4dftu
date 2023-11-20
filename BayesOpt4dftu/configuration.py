@@ -81,6 +81,22 @@ class Config:
         self.dftu_only = vasp_env_params.get('dftu_only', False)
         self.get_optimal_band = vasp_env_params.get('get_optimal_band', False)
 
-        os.environ['VASP_PP_PATH'] = self.vasp_pp_path
+        # K-path parameters
+        self.num_kpts = data['structure_info']['num_kpts']
+        if self.baseline == 'gw' and self.num_kpts != "auto":
+            raise ValueError("Baseline GW currently only supports automatic K-path. "
+                             "Ensure 'num_kpts' is set to 'auto'.")
+
+        if isinstance(self.num_kpts, int) and self.num_kpts > 0:
+            self._logger.info("K-path for band manually set.")
+            self.line_mode_kpath = True
+            self.auto_kpath = False
+        elif self.num_kpts == "auto":
+            self._logger.info("K-path for band will be automatically deduced from the baseline calculation.")
+            self._logger.info("Ensure uniform density of sampling points along the path in the baseline calculation.")
+            self.auto_kpath = True
+            self.line_mode_kpath = False
+        else:
+            raise ValueError("Unsupported `num_kpts` type: only positive integers or 'auto' are accepted.")
 
         self._logger.info(f"Configuration loaded from file {self.config_file_name}.")
