@@ -28,7 +28,7 @@ class TempFileManager:
         if os.path.exists(self._config.tmp_u_path):
             os.remove(self._config.tmp_u_path)
 
-        if self._config.delta_mag_weight:
+        if self._config.alpha_mag:
             with open(self._config.tmp_u_path, 'w+') as f:
                 f.write(f"{(' '.join(header))} "
                         f"{self._config.column_names['band_gap']} "

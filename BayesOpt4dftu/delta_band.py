@@ -29,13 +29,16 @@ class DeltaBand:
 
         self._hse_band_path: str = self._config.combined_path_dict['hse']['band']
         self._dftu_band_path: str = self._config.combined_path_dict['dftu']['band']
+        self._gw_band_path: str = self._config.combined_path_dict['gw']['band']
         self._vasprun_hse: str = os.path.join(self._hse_band_path, 'vasprun.xml')
         self._kpoints_hse: str = os.path.join(self._hse_band_path, 'KPOINTS')
         self._vasprun_dftu: str = os.path.join(self._dftu_band_path, 'vasprun.xml')
         self._kpoints_dftu: str = os.path.join(self._dftu_band_path, 'KPOINTS')
 
         self._delta_band: float = 0.0
-        self._first_time_run: bool = True
+        self._auto_kpath = self._config.auto_kpath
+        self._line_mode_kpath = self._config.line_mode_kpath
+        self._is_first_run: bool = True
         self._slice_length: Optional[NDArray] = None
         self._slice_weight: Optional[NDArray] = None
         self._num_slices: int = 0
@@ -47,7 +50,7 @@ class DeltaBand:
     def compute_delta_band(self):
         ispin_dftu, nbands_dftu, nkpts_dftu = DeltaBand.read_ispin_nbands_nkpts(self._vasprun_dftu)
 
-        if self._first_time_run and self._baseline == 'hse':
+        if self._is_first_run and self._baseline == 'hse':
             self.check_hse_compatibility(ispin_dftu, nbands_dftu, nkpts_dftu)
 
         if self._baseline == 'hse':
@@ -57,7 +60,7 @@ class DeltaBand:
 
         if ispin_dftu == 1:
             band_dftu = Band(
-                folder=self._config.combined_path_dict['dftu']['band'],
+                folder=self._dftu_band_path,
                 spin='up',
                 interpolate=self._interpolate,
                 new_n=new_n,
@@ -69,7 +72,7 @@ class DeltaBand:
 
             if self._baseline == 'hse':
                 band_hse = Band(
-                    folder=self._config.combined_path_dict['hse']['band'],
+                    folder=self._hse_band_path,
                     spin='up',
                     interpolate=self._interpolate,
                     new_n=new_n,
@@ -78,7 +81,7 @@ class DeltaBand:
                 eigenvalues_hse = self.access_eigen(band_hse, interpolate=self._interpolate)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_hse)
             elif self._baseline == 'gw':
-                eigenvalues_gw = self.access_eigen_gw(self._config.combined_path_dict['gw']['band'], ispin=ispin_dftu)
+                eigenvalues_gw = self.access_eigen_gw(self._gw_band_path, ispin=ispin_dftu)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_gw)
             else:
                 raise ValueError("Unsupported baseline calculation: only 'hse' or 'gw' are accepted")
@@ -87,14 +90,14 @@ class DeltaBand:
 
         elif ispin_dftu == 2:
             band_dftu_up = Band(
-                folder=self._config.combined_path_dict['dftu']['band'],
+                folder=self._dftu_band_path,
                 spin='up',
                 interpolate=self._interpolate,
                 new_n=new_n,
                 projected=False
             )
             band_dftu_down = Band(
-                folder=self._config.combined_path_dict['dftu']['band'],
+                folder=self._dftu_band_path,
                 spin='down',
                 interpolate=self._interpolate,
                 new_n=new_n,
@@ -109,14 +112,14 @@ class DeltaBand:
 
             if self._baseline == 'hse':
                 band_hse_up = Band(
-                    folder=self._config.combined_path_dict['hse']['band'],
+                    folder=self._hse_band_path,
                     spin='up',
                     interpolate=self._interpolate,
                     new_n=new_n,
                     projected=False,
                 )
                 band_hse_down = Band(
-                    folder=self._config.combined_path_dict['hse']['band'],
+                    folder=self._hse_band_path,
                     spin='down',
                     interpolate=self._interpolate,
                     new_n=new_n,
@@ -129,7 +132,7 @@ class DeltaBand:
 
             elif self._baseline == 'gw':
                 eigenvalues_gw_up, eigenvalues_gw_down = self.access_eigen_gw(
-                    self._config.combined_path_dict['gw']['band'], ispin=ispin_dftu)
+                    self._gw_band_path, ispin=ispin_dftu)
                 shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_gw_up)
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_gw_down)
             else:
@@ -142,7 +145,7 @@ class DeltaBand:
         else:
             raise ValueError('Incorrect ISPIN value.')
 
-        self._first_time_run = False
+        self._is_first_run = False
 
     def access_eigen(self, b: Band, interpolate=False):
         wave_vectors = b._get_k_distance()
@@ -172,7 +175,7 @@ class DeltaBand:
         """
         unweighted_delta_band_k = (1 / n_bands) * sum((shifted_baseline - shifted_dftu) ** 2)
 
-        if self._config.line_mode_kpath:
+        if self._line_mode_kpath:
             weighted_delta_band_k_2d = unweighted_delta_band_k.reshape(-1, self._num_kpts_each_slice).copy()
             weighted_delta_band_k_2d[:, 1:-1] *= self._slice_weight[:, np.newaxis]
 
@@ -249,7 +252,7 @@ class DeltaBand:
 
             eigenvalues = np.array(concatenated_k_e).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
 
-            if self._config.line_mode_kpath:
+            if self._line_mode_kpath:
                 eigenvalues = self.pad_gw_band(eigenvalues)
 
             return eigenvalues
@@ -265,7 +268,7 @@ class DeltaBand:
             eigenvalues_up = np.array(concatenated_k_e_up).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
             eigenvalues_down = np.array(concatenated_k_e_down).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
 
-            if self._config.line_mode_kpath:
+            if self._line_mode_kpath:
                 eigenvalues_up, eigenvalues_down = self.pad_gw_band(eigenvalues_up), self.pad_gw_band(eigenvalues_down)
 
             return eigenvalues_up, eigenvalues_down

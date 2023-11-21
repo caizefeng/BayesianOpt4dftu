@@ -17,9 +17,9 @@
             4
         ],
         "kappa": 5,
-        "alpha1": 0.5,
-        "alpha2": 0.5,
-        "delta_mag_weight": 0.0,
+        "alpha_gap": 0.5,
+        "alpha_band": 0.5,
+        "alpha_mag": 0.0,
         "threshold": 0.0001,
         "urange": [
             -10.0,
@@ -118,8 +118,8 @@
         "ldau_luj": {
             "Ge": {
                 "L": 1,
-                "U": -2.325276,
-                "J": 0
+                "U": 0.0,
+                "J": 0.0
             }
         }
     },

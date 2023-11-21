@@ -65,17 +65,17 @@ Before running the program, configure the `input.json` file. It contains:
         - Example: `"br": [5, 5]`
 
     - **`kappa`**:
-        - Description: Controls the exploration and exploitation when the acquisition function samples the next points.
-          Exploitation 0 <--kappa --> 10 Exploration
+        - Description: Controls the balance between exploration and exploitation when the acquisition function samples the next points.
+          A lower value (nearing 0) indicates a preference for exploitation. A higher value (approaching 10) indicates a preference for exploration.
         - Example: `"kappa": 5`
 
-    - **`alpha1`** and **`alpha2`**:
+    - **`alpha_gap`** and **`alpha_band`**:
         - Description: Specifies the weight coefficients of Δgap and Δband respectively.
-        - Examples: `"alpha1": 0.25` and `"alpha2": 0.75`
+        - Examples: `"alpha_gap": 0.25` and `"alpha_band": 0.75`
 
-    - **`delta_mag_weight`**:
-        - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `delta_mag_weight` of 0 will exclude Δmagnetization from the loss function.
-        - Example: `"delta_mag_weight": 0.1`
+    - **`alpha_mag`**:
+        - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `alpha_mag` of 0 will exclude Δmagnetization from the loss function.
+        - Example: `"alpha_mag": 0.1`
 
     - **`threshold`**:
         - Description: Specifies the accuracy at which you'd like to stop the BO process. A `threshold` of 0 will disable convergence assessment.

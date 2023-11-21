@@ -25,8 +25,13 @@ class Config:
         # BO parameters
         bo_params = data['bo']
         self.k = float(bo_params.get('kappa', 5))
-        self.a1 = bo_params.get('alpha1', 0.25)
-        self.a2 = bo_params.get('alpha2', 0.75)
+        self.alpha_gap = bo_params.get('alpha_gap', 0.25)
+        self.alpha_band = bo_params.get('alpha_band', 0.75)
+        self.alpha_mag = bo_params.get('alpha_mag', 0.0)
+        if self.alpha_mag:
+            self.include_mag = True
+        else:
+            self.include_mag = False
         self.which_u = tuple(bo_params.get('which_u', [1, 1]))
         self.urange = tuple(bo_params.get('urange', [-10.0, 10.0]))
         self.br = tuple(bo_params.get('br', [5, 5]))
@@ -34,11 +39,6 @@ class Config:
         self.iteration = bo_params.get('iteration', 50)
         self.threshold = bo_params.get('threshold', 0.0001)
         self.baseline = bo_params.get('baseline', 'hse')
-        self.delta_mag_weight = bo_params.get('delta_mag_weight', 0.0)
-        if self.delta_mag_weight:
-            self.include_mag = True
-        else:
-            self.include_mag = False
 
         # File paths
         self.root_dir = './'
@@ -53,7 +53,7 @@ class Config:
 
         self.config_file_name = config_file
         self.tmp_config_file_name = f"{config_file.split('.')[0]}_tmp.{config_file.split('.')[1]}"
-        self.u_file_name = f"u_kappa_{self.k}_a1_{self.a1}_a2_{self.a2}.txt"
+        self.u_file_name = f"u_kappa_{self.k}_ag_{self.alpha_gap}_ab_{self.alpha_band}_am_{self.alpha_mag}.txt"
         self.tmp_u_file_name = 'u_tmp.txt'
 
         self.config_path = os.path.join(self.root_dir, self.config_file_name)

@@ -14,13 +14,13 @@ from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
 class OptimizerGenerator:
-    def __init__(self, utxt_path, column_names, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa):
+    def __init__(self, utxt_path, column_names, opt_u_index, u_range, alpha_gap, alpha_band, alpha_mag, kappa):
         self._utility_function = UtilityFunction(kind="ucb", kappa=kappa, xi=0)
         self._opt_u_index: List[float] = opt_u_index
         self._u_range: List[float] = u_range
-        self._a1: float = a1
-        self._a2: float = a2
-        self._delta_mag_weight: float = delta_mag_weight
+        self._alpha_gap: float = alpha_gap
+        self._alpha_band: float = alpha_band
+        self._alpha_mag: float = alpha_mag
         self._kappa: float = kappa
 
         self._utxt_path: str = utxt_path
@@ -28,8 +28,8 @@ class OptimizerGenerator:
         self._n_obs: Optional[int] = None
         self._data: Optional[pd.DataFrame] = None
 
-    def loss(self, delta_gap=0.0, delta_band=0.0, delta_mag=0.0, alpha_1=0.5, alpha_2=0.5, delta_mag_weight=0.0):
-        return -alpha_1 * delta_gap ** 2 - alpha_2 * delta_band ** 2 - delta_mag_weight * delta_mag ** 2
+    def loss(self, delta_gap=0.0, delta_band=0.0, delta_mag=0.0, alpha_gap=0.5, alpha_band=0.5, alpha_mag=0.0):
+        return -alpha_gap * delta_gap ** 2 - alpha_band * delta_band ** 2 - alpha_mag * delta_mag ** 2
 
     def set_bounds(self):
         # Set up the indices of variables that are going to be optimized.
@@ -68,18 +68,18 @@ class OptimizerGenerator:
             for (value, variable) in zip(values, v_strings):
                 params[variable] = value
 
-            if self._delta_mag_weight:
+            if self._alpha_mag:
                 target = self.loss(delta_gap=self._data.iloc[i][self._column_names['delta_gap']],
                                    delta_band=self._data.iloc[i][self._column_names['delta_band']],
                                    delta_mag=self._data.iloc[i][self._column_names['delta_mag']],
-                                   alpha_1=self._a1,
-                                   alpha_2=self._a2,
-                                   delta_mag_weight=self._delta_mag_weight)
+                                   alpha_gap=self._alpha_gap,
+                                   alpha_band=self._alpha_band,
+                                   alpha_mag=self._alpha_mag)
             else:
                 target = self.loss(delta_gap=self._data.iloc[i][self._column_names['delta_gap']],
                                    delta_band=self._data.iloc[i][self._column_names['delta_band']],
-                                   alpha_1=self._a1,
-                                   alpha_2=self._a2)
+                                   alpha_gap=self._alpha_gap,
+                                   alpha_band=self._alpha_band)
 
             # Suppress non-unique data point registration messages
             with SuppressPrints():
@@ -102,8 +102,9 @@ class OptimizerGenerator:
 class BoStepExecutor(OptimizerGenerator):
     _logger = BoLoggerGenerator.get_logger("BoStepExecutor")
 
-    def __init__(self, utxt_path, column_names, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa, elements):
-        super().__init__(utxt_path, column_names, opt_u_index, u_range, a1, a2, delta_mag_weight, kappa)
+    def __init__(self, utxt_path, column_names, opt_u_index, u_range, alpha_gap, alpha_band, alpha_mag, kappa,
+                 elements):
+        super().__init__(utxt_path, column_names, opt_u_index, u_range, alpha_gap, alpha_band, alpha_mag, kappa)
         self._elements: List[str] = elements
         self._optimizer: Optional[BayesianOptimization] = None
         self._target: Optional[float] = None
@@ -220,7 +221,8 @@ class BoStepExecutor(OptimizerGenerator):
             axis.legend(loc=4, borderaxespad=0.)
             acq.legend(loc=4, borderaxespad=0.)
 
-            plt.savefig('1D_kappa_%s_a1_%s_a2_%s.png' % (self._kappa, self._a1, self._a2), dpi=400)
+            plt.savefig(f"1D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}.png",
+                        dpi=400)
 
         if dim == 2:
             d = self.predict()
@@ -244,7 +246,8 @@ class BoStepExecutor(OptimizerGenerator):
             axis[1].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
             cbar2 = plt.colorbar(im2, ax=axis[1])
 
-            plt.savefig('2D_kappa_%s_a1_%s_a2_%s.png' % (self._kappa, self._a1, self._a2), dpi=400)
+            plt.savefig(f"2D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}.png",
+                        dpi=400)
 
 
 class BoDftuIterator(BoStepExecutor):
@@ -263,7 +266,7 @@ class BoDftuIterator(BoStepExecutor):
             upath = self._config.tmp_u_path
         super().__init__(upath, self._config.column_names,
                          self._config.which_u, self._config.urange,
-                         self._config.a1, self._config.a2, self._config.delta_mag_weight, self._config.k,
+                         self._config.alpha_gap, self._config.alpha_band, self._config.alpha_mag, self._config.k,
                          self._config.elements)
         self._logger.info("Bayesian Optimization begins.")
         self._i_step: int = 0
