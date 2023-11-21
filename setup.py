@@ -41,7 +41,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Maituo Yu',
-    #    author_email="???",
+    maintainer='Zefeng Cai',
     url='https://github.com/caizefeng/BayesianOpt4dftu',
     license='MIT',
     classifiers=[
