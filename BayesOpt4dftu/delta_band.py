@@ -148,25 +148,26 @@ class DeltaBand:
         self._is_first_run = False
 
     def access_eigen(self, b: Band, interpolate=False):
-        wave_vectors = b._get_k_distance()
-
-        # Compute k-space length and corresponding weight of each slice
-        if self._first_time_run and self._config.line_mode_kpath:
-            self._num_slices, self._num_kpts_each_slice = wave_vectors.shape
-            self._slice_length = wave_vectors[:, -1] - wave_vectors[:, 0]
-            max_length = np.max(self._slice_length)
-            self._slice_weight = self._slice_length / max_length  # normalize so that the maximum weight equals 1
-
         eigenvalues = b.eigenvalues
 
-        if interpolate:
-            _, eigenvalues_interp = b._get_interpolated_data(
-                wave_vectors=wave_vectors,
-                data=eigenvalues
-            )
-            return eigenvalues_interp
-        else:
-            return eigenvalues
+        if not self._auto_kpath:
+            wave_vectors = b._get_k_distance()
+
+            # Compute k-space length and corresponding weight of each slice
+            if self._line_mode_kpath and self._is_first_run:
+                self._num_slices, self._num_kpts_each_slice = wave_vectors.shape
+                self._slice_length = wave_vectors[:, -1] - wave_vectors[:, 0]
+                max_length = np.max(self._slice_length)
+                self._slice_weight = self._slice_length / max_length  # normalize so that the maximum weight equals 1
+
+            if interpolate:
+                _, eigenvalues_interp = b._get_interpolated_data(
+                    wave_vectors=wave_vectors,
+                    data=eigenvalues
+                )
+                return eigenvalues_interp
+
+        return eigenvalues
 
     def scale_delta_band(self, n_bands, shifted_baseline, shifted_dftu):
         """

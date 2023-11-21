@@ -2,6 +2,7 @@ import os
 from typing import Dict
 
 import numpy as np
+from numpy.typing import NDArray
 from pymatgen.io.vasp import Outcar
 
 from BayesOpt4dftu.configuration import Config
@@ -20,7 +21,7 @@ class DeltaMag:
             'dftu': os.path.join(self._config.combined_path_dict['dftu']['scf'], 'OUTCAR'),
             'hse': os.path.join(self._config.combined_path_dict['hse']['band'], 'OUTCAR'),
             'gw': os.path.join(self._config.combined_path_dict['gw']['scf'], 'OUTCAR')
-            }
+        }
         self._noncollinear: bool = DeltaMag.read_lnoncollinear(self._outcar_with_mag[self._config.baseline])
         self._delta_mag: float = 0.0
 
@@ -63,7 +64,7 @@ class DeltaMag:
         return False
 
     @staticmethod
-    def mag2array(mag, noncollinear=True, axis=2, mode='total'):
+    def mag2array(mag, noncollinear=True, axis=2, mode='total') -> NDArray:
         num_ions = len(mag)
 
         orbits = mag[0].keys()

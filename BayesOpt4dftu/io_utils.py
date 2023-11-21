@@ -61,6 +61,14 @@ class SuppressPrints:
         sys.stdout = self._original_stdout
 
 
+def find_and_readlines_first(directory, file_list):
+    for filename in file_list:
+        if os.path.exists(os.path.join(directory, filename)):
+            with open(os.path.join(directory, filename), 'r') as file:
+                return file.readlines()
+    raise FileNotFoundError(f"None of these files ({file_list}) were found.")
+
+
 def deprecated(func):
     def wrapper(*args, **kwargs):
         warnings.warn(f"{func.__name__} is deprecated", DeprecationWarning, stacklevel=2)

@@ -198,7 +198,9 @@ Before running the program, configure the `input.json` file. It contains:
         - Example: `"kgrid_pbe": [7, 7, 7]` specifies a 7x7x7 k-point grid for PBE+U calculation.
     - **`num_kpts`** and **`kpath`**:
         - Description: Define the non-self-consistent (non-SC) k-point path for band structure calculations.
-        - Example: `"num_kpts": 50` sets the number of k-points per path segment to 50;
+          `num_kpts` can be either an integer or a string "auto".
+        - Example: `"num_kpts": 50` sets the number of k-points per path segment to 50. Important: In this mode, contributions to Δband are weighted to achieve an approximately uniform density of sampling along the path.
+         `"num_kpts": "auto"` automatically determines the path and number of k-points based on the HSE or GW baseline calculation.
                     
 
 - **`general_flags`**: Includes general INCAR flags required in the VASP calculation.

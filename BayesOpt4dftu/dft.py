@@ -12,7 +12,7 @@ from pymatgen.io.vasp import Incar, Poscar
 
 from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.io_utils import deprecated
-from BayesOpt4dftu.kpath import BoBandPath
+from BayesOpt4dftu.k_path import BoBandPath
 from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
@@ -36,7 +36,7 @@ class VaspInit:
         self._general_flags: Dict[Any, Any] = self._input_dict['general_flags']
 
         self._atoms: Optional[Atoms] = None
-        self._kpath: Optional[BoBandPath] = None
+        self._k_path: Optional[BoBandPath] = None
 
     def init_atoms(self):
         lattice_param = self._struct_info['lattice_param']
@@ -45,18 +45,18 @@ class VaspInit:
         for atom in self._struct_info['atoms']:
             self._atoms.append(Atom(atom[0], atom[1], magmom=atom[2]))
 
-    def init_kpath(self):
+    def init_k_path(self):
         if self._config.auto_kpath:
-            self._kpath = BoBandPath(is_auto=True,
-                                     baseline_path=self._config.combined_path_dict[self._config.baseline]['band'])
+            self._k_path = BoBandPath(is_auto=True,
+                                      baseline_type=self._config.baseline,
+                                      baseline_path=self._config.combined_path_dict[self._config.baseline]['band'])
         else:
-            self._kpath = BoBandPath(is_auto=False,
-                                     num_kpoints=self._struct_info['num_kpts'],
-                                     k_labels=self._struct_info['kpath'],
-                                     custom_kpoints=False
-                                     )
-        self._kpath.set_atoms(self._atoms)
-        self._kpath.generate()
+            self._k_path = BoBandPath(is_auto=False,
+                                      num_kpoints=self._struct_info['num_kpts'],
+                                      k_labels=self._struct_info['kpath'],
+                                      custom_kpoints=False)
+        self._k_path.set_atoms(self._atoms)
+        self._k_path.generate()
 
     def generate_input(self, directory, step, method):
         flags = {}
@@ -86,9 +86,9 @@ class VaspInit:
 
             # KPOINTS
             if method == 'pbe':
-                self._kpath.write_kpoints(directory)
+                self._k_path.write_kpoints(directory)
             elif method == 'hse':
-                self._kpath.write_kpoints(directory, concat_ibzkpt=True)
+                self._k_path.write_kpoints(directory, concat_ibzkpt=True)
 
         # Rewrite LDAU flags to reflect correct numerical precision
         if method == 'pbe':
@@ -191,7 +191,7 @@ class DftManager:
 
         calc = VaspInit()
         calc.init_atoms()
-        calc.init_kpath()
+        calc.init_k_path()
 
         # Recursive directory creation; it won't raise an error if the directory already exists
         os.makedirs(self._config.combined_path_dict[method]['scf'], exist_ok=True)
