@@ -282,6 +282,8 @@ class BoDftuIterator(BoStepExecutor):
         u_next = list(next_point_to_probe.values())
         self.update_u_config(u_next)
         self._i_step += 1
+        if self._i_step % 25 == 0:
+            self._logger.info(f"Iteration {self._i_step} of Bayesian Optimization loop completed.")
 
     def update_u_config(self, u_new):
         with open(self._config.tmp_config_path, 'r') as f:
