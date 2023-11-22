@@ -93,7 +93,7 @@ class OptimizerGenerator:
     @staticmethod
     def retrieve_optimal(x, mu):
         best_obj = mu.max()
-        best_index = np.where(mu == mu.max())[0][0]
+        best_index = np.where(mu == best_obj)[0][0]
         best_x = x[best_index]
         optimal = (best_x, best_obj)
         return optimal
@@ -110,6 +110,9 @@ class BoStepExecutor(OptimizerGenerator):
         self._target: Optional[float] = None
         self._optimal: Optional[Tuple[Any, Any]] = None
 
+        self._dim: int = 0
+        self._plot_data: Optional[Dict[str, Any]] = None
+
     def get_optimal(self):
         optimal_u, optimal_obj = self._optimal
         self._logger.info(f"Optimal U value: {optimal_u}")
@@ -122,9 +125,9 @@ class BoStepExecutor(OptimizerGenerator):
 
     def predict(self, ratio=1):
         u = list(self._optimizer.res[0]["params"].keys())
-        dim = len(u)
+        self._dim = len(u)
         plot_size = len(self._optimizer.res) * ratio
-        if dim == 1:
+        if self._dim == 1:
             x = np.linspace(self._u_range[0], self._u_range[1], 10000).reshape(-1, 1)
             x_obs = np.array([res["params"][u[0]] for res in self._optimizer.res]).reshape(-1, 1)[:plot_size]
             y_obs = np.array([res["target"] for res in self._optimizer.res])[:plot_size]
@@ -133,20 +136,18 @@ class BoStepExecutor(OptimizerGenerator):
             mu, sigma = self._optimizer._gp.predict(x, return_std=True)
             self._optimal = OptimizerGenerator.retrieve_optimal(x, mu)
 
-            data4plot = {'mu': mu,
-                         'sigma': sigma,
-                         'x': x,
-                         'x_obs': x_obs,
-                         'y_obs': y_obs}
+            self._plot_data = {'mu': mu,
+                               'sigma': sigma,
+                               'x': x,
+                               'x_obs': x_obs,
+                               'y_obs': y_obs}
 
-            return data4plot
-
-        if dim == 2:
+        elif self._dim == 2:
             x = y = np.linspace(self._u_range[0], self._u_range[1], 300)
             x_mesh, y_mesh = np.meshgrid(x, y)
             x = x_mesh.ravel()
             y = y_mesh.ravel()
-            x_mesh = np.vstack([x, y]).T
+            x_mesh = np.column_stack((x, y))
 
             x1_obs = np.array([[res["params"][u[0]]] for res in self._optimizer.res])[:plot_size]
             x2_obs = np.array([[res["params"][u[1]]] for res in self._optimizer.res])[:plot_size]
@@ -154,100 +155,101 @@ class BoStepExecutor(OptimizerGenerator):
             obs = np.column_stack((x1_obs, x2_obs))
 
             self._optimizer._gp.fit(obs, y_obs)
-            mu, sigma = self._optimizer._gp.predict(x_mesh, eval)
+            mu, sigma = self._optimizer._gp.predict(x_mesh, return_std=True)
             self._optimal = OptimizerGenerator.retrieve_optimal(x_mesh, mu)
 
-            data4plot = {'mu': mu,
-                         'sigma': sigma,
-                         'obs': obs,
-                         'x1_obs': x1_obs,
-                         'x2_obs': x2_obs,
-                         'x': x,
-                         'y': y,
-                         'X': x_mesh}
+            self._plot_data = {'mu': mu,
+                               'sigma': sigma,
+                               'obs': obs,
+                               'x1_obs': x1_obs,
+                               'x2_obs': x2_obs,
+                               'x': x,
+                               'y': y,
+                               'X': x_mesh}
 
-            return data4plot
+        elif self._dim == 3:
+            # Create a grid for each dimension
+            grid_points = [np.linspace(self._u_range[0], self._u_range[1], 300) for _ in range(self._dim)]
+            mesh = np.meshgrid(*grid_points)
+            flat_mesh = [m.ravel() for m in mesh]
+            x_mesh = np.column_stack(flat_mesh)
 
-        if dim == 3:
-            x = y = z = np.linspace(self._u_range[0], self._u_range[1], 100)
-            x_mesh, y_mesh, z_mesh = np.meshgrid(x, y, z)
-            x = x_mesh.ravel()
-            y = y_mesh.ravel()
-            z = z_mesh.ravel()
-            x_mesh = np.vstack([x, y, z]).T
-
-            x1_obs = np.array([[res["params"][u[0]]] for res in self._optimizer.res])[:plot_size]
-            x2_obs = np.array([[res["params"][u[1]]] for res in self._optimizer.res])[:plot_size]
-            x3_obs = np.array([[res["params"][u[2]]] for res in self._optimizer.res])[:plot_size]
+            # Observations for each dimension
+            x_obs = [np.array([[res["params"][u[d]]] for res in self._optimizer.res])[:plot_size] for d in
+                     range(self._dim)]
             y_obs = np.array([res["target"] for res in self._optimizer.res])[:plot_size]
-            obs = np.column_stack((x1_obs, x2_obs, x3_obs))
+            obs = np.column_stack(x_obs)
 
+            # Fit and predict
             self._optimizer._gp.fit(obs, y_obs)
-            mu, sigma = self._optimizer._gp.predict(x_mesh, eval)
+            mu, sigma = self._optimizer._gp.predict(x_mesh, return_std=True)
             self._optimal = OptimizerGenerator.retrieve_optimal(x_mesh, mu)
 
-            return mu, sigma
+            # Plot data is set to None for dimensions >= 3
+            self._plot_data = None
 
-    def plot(self, ratio=1):
-        u = list(self._optimizer.res[0]["params"].keys())
-        dim = len(u)
-        plot_size = len(self._optimizer.res) * ratio
-        opt_eles = [ele for i, ele in enumerate(self._elements) if self._opt_u_index[i]]
+    def plot(self):
+        self.predict()
 
-        if dim == 1:
-            d = self.predict()
-            fig = plt.figure()
-            gs = gridspec.GridSpec(2, 1)
-            axis = plt.subplot(gs[0])
-            acq = plt.subplot(gs[1])
-            axis.plot(d['x_obs'].flatten(), d['y_obs'], 'D', markersize=8, label=u'Observations', color='r')
-            axis.plot(d['x'], d['mu'], '--', color='k', label='Prediction')
-            axis.fill(np.concatenate([d['x'], d['x'][::-1]]),
-                      np.concatenate([d['mu'] - 1.9600 * d['sigma'], (d['mu'] + 1.9600 * d['sigma'])[::-1]]),
-                      alpha=.6, fc='c', ec='None', label='95% confidence interval')
+        if self._plot_data is not None:
+            opt_eles = [ele for i, ele in enumerate(self._elements) if self._opt_u_index[i]]
+            d = self._plot_data
+            if self._dim == 1:
+                fig = plt.figure()
+                gs = gridspec.GridSpec(2, 1)
+                axis = plt.subplot(gs[0])
+                acq = plt.subplot(gs[1])
+                axis.plot()
+                axis.plot()
+                axis.fill(np.concatenate([d['x'], d['x'][::-1]]),
+                          np.concatenate([d['mu'] - 1.9600 * d['sigma'], (d['mu'] + 1.9600 * d['sigma'])[::-1]]),
+                          alpha=.6, fc='c', ec='None', label='95% confidence interval')
 
-            axis.set_xlim(self._u_range)
-            axis.set_ylim((None, None))
-            axis.set_ylabel('f(x)')
+                axis.set_xlim(self._u_range)
+                axis.set_ylim((None, None))
+                axis.set_ylabel('f(x)')
 
-            utility = self._utility_function.utility(d['x'], self._optimizer._gp, 0)
-            acq.plot(d['x'], utility, label='Acquisition Function', color='purple')
-            acq.plot(d['x'][np.argmax(utility)], np.max(utility), '*', markersize=15,
-                     label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
-            acq.set_xlim(self._u_range)
-            acq.set_ylim((np.min(utility) - 0.5, np.max(utility) + 0.5))
-            acq.set_ylabel('Acquisition')
-            acq.set_xlabel('U (eV)')
-            axis.legend(loc=4, borderaxespad=0.)
-            acq.legend(loc=4, borderaxespad=0.)
+                utility = self._utility_function.utility(d['x'], self._optimizer._gp, 0)
+                acq.plot()
+                acq.plot()
+                acq.set_xlim(self._u_range)
+                acq.set_ylim((np.min(utility) - 0.5, np.max(utility) + 0.5))
+                acq.set_ylabel('Acquisition')
+                acq.set_xlabel('U (eV)')
+                axis.legend(loc=4, borderaxespad=0.)
+                acq.legend(loc=4, borderaxespad=0.)
 
-            plt.savefig(f"1D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}.png",
-                        dpi=400)
+                plt.savefig(
+                    f"1D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}.png",
+                    dpi=400)
 
-        if dim == 2:
-            d = self.predict()
-            fig, axis = plt.subplots(1, 2, figsize=(15, 5))
-            plt.subplots_adjust(wspace=0.2)
+            elif self._dim == 2:
+                fig, axis = plt.subplots(1, 2, figsize=(15, 5))
+                plt.subplots_adjust(wspace=0.2)
 
-            axis[0].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
-            axis[0].set_title('Gaussian Process Predicted Mean', pad=10)
-            im1 = axis[0].hexbin(d['x'], d['y'], C=d['mu'], cmap=cm.jet, bins=None)
-            axis[0].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
-            axis[0].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
-            axis[0].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
-            cbar1 = plt.colorbar(im1, ax=axis[0])
+                axis[0].plot()
+                axis[0].set_title('Gaussian Process Predicted Mean', pad=10)
+                im1 = axis[0].hexbin(d['x'], d['y'], C=d['mu'], cmap=cm.jet, bins=None)
+                axis[0].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
+                axis[0].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
+                axis[0].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
+                cbar1 = plt.colorbar(im1, ax=axis[0])
 
-            utility = self._utility_function.utility(d['X'], self._optimizer._gp, self._optimizer.max)
-            axis[1].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
-            axis[1].set_title('Acquisition Function', pad=10)
-            axis[1].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
-            axis[1].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
-            im2 = axis[1].hexbin(d['x'], d['y'], C=utility, cmap=cm.jet, bins=None)
-            axis[1].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
-            cbar2 = plt.colorbar(im2, ax=axis[1])
+                utility = self._utility_function.utility(d['X'], self._optimizer._gp, self._optimizer.max)
+                axis[1].plot()
+                axis[1].set_title('Acquisition Function', pad=10)
+                axis[1].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
+                axis[1].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
+                im2 = axis[1].hexbin(d['x'], d['y'], C=utility, cmap=cm.jet, bins=None)
+                axis[1].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
+                cbar2 = plt.colorbar(im2, ax=axis[1])
 
-            plt.savefig(f"2D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}.png",
-                        dpi=400)
+                plt.savefig(
+                    f"2D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}.png",
+                    dpi=400)
+
+        else:
+            self._logger.info("Figure generation omitted for U value optimization with dimensions >= 3.")
 
 
 class BoDftuIterator(BoStepExecutor):
