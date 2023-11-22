@@ -74,7 +74,7 @@ class Config:
         self.vasp_run_command = vasp_env_params.get('vasp_run_command', 'srun -n 54 vasp_ncl')
         # Define the name for output file.
         self.out_file_name = vasp_env_params.get('out_file_name', 'vasp.out')
-        # Define the path direct to the VASP pseudopotential.
+        # Define the path directing to the VASP pseudopotential.
         self.vasp_pp_path = vasp_env_params.get('vasp_pp_path', '/home/maituoy/pp_vasp/')
         os.environ['VASP_PP_PATH'] = self.vasp_pp_path
         self.dry_run = vasp_env_params.get('dry_run', False)

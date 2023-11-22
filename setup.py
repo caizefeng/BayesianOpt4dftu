@@ -37,7 +37,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='BayesOpt4dftu',
     version=get_version("BayesOpt4dftu/__init__.py"),
-    description='Bayesian optimization toolkit for DFT+U',
+    description='Bayesian Optimization toolkit for DFT+U',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Maituo Yu',

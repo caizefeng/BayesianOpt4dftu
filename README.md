@@ -1,6 +1,6 @@
 # BayesianOpt4dftu #
 
-Determine the Hubbard U parameters in DFT+U using the Bayesian optimization approach.
+Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization approach.
 
 ## Prerequisites
 

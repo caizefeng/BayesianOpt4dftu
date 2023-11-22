@@ -20,7 +20,7 @@ class TempFileManager:
         # Temporary config
         shutil.copyfile(self._config.config_path, self._config.tmp_config_path)
 
-        # Temporary Bayesian optimization log
+        # Temporary Bayesian Optimization log
         header = []
         for i, u in enumerate(self._config.which_u):
             header.append(f"U_ele_{str(i + 1)}")
