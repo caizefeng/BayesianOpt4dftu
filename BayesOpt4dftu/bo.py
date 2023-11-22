@@ -199,8 +199,8 @@ class BoStepExecutor(OptimizerGenerator):
                 gs = gridspec.GridSpec(2, 1)
                 axis = plt.subplot(gs[0])
                 acq = plt.subplot(gs[1])
-                axis.plot()
-                axis.plot()
+                axis.plot(d['x_obs'].flatten(), d['y_obs'], 'D', markersize=8, label=u'Observations', color='r')
+                axis.plot(d['x'], d['mu'], '--', color='k', label='Prediction')
                 axis.fill(np.concatenate([d['x'], d['x'][::-1]]),
                           np.concatenate([d['mu'] - 1.9600 * d['sigma'], (d['mu'] + 1.9600 * d['sigma'])[::-1]]),
                           alpha=.6, fc='c', ec='None', label='95% confidence interval')
@@ -210,8 +210,9 @@ class BoStepExecutor(OptimizerGenerator):
                 axis.set_ylabel('f(x)')
 
                 utility = self._utility_function.utility(d['x'], self._optimizer._gp, 0)
-                acq.plot()
-                acq.plot()
+                acq.plot(d['x'], utility, label='Acquisition Function', color='purple')
+                acq.plot(d['x'][np.argmax(utility)], np.max(utility), '*', markersize=15,
+                         label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
                 acq.set_xlim(self._u_range)
                 acq.set_ylim((np.min(utility) - 0.5, np.max(utility) + 0.5))
                 acq.set_ylabel('Acquisition')
@@ -227,7 +228,7 @@ class BoStepExecutor(OptimizerGenerator):
                 fig, axis = plt.subplots(1, 2, figsize=(15, 5))
                 plt.subplots_adjust(wspace=0.2)
 
-                axis[0].plot()
+                axis[0].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
                 axis[0].set_title('Gaussian Process Predicted Mean', pad=10)
                 im1 = axis[0].hexbin(d['x'], d['y'], C=d['mu'], cmap=cm.jet, bins=None)
                 axis[0].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
@@ -236,7 +237,7 @@ class BoStepExecutor(OptimizerGenerator):
                 cbar1 = plt.colorbar(im1, ax=axis[0])
 
                 utility = self._utility_function.utility(d['X'], self._optimizer._gp, self._optimizer.max)
-                axis[1].plot()
+                axis[1].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
                 axis[1].set_title('Acquisition Function', pad=10)
                 axis[1].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
                 axis[1].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
