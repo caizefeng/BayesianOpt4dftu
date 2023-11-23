@@ -256,7 +256,7 @@ Upon reaching the threshold or maximum iterations, two output files are generate
 
 - 1-D Bayesian Optimization for Ge
 
-  <img src="https://github.com/maituoy/BayesianOpt4dftu/blob/master/example/1d/1D_kappa_5_a1_0.5_a2_0.5.png" width="600" height="400">
+  <img src="https://github.com/maituoy/BayesianOpt4dftu/blob/master/example/1d/1D_kappa_5.0_ag_0.5_ab_0.5_am_0.0.png" width="600" height="400">
 
 - 2-D Bayesian Optimization for InAs
 

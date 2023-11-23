@@ -1,0 +1,83 @@
+ running on   54 total cores
+ distrk:  each k-point on    9 cores,    6 groups
+ distr:  one band on    3 cores,    3 groups
+ using from now: INCAR     
+ vasp.5.4.4.18Apr17-6-g9f103f2a35 (build Sep 01 2023 15:42:28) complex          
+  
+ POSCAR found type information on POSCAR  Ge
+ POSCAR found :  1 types and       2 ions
+ scaLAPACK will be used
+
+ ----------------------------------------------------------------------------- 
+|                                                                             |
+|           W    W    AA    RRRRR   N    N  II  N    N   GGGG   !!!           |
+|           W    W   A  A   R    R  NN   N  II  NN   N  G    G  !!!           |
+|           W    W  A    A  R    R  N N  N  II  N N  N  G       !!!           |
+|           W WW W  AAAAAA  RRRRR   N  N N  II  N  N N  G  GGG   !            |
+|           WW  WW  A    A  R   R   N   NN  II  N   NN  G    G                |
+|           W    W  A    A  R    R  N    N  II  N    N   GGGG   !!!           |
+|                                                                             |
+|      For optimal performance we recommend to set                            |
+|        NCORE= 4 - approx SQRT( number of cores)                             |
+|      NCORE specifies how many cores store one orbital (NPAR=cpu/NCORE).     |
+|      This setting can  greatly improve the performance of VASP for DFT.     |
+|      The default,   NCORE=1            might be grossly inefficient         |
+|      on modern multi-core architectures or massively parallel machines.     |
+|      Do your own testing !!!!                                               |
+|      Unfortunately you need to use the default for GW and RPA calculations. |
+|      (for HF NCORE is supported but not extensively tested yet)             |
+|                                                                             |
+ ----------------------------------------------------------------------------- 
+
+
+ ----------------------------------------------------------------------------- 
+|                                                                             |
+|           W    W    AA    RRRRR   N    N  II  N    N   GGGG   !!!           |
+|           W    W   A  A   R    R  NN   N  II  NN   N  G    G  !!!           |
+|           W    W  A    A  R    R  N N  N  II  N N  N  G       !!!           |
+|           W WW W  AAAAAA  RRRRR   N  N N  II  N  N N  G  GGG   !            |
+|           WW  WW  A    A  R   R   N   NN  II  N   NN  G    G                |
+|           W    W  A    A  R    R  N    N  II  N    N   GGGG   !!!           |
+|                                                                             |
+|      You have enabled k-point parallelism (KPAR>1).                         |
+|      This developmental code was originally  written by Paul Kent at ORNL,  |
+|      and carefully double checked in Vienna.                                |
+|      GW as well as linear response parallelism added by Martijn Marsman     |
+|      and Georg Kresse.                                                      |
+|      Carefully verify results versus KPAR=1.                                |
+|      Report problems to Paul Kent and Vienna.                               |
+|                                                                             |
+ ----------------------------------------------------------------------------- 
+
+ LDA part: xc-table for Pade appr. of Perdew
+ POSCAR, INCAR and KPOINTS ok, starting setup
+ FFT: planning ...
+ WAVECAR not read
+ entering main loop
+       N       E                     dE             d eps       ncg     rms          ort
+DAV:   1     0.252204663144E+03    0.25220E+03   -0.11253E+04   864   0.169E+03
+DAV:   2     0.537519652087E+02   -0.19845E+03   -0.18049E+03   864   0.353E+02
+DAV:   3    -0.546405182869E+00   -0.54298E+02   -0.52460E+02   864   0.840E+01
+DAV:   4    -0.823934112370E+01   -0.76929E+01   -0.75895E+01   864   0.351E+01
+DAV:   5    -0.899628407373E+01   -0.75694E+00   -0.75517E+00   864   0.116E+01
+ gam= 0.000 g(H,U,f)=  0.118E+00 0.164E-01 0.118E-05 ort(H,U,f) = 0.000E+00 0.000E+00 0.000E+00
+SDA:   6    -0.888451120188E+01    0.11177E+00   -0.53657E-01   864   0.134E+00 0.000E+00
+ gam= 0.382 g(H,U,f)=  0.294E-01 0.101E-01 0.257E-06 ort(H,U,f) = 0.561E-01 0.128E-01 0.534E-06
+DMP:   7    -0.892511563889E+01   -0.40604E-01   -0.26346E-01   864   0.395E-01 0.689E-01
+ gam= 0.382 g(H,U,f)=  0.439E-02 0.499E-02 0.227E-07 ort(H,U,f) = 0.880E-02 0.104E-01 0.131E-06
+DMP:   8    -0.894212554317E+01   -0.17010E-01   -0.66958E-02   864   0.939E-02 0.192E-01
+ gam= 0.382 g(H,U,f)=  0.251E-02 0.209E-02 0.831E-08 ort(H,U,f) =-0.228E-02 0.579E-02 0.425E-07
+DMP:   9    -0.894616803674E+01   -0.40425E-02   -0.23762E-02   864   0.460E-02 0.351E-02
+ gam= 0.382 g(H,U,f)=  0.164E-02 0.762E-03 0.934E-08 ort(H,U,f) =-0.342E-03 0.259E-02 0.336E-07
+DMP:  10    -0.894780196800E+01   -0.16339E-02   -0.13040E-02   864   0.240E-02 0.225E-02
+ gam= 0.382 g(H,U,f)=  0.674E-03 0.247E-03 0.461E-08 ort(H,U,f) = 0.528E-03 0.992E-03 0.203E-07
+DMP:  11    -0.894875458140E+01   -0.95261E-03   -0.60071E-03   864   0.921E-03 0.152E-02
+ gam= 0.382 g(H,U,f)=  0.178E-03 0.738E-04 0.216E-08 ort(H,U,f) = 0.251E-03 0.333E-03 0.620E-08
+DMP:  12    -0.894916919512E+01   -0.41461E-03   -0.19009E-03   864   0.252E-03 0.584E-03
+ gam= 0.382 g(H,U,f)=  0.583E-04 0.217E-04 0.243E-08 ort(H,U,f) = 0.297E-04 0.100E-03 0.198E-08
+DMP:  13    -0.894928858784E+01   -0.11939E-03   -0.51881E-04   864   0.800E-04 0.130E-03
+ gam= 0.382 g(H,U,f)=  0.285E-04 0.623E-05 0.152E-08 ort(H,U,f) = 0.463E-05 0.276E-04 0.193E-08
+DMP:  14    -0.894932017543E+01   -0.31588E-04   -0.18831E-04   864   0.348E-04 0.323E-04
+ final diagonalization
+   1 F= -.89493202E+01 E0= -.89493013E+01  d E =-.377816E-04  mag=    -0.0000
+ writing wavefunctions
