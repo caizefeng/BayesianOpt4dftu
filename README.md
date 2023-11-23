@@ -24,7 +24,7 @@ Before running the program, configure the `input.json` file. It contains:
         - Example: `"vasp_run_command": "mpirun -np 64 /path/to/vasp/executable"`
 
     - **`out_file_name`**:
-        - Description: The name of the VASP output file.
+        - Description: The desired name of the VASP output file.
         - Example: `"out_file_name": "slurm-vasp.out"`
 
     - **`vasp_pp_path`**:
@@ -33,28 +33,29 @@ Before running the program, configure the `input.json` file. It contains:
         - Example: `"vasp_pp_path": "/path/to/pseudopotentials/"`
 
     - **`dry_run`**:
-        - Description: Specifies if the run is a dry run (generate files only without actual computation) or not.
+        - Description: Specifies if the run is a dry run (generating files only without actual computation) or not.
         - Example: `"dry_run": false`
 
     - **`dftu_only`**:
-        - Description: Indicates whether only DFT+U is performed. If set to true, completed calculations should be placed in the `<working dir>/<baseline>` directory.
+        - Description: Indicates whether only DFT+U is performed. If set to true, completed baseline calculations should be placed in the `<working dir>/<baseline>` directory.
         - Example: `"dftu_only": false`
           
     - **`get_optimal_band`**:
-        - Description: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization.
+        - Description: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization. 
+          The results of this calculation will be appended to the end of the log file.
         - Example: `"get_optimal_band": false`
 
 
 - **`bo`**: Settings specific to Bayesian Optimization.
 
     - **`baseline`**:
-        - Description: Specifies the baseline calculation for Bayesian Optimization. Note: Currently, only "hse" and "gw" are supported. "gw" must be executed separately, meaning it is only supported when `"dftu_only": true`.
+        - Description: Specifies the baseline calculation for Bayesian Optimization. Currently, only `"hse"` and `"gw"` are supported. `"gw"` must be executed separately, meaning it is only supported when `"dftu_only": true`.
         - Example: `"baseline": "hse"`
 
     - **`which_u`**:
-        - Description: Defines which element you'd like to optimize the U for.
-        - Format: For a unary substance, it has to be `(1,)`. For
-          compounds with over 2 elements, you can set each element to 0 or 1 to switch off/on the optimization for that
+        - Description: Specifies which element you'd like to optimize the U for.
+        - Format: For a unary substance, it has to be `[1,]`. For
+          compounds with over 2 elements, you can set each element to `0` or `1` to switch off/on the optimization for that
           element.
         - Example: For InAs, when optimizing for both In and As, it should be set as `"which_u": [1, 1]`
 
@@ -66,7 +67,7 @@ Before running the program, configure the `input.json` file. It contains:
 
     - **`kappa`**:
         - Description: Controls the balance between exploration and exploitation when the acquisition function samples the next points.
-          A lower value (nearing 0) indicates a preference for exploitation. A higher value (approaching 10) indicates a preference for exploration.
+          A lower value (nearing `0`) indicates a preference for exploitation. A higher value (approaching `10`) indicates a preference for exploration.
         - Example: `"kappa": 5`
 
     - **`alpha_gap`** and **`alpha_band`**:
@@ -74,22 +75,22 @@ Before running the program, configure the `input.json` file. It contains:
         - Examples: `"alpha_gap": 0.25` and `"alpha_band": 0.75`
 
     - **`alpha_mag`**:
-        - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `alpha_mag` of 0 will exclude Δmagnetization from the loss function.
+        - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `alpha_mag` of `0` will exclude Δmagnetization from the loss function.
         - Example: `"alpha_mag": 0.1`
 
     - **`threshold`**:
-        - Description: Specifies the accuracy at which you'd like to stop the BO process. A `threshold` of 0 will disable convergence assessment.
+        - Description: Specifies the accuracy at which you'd like to stop the BO process. 
+          A `threshold` of `0` will disable convergence assessment, meaning the BO will exit only upon reaching the maximum steps.
         - Example: `"threshold": 0.0001`
 
     - **`urange`**:
-        - Description: Defines the U parameter range for optimization. The unit is eV. Note: Defining different U ranges for separate
-          elements is unsupported. 
+        - Description: Specifies the U parameter range for optimization. The unit is eV. Defining different U ranges for separate
+          elements is currently unsupported. 
         - Example: `"urange": [-10, 10]`
 
     - **`elements`**:
-        - Description: Lists the elements in your system. This is used for plotting the BO results. Note: If it's a
-          unary
-          substance, it has to be [ele,].
+        - Description: Lists the elements in your system. This is used for plotting the BO results. If it's a
+          unary substance, it has to be `["ele",]`.
         - Example: `"elements": ["In", "As"]`
 
     - **`iteration`**:
@@ -100,7 +101,7 @@ Before running the program, configure the `input.json` file. It contains:
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,
   etc.) of the target materials.
   #### Example based on InAs:
-    - **`lattice_param`** and **`cell`**: define the 2nd to 5th rows in your POSCAR.
+    - **`lattice_param`** and **`cell`**: Specify the 2nd to 5th rows in your POSCAR.
         ```json
         {
             "lattice_param": 6.0584,
@@ -124,7 +125,7 @@ Before running the program, configure the `input.json` file. It contains:
         }
         ```
 
-    - **`atoms`**: Define the atomic positions of each atom in your system and the initial magnetic moment if there is
+    - **`atoms`**: Specify the atomic positions of each atom in your system and the initial magnetic moment if there is
       any.
 
       With SOC:
@@ -188,26 +189,26 @@ Before running the program, configure the `input.json` file. It contains:
         }
         ```
 
-      So in this case, there are two atoms in the primitive cell which are located at the position `(0,0,0)`
-      and `(0.75, 0.75, 0.75)`. The second term under each atom defines the initial magnetic moment. If the spin-orbit
-      coupling is not included in your calculation, it is just an integer while otherwise it is a (3,) array of each
-      element defines the initial moment of corresponding direction. If the initial moment is 0, it has to be set to a
-      small number to avoid conflict in the ASE.
+      So in this case, there are two atoms in the primitive cell at positions `(0,0,0)`
+      and `(0.75, 0.75, 0.75)`. The second term under each atom specifies the initial magnetic moment. 
+      For calculations excluding non-collinear magnetization or spin-orbit coupling, this is an integer; 
+      otherwise, it's a (3,) array, with each element representing the initial moment in a specific direction. 
+      To avoid omission error in the ASE package, the initial moment should be set to a small, non-zero number if it is intended to be 0.
     - **`kgrid_hse`** and **`kgrid_pbe`**:
         - Description: Set the self-consistent k-point grid for HSE and PBE+U calculations, respectively.
         - Example: `"kgrid_pbe": [7, 7, 7]` specifies a 7x7x7 k-point grid for PBE+U calculation.
     - **`num_kpts`** and **`kpath`**:
-        - Description: Define the non-self-consistent (non-SC) k-point path for band structure calculations.
+        - Description: Specify the non-self-consistent (non-SC) k-point path for band structure calculations.
           `num_kpts` can be either an integer or a string "auto".
         - Example: `"num_kpts": 50` sets the number of k-points per path segment to 50. Important: In this mode, contributions to Δband are weighted to achieve an approximately uniform density of sampling along the path.
          `"num_kpts": "auto"` automatically determines the path and number of k-points based on the HSE or GW baseline calculation.
                     
 
-- **`general_flags`**: Includes general INCAR flags required in the VASP calculation.
-- **`scf`**: Flags required particularly in SCF calculation.
-- **`band`**: Flags required particularly in band structure calculation.
-- **`pbe`**: Flags required when using PBE as exchange-correlation functional.
-- **`hse`**: Flags required when using HSE06 as exchange-correlation functional.
+- **`general_flags`**: General INCAR flags required in all VASP calculation.
+- **`scf`**: Flags that will only be added in SCF calculation.
+- **`band`**: Flags that will only be added in band structure calculation.
+- **`pbe`**: Flags that will only be added when using PBE as exchange-correlation functional.
+- **`hse`**: Flags that will only be added when using HSE06 as exchange-correlation functional.
   
     Check ASE VASP calculator documentation for additional flag keys.
 
@@ -245,16 +246,22 @@ bo_dftu
 
 Upon reaching the threshold or maximum iterations, two output files are generated:
 
-- `u_xx.txt`: Contains U parameters, band gap, and Δband for each step.
-- `1D_xxx.png` or `2D_xxx.png`: Visual representation of the Gaussian process predicted mean and acquisition function.
+- `u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetizaion (optional) for each step.
+- `1D_xxx.png` or `2D_xxx.png`: Provides a visual representation of the Gaussian process predicted mean and acquisition function. 
+   This file will be omitted if you set three or more optimizable U parameters.
 
 **Example of BO plots**:
 
+- 1-D Bayesian Optimization for Ge
+
   <img src="https://github.com/maituoy/BayesianOpt4dftu/blob/master/example/1d/1D_kappa_5_a1_0.5_a2_0.5.png" width="600" height="400">
+
+- 2-D Bayesian Optimization for InAs
 
   <img src="https://github.com/maituoy/BayesianOpt4dftu/blob/master/example/2d/2D_kappa_5_a1_0.25_a2_0.75.png" width="800" height="270">
 
-Optimal U values are deduced from the predicted mean space interpolation. Alternatively, use the `u.txt` file to select U values with the highest objective value.
+Optimal U values are automatically deduced from the predicted mean space interpolation. 
+Alternatively, you can use the `u_xxx.txt` file to select U values with the highest objective value.
 
 ## Citation
 
