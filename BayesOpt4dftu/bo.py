@@ -169,7 +169,7 @@ class BoStepExecutor(OptimizerGenerator):
 
         elif self._dim >= 3:
             # Create a grid for each dimension
-            grid_points = [np.linspace(self._u_range[0], self._u_range[1], 1000) for _ in range(self._dim)]
+            grid_points = [np.linspace(self._u_range[0], self._u_range[1], 300) for _ in range(self._dim)]
             mesh = np.meshgrid(*grid_points)
             flat_mesh = [m.ravel() for m in mesh]
             x_mesh = np.column_stack(flat_mesh)
