@@ -11,8 +11,11 @@ INCAR created by Atomic Simulation Environment
  GGA = PE
  PREC = N
  PRECFOCK = Fast
- ICHARG = 11
+ ICHARG = 2
+ ISTART = 0
  KPAR = 6
+ LMAXMIX = 4
+ LORBIT = 11
  NBANDS = 21
  NCORE = 3
  SAXIS = 0.0000 0.0000 1.0000 

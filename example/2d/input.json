@@ -5,7 +5,7 @@
         "vasp_pp_path": "/trace/home/zefengc/soft/Pseudopotentials/",
         "dry_run": false,
         "dftu_only": false,
-        "get_optimal_band": false
+        "get_optimal_band": true
     },
     "bo": {
         "baseline": "hse",
@@ -30,7 +30,7 @@
             "In",
             "As"
         ],
-        "iteration": 50
+        "iteration": 200
     },
     "structure_info": {
         "lattice_param": 6.0584,

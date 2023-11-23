@@ -256,11 +256,11 @@ Upon reaching the threshold or maximum iterations, two output files are generate
 
 - 1-D Bayesian Optimization for Ge
 
-  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/example/1d/1D_kappa_5.0_ag_0.5_ab_0.5_am_0.0.png" width="600" height="400">
+  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/example/1d/1D_kappa_5.0_ag_0.5_ab_0.5_am_0.0.png" width="600" height="450">
 
 - 2-D Bayesian Optimization for InAs
 
-  <img src="https://github.com/maituoy/BayesianOpt4dftu/blob/master/example/2d/2D_kappa_5_a1_0.25_a2_0.75.png" width="800" height="270">
+  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/example/2d/2D_kappa_5.0_ag_0.25_ab_0.75_am_0.0.png" width="800" height="270">
 
 Optimal U values are automatically deduced from the predicted mean space interpolation. 
 Alternatively, you can use the `u_xxx.txt` file to select U values with the highest objective value.
