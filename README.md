@@ -73,7 +73,7 @@ Before running the program, configure the `input.json` file. It contains:
         - Example: `"kappa": 5`
 
     - **`alpha_gap`** and **`alpha_band`**:
-        - Description: Specifies the weight coefficients of Δgap and Δband respectively.
+        - Description: Specifies the weight coefficients of Δgap and Δband respectively. So far, there are no constraints on the choice of `alpha`s, meaning they can be arbitrary positive real numbers.
         - Examples: `"alpha_gap": 0.25` and `"alpha_band": 0.75`
 
     - **`alpha_mag`**:
@@ -202,7 +202,7 @@ Before running the program, configure the `input.json` file. It contains:
     - **`num_kpts`** and **`kpath`**:
         - Description: Specify the non-self-consistent (non-SC) k-point path for band structure calculations.
           `num_kpts` can be either an integer or a string "auto".
-        - Example: `"num_kpts": 50` sets the number of k-points per path segment to 50. Important: In this mode, contributions to Δband are weighted to achieve an approximately uniform density of sampling along the path.
+        - Example: `"num_kpts": 50` and `"kpath": "G X W L G K"` set the k-point path to `G-X-W-L-G-K` and the number of k-points per path segment to 50. Important: In this mode, contributions to Δband are weighted to achieve an approximately uniform density of sampling along the path.
          `"num_kpts": "auto"` automatically determines the path and number of k-points based on the HSE or GW baseline calculation.
                     
 
