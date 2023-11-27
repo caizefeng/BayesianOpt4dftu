@@ -130,7 +130,7 @@ Before running the program, configure the `input.json` file. It contains:
     - **`atoms`**: Specify the atomic positions of each atom in your system and the initial magnetic moment if there is
       any.
 
-      With SOC:
+      Non-collinear magnetism:
         ```json
         {
             "atoms": [
@@ -164,8 +164,7 @@ Before running the program, configure the `input.json` file. It contains:
         }
         ```
 
-      Without SOC:
-
+      Collinear magnetism:
         ```json
         {
             "atoms": [
