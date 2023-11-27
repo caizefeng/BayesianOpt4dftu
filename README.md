@@ -217,9 +217,7 @@ Before running the program, configure the `input.json` file. It contains:
 ## Installation
 
 ```shell
-git clone https://github.com/caizefeng/BayesianOpt4dftu.git
-cd BayesOpt4dftu
-pip install .
+pip install git+https://github.com/caizefeng/BayesianOpt4dftu.git
 ```
 
 ## Usage
