@@ -113,11 +113,11 @@ class BoBandPath:
 
     def from_baseline_gw(self):
         kpt_contents = find_and_readlines_first(self._baseline_path,
-                                                ['wannier90.band.kpt',
+                                                ['wannier90_band.kpt',
                                                  'wannier90.1_band.kpt',
                                                  'wannier90.2_band.kpt'])
         labelinfo_contents = find_and_readlines_first(self._baseline_path,
-                                                      ['wannier90.band.labelinfo.dat',
+                                                      ['wannier90_band.labelinfo.dat',
                                                        'wannier90.1_band.labelinfo.dat',
                                                        'wannier90.2_band.labelinfo.dat'])
         # Processing the kpt file to extract k-points and weights

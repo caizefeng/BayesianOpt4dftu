@@ -247,7 +247,7 @@ class DeltaBand:
                 nbands = int(split_line.split('=')[-1].strip())
 
         if ispin == 1:
-            data = open(os.path.join(gw_band_dir, 'wannier90.band.dat'), 'r+').readlines()
+            data = open(os.path.join(gw_band_dir, 'wannier90_band.dat'), 'r+').readlines()
             concatenated_k_e = []
             DeltaBand.clean_wannier_data(data, concatenated_k_e)
 
