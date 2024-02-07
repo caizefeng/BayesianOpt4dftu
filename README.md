@@ -102,7 +102,7 @@ Before running the program, configure the `input.json` file. It contains:
 
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,
   etc.) of the target materials.
-  #### Example based on InAs:
+  #### An example of InAs:
     - **`lattice_param`** and **`cell`**: Specify the 2nd to 5th rows in your POSCAR.
         ```json
         {
@@ -221,14 +221,14 @@ pip install git+https://github.com/caizefeng/BayesianOpt4dftu.git
 
 ## Usage
 
-For demonstration, consider the `/example/2d`:
+For demonstration, consider the `/examples/2d`:
 
 ### 1. Edit `input.json`
 
 Change to the example directory:
 
 ```shell
-cd example/2d
+cd examples/2d
 ```
 
 Update the `input.json` file with the appropriate `vasp_env` settings based on your system specifications and the location of your VASP binary.
@@ -253,11 +253,11 @@ Upon reaching the threshold or maximum iterations, two output files are generate
 
 - 1-D Bayesian Optimization for Ge
 
-  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/example/1d/1D_kappa_5.0_ag_0.5_ab_0.5_am_0.0.png" width="600" height="450">
+  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/examples/1d/1D_kappa_5.0_ag_0.5_ab_0.5_am_0.0.png" width="600" height="450">
 
 - 2-D Bayesian Optimization for InAs
 
-  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/example/2d/2D_kappa_5.0_ag_0.25_ab_0.75_am_0.0.png" width="800" height="270">
+  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/examples/2d/2D_kappa_5.0_ag_0.25_ab_0.75_am_0.0.png" width="800" height="270">
 
 Optimal U values are automatically deduced from the predicted mean space interpolation. 
 Alternatively, you can use the `u_xxx.txt` file to select U values with the highest objective value.
