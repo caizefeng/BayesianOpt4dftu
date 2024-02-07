@@ -50,6 +50,7 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     install_requires=get_required_packages(),
+    python_requires='>=3.8',
     package_data={
         'BayesOpt4dftu': ['schemas/*.json']
     },
