@@ -6,7 +6,7 @@ Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization appr
 
 ## Prerequisites
 
-1. Python 3.6 or higher
+1. Python 3.8 or higher
 2. NumPy
 3. Pandas
 4. ASE (https://wiki.fysik.dtu.dk/ase)
