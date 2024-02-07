@@ -50,6 +50,9 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     install_requires=get_required_packages(),
+    package_data={
+        'BayesOpt4dftu': ['schemas/*.json']
+    },
     entry_points={
         'console_scripts': [
             'bo_dftu=BayesOpt4dftu.main:main',

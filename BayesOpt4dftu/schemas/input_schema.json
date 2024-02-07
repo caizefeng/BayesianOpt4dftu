@@ -1,0 +1,280 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "vasp_env": {
+            "type": "object",
+            "properties": {
+                "vasp_run_command": {
+                    "type": "string"
+                },
+                "out_file_name": {
+                    "type": "string"
+                },
+                "vasp_pp_path": {
+                    "type": "string"
+                },
+                "dry_run": {
+                    "type": "boolean"
+                },
+                "dftu_only": {
+                    "type": "boolean"
+                },
+                "get_optimal_band": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "vasp_run_command",
+                "vasp_pp_path"
+            ],
+            "additionalProperties": false
+        },
+        "bo": {
+            "type": "object",
+            "properties": {
+                "baseline": {
+                    "type": "string",
+                    "enum": [
+                        "hse",
+                        "gw"
+                    ]
+                },
+                "which_u": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    }
+                },
+                "br": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "kappa": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "alpha_gap": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "alpha_band": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "alpha_mag": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "threshold": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "urange": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "elements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "iteration": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "required": [
+                "baseline",
+                "which_u",
+                "br",
+                "kappa",
+                "alpha_gap",
+                "alpha_band",
+                "alpha_mag",
+                "threshold",
+                "urange",
+                "elements",
+                "iteration"
+            ],
+            "additionalProperties": false
+        },
+        "structure_info": {
+            "type": "object",
+            "properties": {
+                "lattice_param": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "cell": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 3,
+                        "maxItems": 3
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "atoms": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                },
+                                "minItems": 3,
+                                "maxItems": 3
+                            },
+                            {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number"
+                                        },
+                                        "minItems": 3,
+                                        "maxItems": 3
+                                    },
+                                    {
+                                        "type": "number"
+                                    }
+                                ]
+                            }
+                        ],
+                        "minItems": 3,
+                        "maxItems": 3
+                    }
+                },
+                "kgrid_hse": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "kgrid_pbe": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "num_kpts": {
+                    "anyOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        {
+                            "type": "string",
+                            "enum": [
+                                "auto"
+                            ]
+                        }
+                    ]
+                },
+                "kpath": {
+                    "type": "string",
+                    "pattern": "^(.+?)(\\s+.+?)+$"
+                }
+            },
+            "required": [
+                "lattice_param",
+                "cell",
+                "atoms",
+                "kgrid_pbe",
+                "num_kpts"
+            ],
+            "additionalProperties": false
+        },
+        "general_flags": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "scf": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "band": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "pbe": {
+            "type": "object",
+            "properties": {
+                "ldau": {
+                    "const": true
+                },
+                "ldau_luj": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "L": {
+                                "type": "integer"
+                            },
+                            "U": {
+                                "type": "number"
+                            },
+                            "J": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "L",
+                            "U",
+                            "J"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "ldau",
+                "ldau_luj"
+            ],
+            "additionalProperties": true
+        },
+        "hse": {
+            "type": "object",
+            "additionalProperties": true
+        }
+    },
+    "required": [
+        "vasp_env",
+        "bo",
+        "structure_info",
+        "general_flags",
+        "scf",
+        "band",
+        "pbe",
+        "hse"
+    ],
+    "additionalProperties": false
+}

@@ -1,6 +1,8 @@
 import json
 import os
 
+import importlib.resources as resources
+from jsonschema import validate, ValidationError
 from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
@@ -11,16 +13,37 @@ class Config:
     def __new__(cls, config_file="input.json"):
         if not cls._instance:
             cls._instance = super().__new__(cls)
+
+            cls._instance._logger.info("Loading configuration ...")
+
+            with resources.path("BayesOpt4dftu.schemas", "input_schema.json") as schema_path:
+                cls._instance._validate_config(config_file, str(schema_path))
+
             cls._instance._load_config(config_file)
 
         return cls._instance
 
+    def _validate_config(self, config_file, schema_file):
+        # Load the schema
+        with open(schema_file, 'r') as schema_f:
+            schema = json.load(schema_f)
+
+        # Load the data to be validated
+        with open(config_file, 'r') as config_f:
+            data = json.load(config_f)
+
+        # Perform validation
+        try:
+            validate(instance=data, schema=schema)
+            self._logger.info("JSON schema validation successful.")
+        except ValidationError as e:
+            self._logger.error(f"JSON schema validation failed: {e.message}")
+            raise
+
     def _load_config(self, config_file):
 
-        self._logger.info(f"Loading configuration ...")
-
-        with open(config_file, "r") as f:
-            data = json.load(f)
+        with open(config_file, "r") as config_f:
+            data = json.load(config_f)
 
         # BO parameters
         bo_params = data['bo']
