@@ -15,6 +15,12 @@ Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization appr
 7. Vienna Ab initio Simulation Package (VASP) (https://www.vasp.at)
 8. Vaspvis (https://github.com/DerekDardzinski/vaspvis)
 
+## Installation
+
+```shell
+pip install git+https://github.com/caizefeng/BayesianOpt4dftu.git
+```
+
 ## Configuration
 
 Before running the program, configure the `input.json` file. It contains:
@@ -212,12 +218,6 @@ Before running the program, configure the `input.json` file. It contains:
 - **`hse`**: Flags that will only be added when using HSE06 as exchange-correlation functional.
   
     Check ASE VASP calculator documentation for additional flag keys.
-
-## Installation
-
-```shell
-pip install git+https://github.com/caizefeng/BayesianOpt4dftu.git
-```
 
 ## Usage
 
