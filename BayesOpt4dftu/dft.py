@@ -207,7 +207,12 @@ class DftManager:
 
         # Exit if dry run
         if self._config.dry_run:
-            self._logger.info("No actual calculations were performed. Review the input files before proceeding.")
+            if method == 'hse':
+                self._logger.info(
+                    "No actual hybrid DFT calculation was performed. Review the input files before proceeding.")
+            elif method == 'dftu':
+                self._logger.info(
+                    "No actual DFT+U calculations were performed. Review the input files before proceeding.")
             self._logger.info("Dry run executed.")
             return
 
