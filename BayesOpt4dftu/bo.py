@@ -1,10 +1,13 @@
 import json
 from typing import Optional, Tuple, Any, List, Dict
 
+import matplotlib
 import numpy as np
 import pandas as pd
 from bayes_opt import BayesianOptimization
 from bayes_opt import UtilityFunction
+
+matplotlib.use('Agg')  # Set the backend to 'Agg' for non-interactive plotting  # noqa
 from matplotlib import cm, gridspec
 from matplotlib import pyplot as plt
 
