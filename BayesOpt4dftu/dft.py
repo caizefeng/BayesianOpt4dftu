@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import subprocess
 from collections import defaultdict
 from typing import Optional, Dict, Any
@@ -11,7 +10,7 @@ from ase.calculators.vasp import Vasp
 from pymatgen.io.vasp import Incar, Poscar
 
 from BayesOpt4dftu.configuration import Config
-from BayesOpt4dftu.io_utils import deprecated, recreate_path_as_directory
+from BayesOpt4dftu.io_utils import deprecated, recreate_path_as_directory, error_handled_copy
 from BayesOpt4dftu.k_path import BoBandPath
 from BayesOpt4dftu.logging import BoLoggerGenerator
 
@@ -221,13 +220,21 @@ class DftManager:
 
         # Copy necessary files from `scf` to `band`
         if method == 'dftu':
-            for filename in ["CHG", "CHGCAR", "WAVECAR"]:
-                shutil.copy(os.path.join(self._config.combined_path_dict[method]['scf'], filename),
-                            self._config.combined_path_dict[method]['band'])
+            for filename in ["CHGCAR", "WAVECAR"]:
+                error_cause = ("the prior self-consistent calculation needed for PBE+U band calculations "
+                               "has failed or been interrupted")
+                error_handled_copy(os.path.join(self._config.combined_path_dict[method]['scf'], filename),
+                                   self._config.combined_path_dict[method]['band'],
+                                   self._logger,
+                                   error_cause)
         elif method == 'hse':
             for filename in ["IBZKPT"]:
-                shutil.copy(os.path.join(self._config.combined_path_dict[method]['scf'], filename),
-                            self._config.combined_path_dict[method]['band'])
+                error_cause = ("the prior PBE calculation needed for HSE calculations "
+                               "has failed or been interrupted")
+                error_handled_copy(os.path.join(self._config.combined_path_dict[method]['scf'], filename),
+                                   self._config.combined_path_dict[method]['band'],
+                                   self._logger,
+                                   error_cause)
             calc.generate_input(self._config.combined_path_dict[method]['band'], 'band', 'hse')
 
         # Calc in `band` dir

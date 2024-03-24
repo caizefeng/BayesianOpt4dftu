@@ -99,6 +99,28 @@ def recreate_path_as_directory(path):
     # Recreate the directory
     os.makedirs(path, exist_ok=True)
 
+
+def error_handled_copy(source_path, target_path, logger, error_cause_message):
+    try:
+        # Check if the file is empty
+        if os.path.getsize(source_path) == 0:
+            # Log an error for the empty file
+            logger.error(f"The file at {source_path}, required for subsequent calculations, is empty.")
+            logger.error(f"This issue is likely because {error_cause_message}.")
+            raise ValueError(f"Empty file error at {source_path}.")
+
+        # Proceed with the copy if the file is not empty
+        shutil.copy(source_path, target_path)
+
+    except FileNotFoundError:
+        logger.error(f"The file at {source_path}, required for subsequent calculations, is missing.")
+        logger.error(f"This issue is likely because {error_cause_message}.")
+        raise  # Re-raise the FileNotFoundError to halt the program
+    except Exception as e:
+        logger.error(f"An error occurred while copying from {source_path} to {target_path}. Error details: {e}.")
+        raise  # Re-raise the caught exception to halt the program
+
+
 def deprecated(func):
     def wrapper(*args, **kwargs):
         warnings.warn(f"{func.__name__} is deprecated", DeprecationWarning, stacklevel=2)
