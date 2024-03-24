@@ -11,7 +11,7 @@ from ase.calculators.vasp import Vasp
 from pymatgen.io.vasp import Incar, Poscar
 
 from BayesOpt4dftu.configuration import Config
-from BayesOpt4dftu.io_utils import deprecated
+from BayesOpt4dftu.io_utils import deprecated, recreate_path_as_directory
 from BayesOpt4dftu.k_path import BoBandPath
 from BayesOpt4dftu.logging import BoLoggerGenerator
 
@@ -194,8 +194,8 @@ class DftManager:
         calc.init_k_path()
 
         # Recursive directory creation; it won't raise an error if the directory already exists
-        os.makedirs(self._config.combined_path_dict[method]['scf'], exist_ok=True)
-        os.makedirs(self._config.combined_path_dict[method]['band'], exist_ok=True)
+        recreate_path_as_directory(self._config.combined_path_dict[method]['scf'])
+        recreate_path_as_directory(self._config.combined_path_dict[method]['band'])
         DftManager.remove_old_eigenvalues(method)
 
         if method == 'dftu':

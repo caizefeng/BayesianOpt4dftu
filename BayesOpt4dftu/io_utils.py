@@ -88,6 +88,17 @@ def find_and_readlines_first(directory, file_list):
     raise FileNotFoundError(f"None of these files ({file_list}) were found.")
 
 
+def recreate_path_as_directory(path):
+    # Remove the item at the path, whether it's a file, a directory, or something else
+    if os.path.exists(path):
+        if os.path.isfile(path) or os.path.islink(path):
+            os.remove(path)  # Remove if it's a file or a link
+        elif os.path.isdir(path):
+            shutil.rmtree(path)  # Remove if it's a directory
+
+    # Recreate the directory
+    os.makedirs(path, exist_ok=True)
+
 def deprecated(func):
     def wrapper(*args, **kwargs):
         warnings.warn(f"{func.__name__} is deprecated", DeprecationWarning, stacklevel=2)
