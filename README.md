@@ -211,13 +211,14 @@ Before running the program, configure the `input.json` file. It contains:
          `"num_kpts": "auto"` automatically determines the path and number of k-points based on the HSE or GW baseline calculation.
                     
 
-- **`general_flags`**: General INCAR flags required in all VASP calculation.
-- **`scf`**: Flags that will only be added in SCF calculation.
-- **`band`**: Flags that will only be added in band structure calculation.
-- **`pbe`**: Flags that will only be added when using PBE as exchange-correlation functional.
-- **`hse`**: Flags that will only be added when using HSE06 as exchange-correlation functional.
+- **`general_flags`**: General INCAR tags required in all VASP calculations.
+- **`scf`**: INCAR tags that will only be added in SCF calculations.
+- **`band`**: INCAR tags that will only be added in band structure calculations.
+- **`pbe`**: INCAR tags that will only be added when using PBE as exchange-correlation functional.
+- **`hse`**: INCAR tags that will only be added when using HSE06 as exchange-correlation functional.
   
-    Check ASE VASP calculator documentation for additional flag keys.
+  Check the [ASE VASP calculator](https://wiki.fysik.dtu.dk/ase/ase/calculators/vasp.html) documentation for additional tag keys.
+  (A large portion of them are simply the lowercase versions of the corresponding INCAR tags.)
 
 ## Usage
 
