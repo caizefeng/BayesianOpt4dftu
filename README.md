@@ -21,6 +21,53 @@ Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization appr
 pip install git+https://github.com/caizefeng/BayesianOpt4dftu.git
 ```
 
+## Usage
+
+For the demonstration, 
+let's focus on fitting the Hubbard U values for both elements in indium arsenide (InAs). 
+
+The example input and output can be found in the `/examples/2d` directory:
+
+### 1. Edit `input.json`
+
+Navigate to the example directory:
+
+```shell
+cd examples/2d
+``` 
+
+Adjust the `input.json` file with the appropriate `vasp_env` settings based on your system specifications and the location of your VASP binary.
+
+### 2. Execute
+
+Run the following command:
+
+```shell
+bo_dftu
+```
+
+### 3. Results
+
+Upon reaching the threshold or maximum iterations, two output files are generated:
+
+- `u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetizaion (optional) for each step.
+- `1D_xxx.png` or `2D_xxx.png`: Provides a visual representation of the Gaussian process predicted mean and acquisition function. 
+   This file will be omitted if you set three or more optimizable U parameters.
+
+**Example of BO plots**:
+
+- 1-D Bayesian Optimization for Ge
+
+  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/examples/1d/1D_kappa_5.0_ag_0.5_ab_0.5_am_0.0.png" width="600" height="450">
+
+- 2-D Bayesian Optimization for InAs
+
+  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/examples/2d/2D_kappa_5.0_ag_0.25_ab_0.75_am_0.0.png" width="800" height="270">
+
+Optimal U values are automatically deduced from the predicted mean space interpolation. 
+Alternatively, you can use the `u_xxx.txt` file to select U values with the highest objective value.
+
+
 ## Configuration
 
 Before running the program, configure the `input.json` file. It contains:
@@ -219,49 +266,6 @@ Before running the program, configure the `input.json` file. It contains:
   
   Check the [ASE VASP calculator](https://wiki.fysik.dtu.dk/ase/ase/calculators/vasp.html) documentation for additional tag keys.
   (A large portion of them are simply the lowercase versions of the corresponding INCAR tags.)
-
-## Usage
-
-For demonstration, consider the `/examples/2d`:
-
-### 1. Edit `input.json`
-
-Change to the example directory:
-
-```shell
-cd examples/2d
-```
-
-Update the `input.json` file with the appropriate `vasp_env` settings based on your system specifications and the location of your VASP binary.
-
-### 2. Execute
-
-Run the following command:
-
-```shell
-bo_dftu
-```
-
-### 3. Results
-
-Upon reaching the threshold or maximum iterations, two output files are generated:
-
-- `u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetizaion (optional) for each step.
-- `1D_xxx.png` or `2D_xxx.png`: Provides a visual representation of the Gaussian process predicted mean and acquisition function. 
-   This file will be omitted if you set three or more optimizable U parameters.
-
-**Example of BO plots**:
-
-- 1-D Bayesian Optimization for Ge
-
-  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/examples/1d/1D_kappa_5.0_ag_0.5_ab_0.5_am_0.0.png" width="600" height="450">
-
-- 2-D Bayesian Optimization for InAs
-
-  <img src="https://github.com/caizefeng/BayesianOpt4dftu/blob/master/examples/2d/2D_kappa_5.0_ag_0.25_ab_0.75_am_0.0.png" width="800" height="270">
-
-Optimal U values are automatically deduced from the predicted mean space interpolation. 
-Alternatively, you can use the `u_xxx.txt` file to select U values with the highest objective value.
 
 ## Citation
 
