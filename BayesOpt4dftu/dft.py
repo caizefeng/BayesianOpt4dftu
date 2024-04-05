@@ -107,7 +107,7 @@ class VaspInit:
 
             # Extract LDAU parameters from JSON
             ldau_luj = params["ldau_luj"]
-            elements = [site.specie.name for site in poscar.structure]
+            elements = [str(element) for element in poscar.structure.composition.elements]
 
             # Defaults
             ldaul = defaultdict(lambda: -1)
