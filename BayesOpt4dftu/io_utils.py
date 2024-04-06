@@ -80,12 +80,13 @@ class SuppressPrints:
         sys.stdout = self._original_stdout
 
 
-def find_and_readlines_first(directory, file_list):
+def find_and_readlines_first(directory, file_list, logger, extra_message=''):
     for filename in file_list:
         if os.path.exists(os.path.join(directory, filename)):
             with open(os.path.join(directory, filename), 'r') as file:
                 return file.readlines()
-    raise FileNotFoundError(f"None of these files ({file_list}) were found.")
+    logger.error(f"None of these files ({file_list}) were found{' ' + extra_message if extra_message else ''}.")
+    raise FileNotFoundError
 
 
 def recreate_path_as_directory(path):

@@ -9,9 +9,11 @@ from pymatgen.io.vasp import Outcar
 from vaspvis import Band
 
 from BayesOpt4dftu.configuration import Config
+from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
 class DeltaBand:
+    _logger = BoLoggerGenerator.get_logger("DeltaBand")
     _config: Config = None
 
     @classmethod
@@ -84,7 +86,8 @@ class DeltaBand:
                 eigenvalues_gw = self.access_eigen_gw(self._gw_band_path, ispin=ispin_dftu)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_gw)
             else:
-                raise ValueError("Unsupported baseline calculation: only 'hse' or 'gw' are accepted")
+                self._logger.error("Unsupported baseline calculation: only 'hse' or 'gw' are accepted.")
+                raise ValueError
 
             self._delta_band = self.scale_delta_band(n, shifted_baseline, shifted_dftu)
 
@@ -136,14 +139,16 @@ class DeltaBand:
                 shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_gw_up)
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_gw_down)
             else:
-                raise ValueError("Unsupported baseline calculation: only 'hse' or 'gw' are accepted")
+                self._logger.error("Unsupported baseline calculation: only 'hse' or 'gw' are accepted.")
+                raise ValueError
 
             delta_band_up = self.scale_delta_band(n_up, shifted_baseline_up, shifted_dftu_up)
             delta_band_down = self.scale_delta_band(n_down, shifted_baseline_down, shifted_dftu_down)
             self._delta_band = np.mean([delta_band_up, delta_band_down])
 
         else:
-            raise ValueError('Incorrect ISPIN value.')
+            self._logger.error("Incorrect ISPIN value.")
+            raise ValueError
 
         self._is_first_run = False
 
@@ -222,7 +227,8 @@ class DeltaBand:
         ispin_hse, nbands_hse, nkpts_hse = DeltaBand.read_ispin_nbands_nkpts(self._vasprun_hse)
 
         if nbands_hse != nbands_dftu:
-            raise ValueError('The band number of HSE and DFT+U do not match.')
+            self._logger.error("The band number of HSE and DFT+U do not match.")
+            raise RuntimeError
 
         kpoints = [line for line in open(self._kpoints_hse) if line.strip()]
         kpts_diff = 0
@@ -230,10 +236,12 @@ class DeltaBand:
             if line.split()[3] != '0':
                 kpts_diff += 1
         if nkpts_hse - kpts_diff != nkpts_dftu:
-            raise ValueError('The kpoints number of HSE and DFT+U do not match.')
+            self._logger.error("The kpoints number of HSE and DFT+U do not match.")
+            raise RuntimeError
 
         if ispin_hse != ispin_dftu:
-            raise ValueError('The spin number of HSE and DFT+U do not match.')
+            self._logger.error("The spin number of HSE and DFT+U do not match.")
+            raise RuntimeError
 
     def access_eigen_gw(self, gw_band_dir, ispin):
         # TODO: Accurate E-fermi for METAL should be from fine-grid SCF calculation
@@ -284,7 +292,7 @@ class DeltaBand:
 
         if n_col != self._num_slices * (self._num_kpts_each_slice - 1):
             raise ValueError(
-                "For GW baseline, `num_kpts` must be set to `(k_gw + 1)`. "
+                "For GW baseline, `_num_kpts_each_slice` must equal to `(k_gw + 1)`. "
                 "`k_gw` is the number of kpoints in each kpath segment of the GW calculation."
             )
 

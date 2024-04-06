@@ -107,8 +107,9 @@ class Config:
         # K-path parameters
         self.num_kpts = data['structure_info']['num_kpts']
         if self.baseline == 'gw' and self.num_kpts != "auto":
-            raise ValueError("Baseline GW currently only supports automatic K-path. "
-                             "Ensure 'num_kpts' is set to 'auto'.")
+            self._logger.error("Baseline GW currently only supports automatic K-path. "
+                               "Ensure `num_kpts` is set to 'auto'.")
+            raise ValueError
 
         if isinstance(self.num_kpts, int) and self.num_kpts > 0:
             self._logger.info("K-path for band manually set.")
@@ -120,6 +121,7 @@ class Config:
             self.auto_kpath = True
             self.line_mode_kpath = False
         else:
-            raise ValueError("Unsupported `num_kpts` type: only positive integers or 'auto' are accepted.")
+            self._logger.error("Unsupported `num_kpts` type: only positive integers or 'auto' are accepted.")
+            raise ValueError
 
         self._logger.info(f"Configuration loaded from file {self.config_file_name}.")

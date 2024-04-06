@@ -2,9 +2,11 @@ import numpy as np
 from vaspvis.utils import BandGap
 
 from BayesOpt4dftu.configuration import Config
+from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
 class DeltaGap:
+    _logger = BoLoggerGenerator.get_logger("DeltaGap")
     _config: Config = None
 
     @classmethod
@@ -40,6 +42,7 @@ class DeltaGap:
             self._baseline_gap = 0.0
 
         else:
-            raise ValueError("Unsupported baseline calculation: only 'hse' or 'gw' are accepted")
+            self._logger.error("Unsupported baseline calculation: only 'hse' or 'gw' are accepted.")
+            raise ValueError
 
         self._delta_gap = np.sqrt(np.mean((self._dftu_gap - self._baseline_gap) ** 2))

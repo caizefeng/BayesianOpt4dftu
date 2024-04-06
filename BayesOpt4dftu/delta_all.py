@@ -6,9 +6,11 @@ from BayesOpt4dftu.configuration import Config
 from BayesOpt4dftu.delta_band import DeltaBand
 from BayesOpt4dftu.delta_gap import DeltaGap
 from BayesOpt4dftu.delta_mag import DeltaMag
+from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
 class DeltaAll:
+    _logger = BoLoggerGenerator.get_logger("DeltaAll")
     _config: Config = None
 
     @classmethod

@@ -8,9 +8,11 @@ from ase.dft.kpoints import get_special_points
 from pymatgen.io.vasp import Kpoints
 
 from BayesOpt4dftu.io_utils import find_and_readlines_first
+from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
 class BoBandPath:
+    _logger = BoLoggerGenerator.get_logger("BoBandPath")
 
     def __init__(self, is_auto=True, baseline_type=None, baseline_path=None, num_kpoints=None, k_labels=None,
                  custom_kpoints=False):
@@ -46,7 +48,8 @@ class BoBandPath:
 
     def write_kpoints(self, directory, concat_ibzkpt=False):
         if self._k_path is None:
-            raise RuntimeError("Cannot execute 'write_kpoints' method before 'generate' method.")
+            self._logger.error("Cannot execute `write_kpoints` method before `generate` method.")
+            raise RuntimeError
         if concat_ibzkpt:
             if self._k_path_with_scf_grid is None:
                 self.concat_with_ibzkpt(directory)
@@ -93,7 +96,12 @@ class BoBandPath:
         self._k_path_with_scf_grid.comment = "BayesOpt4dftu: Kpoints from user input and scf K-grid"
 
     def from_baseline_reciprocal(self):
-        k_path = Kpoints.from_file(os.path.join(self._baseline_path, 'KPOINTS'))
+        try:
+            k_path = Kpoints.from_file(os.path.join(self._baseline_path, 'KPOINTS'))
+        except FileNotFoundError:
+            self._logger.error(f"KPOINTS is missing from the provided baseline HSE result.")
+            self._logger.error(f"The KPOINTS file is required to determine the K-Path when `num_pts` is set to 'auto'.")
+            raise
 
         filtered_kpts = []
         filtered_weights = []
@@ -115,11 +123,15 @@ class BoBandPath:
         kpt_contents = find_and_readlines_first(self._baseline_path,
                                                 ['wannier90_band.kpt',
                                                  'wannier90.1_band.kpt',
-                                                 'wannier90.2_band.kpt'])
+                                                 'wannier90.2_band.kpt'],
+                                                self._logger,
+                                                extra_message="from the provided baseline GW result")
         labelinfo_contents = find_and_readlines_first(self._baseline_path,
                                                       ['wannier90_band.labelinfo.dat',
                                                        'wannier90.1_band.labelinfo.dat',
-                                                       'wannier90.2_band.labelinfo.dat'])
+                                                       'wannier90.2_band.labelinfo.dat'],
+                                                      self._logger,
+                                                      extra_message="from the provided baseline GW result")
         # Processing the kpt file to extract k-points and weights
         num_kpts = int(kpt_contents[0].strip())
         kpts = []
@@ -132,7 +144,8 @@ class BoBandPath:
             kpts_weights.append(weight)
 
         if len(kpts) != num_kpts:
-            raise ValueError("Inconsistency of the number of kpoints detected in the GW kpt file.")
+            self._logger.error("Inconsistency of the number of kpoints detected in the GW kpt file.")
+            raise ValueError
 
         # Processing the labelinfo file to extract labels
         labels = [None] * num_kpts

@@ -6,9 +6,11 @@ from numpy.typing import NDArray
 from pymatgen.io.vasp import Outcar
 
 from BayesOpt4dftu.configuration import Config
+from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
 class DeltaMag:
+    _logger = BoLoggerGenerator.get_logger("DeltaMag")
     _config: Config = None
 
     @classmethod
