@@ -104,7 +104,7 @@ Before running the program, configure the `input.json` file. It contains:
 - **`bo`**: Settings specific to Bayesian Optimization.
     - **`resume_checkpoint`**:
         - Description: Determines whether the Bayesian Optimization resumes from a saved checkpoint, as defined by `u_tmp.txt` and `input_tmp.json`.
-        - Example: `"resume_checkpoint": False`
+        - Example: `"resume_checkpoint": false`
 
     - **`baseline`**:
         - Description: Specifies the baseline calculation for Bayesian Optimization. Currently, only `"hse"` and `"gw"` are supported. `"gw"` must be executed separately, meaning it is only supported when `"dftu_only": true`.
