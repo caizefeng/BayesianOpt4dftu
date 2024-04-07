@@ -227,8 +227,11 @@ class DeltaBand:
         ispin_hse, nbands_hse, nkpts_hse = DeltaBand.read_ispin_nbands_nkpts(self._vasprun_hse)
 
         if nbands_hse != nbands_dftu:
-            self._logger.error("The band number of HSE and DFT+U do not match.")
-            raise RuntimeError
+            self._logger.warning(
+                "The number of bands for HSE and DFT+U calculations do not match, "
+                "likely due to differing parallelization settings between those two."
+            )
+            self._logger.warning("The results may still be usable.")
 
         kpoints = [line for line in open(self._kpoints_hse) if line.strip()]
         kpts_diff = 0
