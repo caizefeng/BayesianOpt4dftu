@@ -2,6 +2,8 @@ import json
 import os
 
 import importlib.resources as resources
+import shutil
+
 from jsonschema import validate, ValidationError
 from BayesOpt4dftu.logging import BoLoggerGenerator
 
@@ -47,6 +49,7 @@ class Config:
 
         # BO parameters
         bo_params = data['bo']
+        self.resume_checkpoint = bo_params.get('resume_checkpoint', False)
         self.k = float(bo_params.get('kappa', 5))
         self.alpha_gap = bo_params.get('alpha_gap', 0.25)
         self.alpha_band = bo_params.get('alpha_band', 0.75)
@@ -129,3 +132,60 @@ class Config:
             raise ValueError
 
         self._logger.info(f"Configuration loaded from file {self.config_file_name}.")
+
+
+class TempFileManager:
+    _logger = BoLoggerGenerator.get_logger("TempFileManager")
+    _config: Config = None
+
+    @classmethod
+    def init_config(cls, config: Config):
+        if cls._config is None:
+            cls._config = config
+
+    def setup_temp_files(self):
+        if self._config.resume_checkpoint:
+            if not os.path.exists(self._config.tmp_u_path) or os.path.getsize(self._config.tmp_u_path) == 0:
+                self._logger.error(f"Missing or damaged checkpoint file: {self._config.tmp_u_path}.")
+                raise RuntimeError
+
+            elif not os.path.exists(self._config.tmp_config_path) or os.path.getsize(self._config.tmp_config_path) == 0:
+                self._logger.error(f"Missing or damaged checkpoint file: {self._config.tmp_config_path}.")
+                raise RuntimeError
+
+            else:
+                self._logger.info("Previous temporary files will continue to be used.")
+
+        else:
+            # Temporary config
+            shutil.copyfile(self._config.config_path, self._config.tmp_config_path)
+
+            # Temporary Bayesian Optimization log
+            header = []
+            for i, u in enumerate(self._config.which_u):
+                header.append(f"U_ele_{str(i + 1)}")
+
+            if os.path.exists(self._config.tmp_u_path):
+                os.remove(self._config.tmp_u_path)
+
+            if self._config.alpha_mag:
+                with open(self._config.tmp_u_path, 'w+') as f:
+                    f.write(f"{(' '.join(header))} "
+                            f"{self._config.column_names['band_gap']} "
+                            f"{self._config.column_names['delta_gap']} "
+                            f"{self._config.column_names['delta_band']} "
+                            f"{self._config.column_names['delta_mag']} \n")
+            else:
+                with open(self._config.tmp_u_path, 'w+') as f:
+                    f.write(f"{(' '.join(header))} "
+                            f"{self._config.column_names['band_gap']} "
+                            f"{self._config.column_names['delta_gap']} "
+                            f"{self._config.column_names['delta_band']} \n")
+
+            self._logger.info("Temporary files initiated.")
+
+    def clean_up(self):
+        shutil.move(self._config.tmp_u_path, self._config.u_path)
+        os.remove(self._config.tmp_config_path)
+
+        self._logger.info("Temporary files removed.")

@@ -1,10 +1,10 @@
 import argparse
 
 from BayesOpt4dftu.bo import *
-from BayesOpt4dftu.configuration import Config
+from BayesOpt4dftu.configuration import Config, TempFileManager
 from BayesOpt4dftu.delta_all import DeltaAll
 from BayesOpt4dftu.dft import VaspInit, DftManager
-from BayesOpt4dftu.io_utils import TempFileManager, task_timer
+from BayesOpt4dftu.io_utils import task_timer
 from BayesOpt4dftu.logging import BoLoggerGenerator
 from . import __version__
 
@@ -33,6 +33,10 @@ def main():
             dft_manager.run_task(method='dftu')
         else:
             driver_logger.info("Dry run set to False.")
+
+            if config.resume_checkpoint:
+                driver_logger.info("Optimization resumed from saved temporary files as the checkpoint.")
+                driver_logger.info("Please ensure the settings are consistent.")
 
             temp_file_manager = TempFileManager()
             temp_file_manager.setup_temp_files()

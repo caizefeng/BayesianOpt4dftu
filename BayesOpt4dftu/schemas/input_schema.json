@@ -33,6 +33,9 @@
         "bo": {
             "type": "object",
             "properties": {
+                "resume_checkpoint": {
+                    "type": "boolean"
+                },
                 "baseline": {
                     "type": "string",
                     "enum": [

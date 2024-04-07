@@ -8,6 +8,7 @@
         "get_optimal_band": false
     },
     "bo": {
+        "resume_checkpoint": false,
         "baseline": "hse",
         "which_u": [
             1
