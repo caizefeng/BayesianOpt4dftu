@@ -111,6 +111,10 @@ class Config:
                                "Ensure `num_kpts` is set to 'auto'.")
             raise ValueError
 
+        if self.dftu_only is False and self.num_kpts == "auto":
+            self._logger.error(f"`num_kpts` must be an integer instead of 'auto' when `dftu_only` is set to false.")
+            raise ValueError
+
         if isinstance(self.num_kpts, int) and self.num_kpts > 0:
             self._logger.info("K-path for band manually set.")
             self.line_mode_kpath = True

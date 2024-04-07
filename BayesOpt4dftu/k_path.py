@@ -145,7 +145,7 @@ class BoBandPath:
 
         if len(kpts) != num_kpts:
             self._logger.error("Inconsistency of the number of kpoints detected in the GW kpt file.")
-            raise ValueError
+            raise RuntimeError
 
         # Processing the labelinfo file to extract labels
         labels = [None] * num_kpts
