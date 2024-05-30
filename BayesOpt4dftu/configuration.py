@@ -92,7 +92,9 @@ class Config:
         self.column_names = {'band_gap': 'band_gap',
                              'delta_gap': 'delta_gap',
                              'delta_band': 'delta_band',
-                             'delta_mag': 'delta_mag'}
+                             'delta_mag': 'delta_mag',
+                             'obj_func': 'obj_func',
+                             'd_obj': 'd_obj'}
 
         # VASP parameters
         vasp_env_params = data['vasp_env']
@@ -174,13 +176,17 @@ class TempFileManager:
                             f"{self._config.column_names['band_gap']} "
                             f"{self._config.column_names['delta_gap']} "
                             f"{self._config.column_names['delta_band']} "
-                            f"{self._config.column_names['delta_mag']} \n")
+                            f"{self._config.column_names['delta_mag']} "
+                            f"{self._config.column_names['obj_func']} "
+                            f"{self._config.column_names['d_obj']} \n")
             else:
                 with open(self._config.tmp_u_path, 'w+') as f:
                     f.write(f"{(' '.join(header))} "
                             f"{self._config.column_names['band_gap']} "
                             f"{self._config.column_names['delta_gap']} "
-                            f"{self._config.column_names['delta_band']} \n")
+                            f"{self._config.column_names['delta_band']} "
+                            f"{self._config.column_names['obj_func']} "
+                            f"{self._config.column_names['d_obj']} \n")
 
             self._logger.info("Temporary files initiated.")
 

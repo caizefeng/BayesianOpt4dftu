@@ -23,6 +23,29 @@ def task_timer(label, logger):
         logger.info(f"{label} completed in {hours_text} {minutes_text} {seconds_text}.")
 
 
+def modify_last_line_before_newline(file_path, additional_string):
+    """
+    Appends an additional string to the last line of a file before the newline character.
+
+    Parameters:
+    file_path (str): The path to the file to be modified.
+    additional_string (str): The string to append to the last line.
+    """
+    with open(file_path, 'r+') as file:
+        # Read all lines into a list
+        lines = file.readlines()
+
+        if lines:
+            # Modify the last line
+            lines[-1] = lines[-1].rstrip('\n') + " " + additional_string + "\n"
+
+            # Go back to the start of the file
+            file.seek(0)
+
+            # Write all lines back to the file
+            file.writelines(lines)
+
+
 class SuppressPrints:
     def __enter__(self):
         self._original_stdout = sys.stdout

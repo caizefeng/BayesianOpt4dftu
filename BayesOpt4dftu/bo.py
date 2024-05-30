@@ -12,7 +12,7 @@ from matplotlib import cm, gridspec
 from matplotlib import pyplot as plt
 
 from BayesOpt4dftu.configuration import Config
-from BayesOpt4dftu.io_utils import SuppressPrints
+from BayesOpt4dftu.io_utils import SuppressPrints, modify_last_line_before_newline
 from BayesOpt4dftu.logging import BoLoggerGenerator
 
 
@@ -279,6 +279,7 @@ class BoDftuIterator(BoStepExecutor):
         self._i_step: int = 0
         self._obj_current: Optional[float] = None
         self._obj_next: Optional[float] = None
+        self._d_obj: Optional[float] = None
         self._exit_converged: bool = False
 
     def next(self):
@@ -303,10 +304,14 @@ class BoDftuIterator(BoStepExecutor):
 
     def converge(self):
         if self._obj_current is not None:  # Can't be the 1st step
-            is_converged = (self._config.threshold != 0
-                            and abs(self._obj_next - self._obj_current) <= self._config.threshold)
+            self._d_obj = abs(self._obj_next - self._obj_current)
+            is_converged = (self._config.threshold != 0 and self._d_obj <= self._config.threshold)
+            # add objective function and its difference to the end of the log file
+            modify_last_line_before_newline(self._config.tmp_u_path, " ".join((str(self._obj_next), str(self._d_obj))))
+
         else:
             is_converged = False
+            modify_last_line_before_newline(self._config.tmp_u_path, str(self._obj_next))
 
         if is_converged:
             self._logger.info(f"Convergence reached at iteration {self._i_step + 1}, exiting.")
