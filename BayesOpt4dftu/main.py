@@ -1,20 +1,21 @@
 import argparse
 
+from BayesOpt4dftu import __version__, __package_name__
 from BayesOpt4dftu.bo import *
 from BayesOpt4dftu.configuration import Config, TempFileManager
 from BayesOpt4dftu.delta_all import DeltaAll
 from BayesOpt4dftu.dft import VaspInit, DftManager
 from BayesOpt4dftu.io_utils import task_timer
 from BayesOpt4dftu.logging import BoLoggerGenerator
-from . import __version__
 
 
 def main():
-    parser = argparse.ArgumentParser(description="BayesOpt4dftu CLI tool")
-    parser.add_argument('--version', action='version', version=f"BayesOpt4dftu {__version__}")
-    args = parser.parse_args()  # This will print version and exit if --version is provided
+    parser = argparse.ArgumentParser(description=f'{__package_name__} CLI tool. Use "./input.json" as the config file.')
+    parser.add_argument('--version', action='version', version=f"{__package_name__} {__version__}")
+    _ = parser.parse_args()  # This will print version and exit if --version is provided
 
     driver_logger = BoLoggerGenerator.get_logger("Driver")
+    driver_logger.info(f"{__package_name__}, Version: {__version__}")
     with task_timer("Task", driver_logger):
 
         # Initialize and read all configurations

@@ -1,11 +1,12 @@
 import inspect
 import logging
 import sys
+from BayesOpt4dftu import __package_name__
 
 
 class BoLoggerGenerator:
     _loggers = {}
-    _root_name = "BayesOpt4dftu"
+    _root_name = __package_name__
     _root_logger = logging.getLogger(_root_name)
     formatter = logging.Formatter('[%(asctime)s - %(name)s - %(levelname)s]: %(message)s', '%Y-%m-%d %H:%M:%S')
     _ch = logging.StreamHandler(sys.stdout)
