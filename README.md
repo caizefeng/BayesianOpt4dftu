@@ -50,7 +50,7 @@ bo_dftu
 
 Upon reaching the threshold or maximum iterations, two output files are generated:
 
-- `u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetizaion (optional) for each step.
+- `u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetizaion (optional) for each iteration.
 - `1D_xxx.png` or `2D_xxx.png`: Provides a visual representation of the Gaussian process predicted mean and acquisition function. 
    This file will be omitted if you set three or more optimizable U parameters.
 
@@ -89,26 +89,26 @@ Before running the program, configure the `input.json` file. It contains:
 
     - **`dry_run`**:
         - Description: Specifies if the run is a dry run (generating files only without actual computation) or not.
-        - Example: `"dry_run": false`
+        - Default: `"dry_run": false`
 
     - **`dftu_only`**:
         - Description: Indicates whether only DFT+U is performed. If set to true, completed baseline calculations should be placed in the `<working dir>/<baseline>` directory.
-        - Example: `"dftu_only": false`
+        - Default: `"dftu_only": false`
           
     - **`get_optimal_band`**:
         - Description: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization. 
           The results of this calculation will be appended to the end of the log file.
-        - Example: `"get_optimal_band": false`
+        - Default: `"get_optimal_band": false`
 
 
 - **`bo`**: Settings specific to Bayesian Optimization.
     - **`resume_checkpoint`**:
         - Description: Determines whether the Bayesian Optimization resumes from a saved checkpoint, as defined by `u_tmp.txt` and `input_tmp.json`.
-        - Example: `"resume_checkpoint": false`
+        - Default: `"resume_checkpoint": false`
 
     - **`baseline`**:
         - Description: Specifies the baseline calculation for Bayesian Optimization. Currently, only `"hse"` and `"gw"` are supported. `"gw"` must be executed separately, meaning it is only supported when `"dftu_only": true`.
-        - Example: `"baseline": "hse"`
+        - Default: `"baseline": "hse"`
 
     - **`which_u`**:
         - Description: Specifies which element you'd like to optimize the U for.
@@ -121,30 +121,30 @@ Before running the program, configure the `input.json` file. It contains:
         - Description: Specifies the band range you'd like to include in your Δband.
         - Format: A list of two integers, defining the number of valence bands and conduction bands from the Fermi
           level.
-        - Example: `"br": [5, 5]`
+        - Default: `"br": [5, 5]`
 
     - **`kappa`**:
         - Description: Controls the balance between exploration and exploitation when the acquisition function samples the next points.
           A lower value (nearing `0`) indicates a preference for exploitation. A higher value (approaching `10`) indicates a preference for exploration.
-        - Example: `"kappa": 5`
+        - Default: `"kappa": 5`
 
     - **`alpha_gap`** and **`alpha_band`**:
         - Description: Specifies the weight coefficients of Δgap and Δband respectively. So far, there are no constraints on the choice of `alpha`s, meaning they can be arbitrary positive real numbers.
-        - Examples: `"alpha_gap": 0.25` and `"alpha_band": 0.75`
+        - Default: `"alpha_gap": 0.25` and `"alpha_band": 0.75`
 
     - **`alpha_mag`**:
         - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `alpha_mag` of `0` will exclude Δmagnetization from the loss function.
-        - Example: `"alpha_mag": 0.1`
+        - Default: `"alpha_mag": 0.0`
 
     - **`threshold`**:
         - Description: Specifies the accuracy at which you'd like to stop the BO process. 
-          A `threshold` of `0` will disable convergence assessment, meaning the BO will exit only upon reaching the maximum steps.
-        - Example: `"threshold": 0.0001`
+          A `threshold` of `0` will disable convergence assessment, meaning the BO will exit only upon reaching the maximum iterations.
+        - Default: `"threshold": 0.0001`
 
     - **`urange`**:
         - Description: Specifies the U parameter range for optimization. The unit is eV. Defining different U ranges for separate
           elements is currently unsupported. 
-        - Example: `"urange": [-10, 10]`
+        - Default: `"urange": [-10, 10]`
 
     - **`elements`**:
         - Description: Lists the elements in your system. This is used for plotting the BO results. If it's a
@@ -152,8 +152,8 @@ Before running the program, configure the `input.json` file. It contains:
         - Example: `"elements": ["In", "As"]`
 
     - **`iteration`**:
-        - Description: Sets the maximum steps that BO will perform.
-        - Example: `"iteration": 50`
+        - Description: Sets the maximum iterations that BO will perform.
+        - Default: `"iteration": 50`
 
     - **`report_optimum_interval`**:
         - Description: Sets the interval (in iterations) at which the optimal Hubbard U value is calculated and logged.
