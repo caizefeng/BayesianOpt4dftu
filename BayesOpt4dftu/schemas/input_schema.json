@@ -98,6 +98,10 @@
                 "iteration": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "report_optimum_interval": {
+                    "type": "integer",
+                    "minimum": 2
                 }
             },
             "required": [

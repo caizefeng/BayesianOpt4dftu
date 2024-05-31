@@ -117,33 +117,31 @@ class BoStepExecutor(OptimizerGenerator):
         self._plot_data: Optional[Dict[str, Any]] = None
 
     def get_optimal(self):
-        optimal_u, optimal_obj = self._optimal
-        self._logger.info(f"Optimal U value: {optimal_u}")
-        self._logger.info(f"Optimal objective function: {optimal_obj}")
         return self._optimal
 
     def advance_step(self):
         self._optimizer, self._target = self.get_optimizer()
         return self._optimizer.suggest(self._utility_function), self._target
 
-    def predict(self, ratio=1):
+    def predict(self, generate_plot_data=False, ratio=1):
         u = list(self._optimizer.res[0]["params"].keys())
         self._dim = len(u)
-        plot_size = len(self._optimizer.res) * ratio
+        res_size = len(self._optimizer.res) * ratio
         if self._dim == 1:
             x = np.linspace(self._u_range[0], self._u_range[1], 10000).reshape(-1, 1)
-            x_obs = np.array([res["params"][u[0]] for res in self._optimizer.res]).reshape(-1, 1)[:plot_size]
-            y_obs = np.array([res["target"] for res in self._optimizer.res])[:plot_size]
+            x_obs = np.array([res["params"][u[0]] for res in self._optimizer.res]).reshape(-1, 1)[:res_size]
+            y_obs = np.array([res["target"] for res in self._optimizer.res])[:res_size]
 
             self._optimizer._gp.fit(x_obs, y_obs)
             mu, sigma = self._optimizer._gp.predict(x, return_std=True)
             self._optimal = OptimizerGenerator.retrieve_optimal(x, mu)
 
-            self._plot_data = {'mu': mu,
-                               'sigma': sigma,
-                               'x': x,
-                               'x_obs': x_obs,
-                               'y_obs': y_obs}
+            if generate_plot_data:
+                self._plot_data = {'mu': mu,
+                                   'sigma': sigma,
+                                   'x': x,
+                                   'x_obs': x_obs,
+                                   'y_obs': y_obs}
 
         elif self._dim == 2:
             x = y = np.linspace(self._u_range[0], self._u_range[1], 1000)
@@ -152,23 +150,24 @@ class BoStepExecutor(OptimizerGenerator):
             y = y_mesh.ravel()
             x_mesh = np.column_stack((x, y))
 
-            x1_obs = np.array([[res["params"][u[0]]] for res in self._optimizer.res])[:plot_size]
-            x2_obs = np.array([[res["params"][u[1]]] for res in self._optimizer.res])[:plot_size]
-            y_obs = np.array([res["target"] for res in self._optimizer.res])[:plot_size]
+            x1_obs = np.array([[res["params"][u[0]]] for res in self._optimizer.res])[:res_size]
+            x2_obs = np.array([[res["params"][u[1]]] for res in self._optimizer.res])[:res_size]
+            y_obs = np.array([res["target"] for res in self._optimizer.res])[:res_size]
             obs = np.column_stack((x1_obs, x2_obs))
 
             self._optimizer._gp.fit(obs, y_obs)
             mu, sigma = self._optimizer._gp.predict(x_mesh, return_std=True)
             self._optimal = OptimizerGenerator.retrieve_optimal(x_mesh, mu)
 
-            self._plot_data = {'mu': mu,
-                               'sigma': sigma,
-                               'obs': obs,
-                               'x1_obs': x1_obs,
-                               'x2_obs': x2_obs,
-                               'x': x,
-                               'y': y,
-                               'X': x_mesh}
+            if generate_plot_data:
+                self._plot_data = {'mu': mu,
+                                   'sigma': sigma,
+                                   'obs': obs,
+                                   'x1_obs': x1_obs,
+                                   'x2_obs': x2_obs,
+                                   'x': x,
+                                   'y': y,
+                                   'X': x_mesh}
 
         elif self._dim >= 3:
             # Create a grid for each dimension
@@ -179,9 +178,9 @@ class BoStepExecutor(OptimizerGenerator):
             x_mesh = np.column_stack(flat_mesh)
 
             # Observations for each dimension
-            x_obs = [np.array([[res["params"][u[d]]] for res in self._optimizer.res])[:plot_size] for d in
+            x_obs = [np.array([[res["params"][u[d]]] for res in self._optimizer.res])[:res_size] for d in
                      range(self._dim)]
-            y_obs = np.array([res["target"] for res in self._optimizer.res])[:plot_size]
+            y_obs = np.array([res["target"] for res in self._optimizer.res])[:res_size]
             obs = np.column_stack(x_obs)
 
             # Fit and predict
@@ -190,10 +189,12 @@ class BoStepExecutor(OptimizerGenerator):
             self._optimal = OptimizerGenerator.retrieve_optimal(x_mesh, mu)
 
             # Plot data is set to None for dimensions >= 3
-            self._plot_data = None
+            if generate_plot_data:
+                self._plot_data = None
 
     def plot(self):
-        self.predict()
+        # Fit and predict the optimum first
+        self.predict(generate_plot_data=True)
 
         if self._plot_data is not None:
             opt_eles = [ele for i, ele in enumerate(self._elements) if self._opt_u_index[i]]
@@ -288,8 +289,10 @@ class BoDftuIterator(BoStepExecutor):
         u_next = list(next_point_to_probe.values())
         self.update_u_config(u_next)
         self._i_step += 1
-        if self._i_step % 25 == 0:
-            self._logger.info(f"Iteration {self._i_step} of Bayesian Optimization loop completed.")
+        if self._i_step % self._config.report_optimum_interval == 0:
+            self.predict(generate_plot_data=False)
+            self._logger.info(f"Iteration {self._i_step} of Bayesian Optimization loop completed. "
+                              f"Optimal Hubbard U so far: {self._optimal[0]}")
 
     def update_u_config(self, u_new):
         with open(self._config.tmp_config_path, 'r') as f:

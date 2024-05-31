@@ -31,7 +31,8 @@
             "In",
             "As"
         ],
-        "iteration": 200
+        "iteration": 200,
+        "report_optimum_interval": 10
     },
     "structure_info": {
         "lattice_param": 6.0584,

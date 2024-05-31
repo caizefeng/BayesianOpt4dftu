@@ -29,7 +29,8 @@
         "elements": [
             "Ge"
         ],
-        "iteration": 50
+        "iteration": 50,
+        "report_optimum_interval": 10
     },
     "structure_info": {
         "lattice_param": 5.633,

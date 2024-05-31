@@ -47,7 +47,7 @@ def main():
 
             bo_iterator = BoDftuIterator()
             delta = DeltaAll()
-            for i in range(config.iteration):
+            for i in range(config.iteration):  # the main BO loop
                 dft_manager.run_task(method='dftu')
                 delta.compute_delta()
                 delta.write_delta()
@@ -65,14 +65,17 @@ def main():
 
             # Visualize the optimization process and retrieve optimized U
             bo_iterator.plot()
-            optimal_u, _ = bo_iterator.get_optimal()
+            optimal_u, optimal_obj = bo_iterator.get_optimal()
+            driver_logger.info(f"Optimal Hubbard U: {optimal_u}")
+            driver_logger.info(f"Optimal objective function: {optimal_obj}")
 
             if config.get_optimal_band:
                 bo_iterator.update_u_config(optimal_u)
                 dft_manager.run_task(method='dftu')
                 delta.compute_delta()
-                delta.write_delta()
-                driver_logger.info("An additional DFT+U calculation using optimal U values performed.")
+                delta.write_delta(na_padding=True)
+                driver_logger.info("An additional DFT+U calculation using optimal U values performed and logged at "
+                                   "the end.")
 
             dft_manager.finalize()
             bo_iterator.finalize()

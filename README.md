@@ -155,6 +155,10 @@ Before running the program, configure the `input.json` file. It contains:
         - Description: Sets the maximum steps that BO will perform.
         - Example: `"iteration": 50`
 
+    - **`report_optimum_interval`**:
+        - Description: Sets the interval (in iterations) at which the optimal Hubbard U value is calculated and logged.
+        - Default: `"report_optimum_interval": 10`
+
 
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,
   etc.) of the target materials.

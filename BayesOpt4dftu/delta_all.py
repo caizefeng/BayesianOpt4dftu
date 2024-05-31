@@ -34,7 +34,7 @@ class DeltaAll:
         if self._config.include_mag:
             self.dm.compute_delta_mag()
 
-    def write_delta(self):
+    def write_delta(self, na_padding=False):
         # U values
         incar = Incar.from_file(os.path.join(self._config.combined_path_dict['dftu']['band'], 'INCAR'))
         u = incar['LDAUU']
@@ -52,6 +52,10 @@ class DeltaAll:
         if self._config.include_mag:
             u.append(self.dm.get_delta_mag())
 
-        output = ' '.join(str(x) for x in u)
+        if na_padding:
+            output = " ".join(str(x) for x in u) + " N/A" * 2
+        else:
+            output = " ".join(str(x) for x in u)
+
         with open(self._config.tmp_u_path, 'a') as f:
             f.write(output + '\n')
