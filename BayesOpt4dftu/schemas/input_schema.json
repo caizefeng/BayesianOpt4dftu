@@ -166,7 +166,12 @@
                                         "maxItems": 3
                                     },
                                     {
-                                        "type": "number"
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number"
+                                        },
+                                        "minItems": 1,
+                                        "maxItems": 1
                                     }
                                 ]
                             }
