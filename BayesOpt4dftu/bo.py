@@ -295,7 +295,8 @@ class BoDftuIterator(BoStepExecutor):
         self._i_step += 1
         if self._i_step % self._config.report_optimum_interval == 0:
             self.predict(generate_plot_data=False)
-            self._opt_u_so_far_last = self._opt_u_so_far.copy()
+            if self._i_step // self._config.report_optimum_interval > 1:
+                self._opt_u_so_far_last = self._opt_u_so_far.copy()
             self._opt_u_so_far = self._optimal[0]
             self._logger.info(f"Iteration {self._i_step} of Bayesian Optimization loop completed. "
                               f"Optimal Hubbard U so far: {self._opt_u_so_far}")
