@@ -66,6 +66,7 @@ class Config:
         self.threshold = bo_params.get('threshold', 0.0001)
         self.baseline = bo_params.get('baseline', 'hse')
         self.report_optimum_interval = bo_params.get('report_optimum_interval', 10)
+        self.threshold_opt_u = bo_params.get('threshold_opt_u', 0.0)
 
         # File paths
         self.root_dir = './'

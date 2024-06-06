@@ -30,7 +30,8 @@
             "Ge"
         ],
         "iteration": 50,
-        "report_optimum_interval": 10
+        "report_optimum_interval": 10,
+        "threshold_opt_u": 0.0
     },
     "structure_info": {
         "lattice_param": 5.633,

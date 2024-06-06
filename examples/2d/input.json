@@ -32,7 +32,8 @@
             "As"
         ],
         "iteration": 200,
-        "report_optimum_interval": 10
+        "report_optimum_interval": 10,
+        "threshold_opt_u": 0.0
     },
     "structure_info": {
         "lattice_param": 6.0584,

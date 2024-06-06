@@ -102,6 +102,10 @@
                 "report_optimum_interval": {
                     "type": "integer",
                     "minimum": 2
+                },
+                "threshold_opt_u": {
+                    "type": "number",
+                    "minimum": 0
                 }
             },
             "required": [

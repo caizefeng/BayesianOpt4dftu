@@ -1,6 +1,6 @@
 # BayesianOpt4dftu #
 
-![version](https://img.shields.io/badge/version-1.3.1-blue)
+![version](https://img.shields.io/badge/version-1.4.0-blue)
 
 Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization approach.
 
@@ -137,8 +137,8 @@ Before running the program, configure the `input.json` file. It contains:
         - Default: `"alpha_mag": 0.0`
 
     - **`threshold`**:
-        - Description: Specifies the accuracy at which you'd like to stop the BO process. 
-          A `threshold` of `0` will disable convergence assessment, meaning the BO will exit only upon reaching the maximum iterations.
+        - Description: Specifies the accuracy (difference in objective function between two consecutive iterations) at which you'd like to stop the BO process. 
+          A `threshold` of `0.0` (and `threshold_opt_u` of `0.0` as well) will disable the convergence assessment based, meaning the BO will exit only upon reaching the maximum iterations.
         - Default: `"threshold": 0.0001`
 
     - **`urange`**:
@@ -158,13 +158,19 @@ Before running the program, configure the `input.json` file. It contains:
     - **`report_optimum_interval`**:
         - Description: Sets the interval (in iterations) at which the optimal Hubbard U values are calculated and logged.
         - Default: `"report_optimum_interval": 10`
+     
+    - **`threshold_opt_u`**:
+        - Description: Specifies the accuracy (difference in optimal Hubbard U values between two iterations, intervalled by `report_optimum_interval`) at which you'd like to stop the BO process. 
+          A `threshold_opt_u` of `0.0` will disable this optimal Hubbard U-based convergence assessment.
+          It can be the sole convergence criterion or work together with `threshold`.
+        - Default: `"threshold_opt_u": 0.0`
 
 
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,
   etc.) of the target materials.
   #### An example of InAs:
     - **`lattice_param`** and **`cell`**: Specify the 2nd to 5th rows in your POSCAR.
-        ```json
+        `   ``json
         {
             "lattice_param": 6.0584,
             "cell": [

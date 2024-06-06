@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from bayes_opt import BayesianOptimization
 from bayes_opt import UtilityFunction
+from numpy.typing import NDArray
 
 matplotlib.use('Agg')  # Set the backend to 'Agg' for non-interactive plotting  # noqa
 from matplotlib import cm, gridspec
@@ -283,6 +284,9 @@ class BoDftuIterator(BoStepExecutor):
         self._d_obj: Optional[float] = None
         self._exit_converged: bool = False
 
+        self._opt_u_so_far: Optional[NDArray] = None
+        self._opt_u_so_far_last: Optional[NDArray] = None
+
     def next(self):
         self._obj_current = self._obj_next
         next_point_to_probe, self._obj_next = self.advance_step()
@@ -291,8 +295,10 @@ class BoDftuIterator(BoStepExecutor):
         self._i_step += 1
         if self._i_step % self._config.report_optimum_interval == 0:
             self.predict(generate_plot_data=False)
+            self._opt_u_so_far_last = self._opt_u_so_far.copy()
+            self._opt_u_so_far = self._optimal[0]
             self._logger.info(f"Iteration {self._i_step} of Bayesian Optimization loop completed. "
-                              f"Optimal Hubbard U so far: {self._optimal[0]}")
+                              f"Optimal Hubbard U so far: {self._opt_u_so_far}")
 
     def update_u_config(self, u_new):
         with open(self._config.tmp_config_path, 'r') as f:
@@ -306,20 +312,33 @@ class BoDftuIterator(BoStepExecutor):
             json.dump(data, f, indent=4)
 
     def converge(self):
+        # Criteria #1: objective function
         if self._obj_current is not None:  # Can't be the 1st step
             self._d_obj = abs(self._obj_next - self._obj_current)
             is_converged = (self._config.threshold != 0 and self._d_obj <= self._config.threshold)
             # add objective function and its difference to the end of the log file
             modify_last_line_before_newline(self._config.tmp_u_path, " ".join((str(self._obj_next), str(self._d_obj))))
-
         else:
             is_converged = False
             modify_last_line_before_newline(self._config.tmp_u_path, str(self._obj_next))
 
         if is_converged:
-            self._logger.info(f"Convergence reached at iteration {self._i_step + 1}, exiting.")
+            self._logger.info(f"Convergence (objective function) reached at iteration {self._i_step}, exiting.")
             self._exit_converged = True
-        return is_converged
+
+        # Criteria #2: optimal U values
+        if (self._i_step % self._config.report_optimum_interval == 0) and (
+                self._i_step // self._config.report_optimum_interval > 1):
+            d_opt_u = np.abs(self._opt_u_so_far - self._opt_u_so_far_last)
+            is_converged_opt_u = (self._config.threshold_opt_u != 0 and np.all(d_opt_u <= self._config.threshold_opt_u))
+        else:
+            is_converged_opt_u = False
+
+        if is_converged_opt_u:
+            self._logger.info(f"Convergence (optimal Hubbard U) reached at iteration {self._i_step}, exiting.")
+            self._exit_converged = True
+
+        return self._exit_converged
 
     def finalize(self):
         if not self._exit_converged:
