@@ -170,7 +170,7 @@ Before running the program, configure the `input.json` file. It contains:
   etc.) of the target materials.
   #### An example of InAs:
     - **`lattice_param`** and **`cell`**: Specify the 2nd to 5th rows in your POSCAR.
-        `   ``json
+        ```json
         {
             "lattice_param": 6.0584,
             "cell": [
