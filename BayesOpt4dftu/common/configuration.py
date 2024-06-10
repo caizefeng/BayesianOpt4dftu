@@ -69,7 +69,7 @@ class Config:
         self.threshold_opt_u = bo_params.get('threshold_opt_u', 0.0)
 
         # File paths
-        self.root_dir = '../'
+        self.root_dir = './'
         self.abs_root_dir = os.path.abspath(self.root_dir)
 
         self.step_dir_dict = {'scf': 'scf', 'band': 'band'}
