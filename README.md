@@ -98,7 +98,7 @@ Before running the program, configure the `input.json` file. It contains:
     - **`get_optimal_band`**:
         - Description: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization. 
           The results of this calculation will be appended to the end of the log file.
-        - Default: `"get_optimal_band": false`
+        - Default: `"get_optimal_band": true`
 
 
 - **`bo`**: Settings specific to Bayesian Optimization.

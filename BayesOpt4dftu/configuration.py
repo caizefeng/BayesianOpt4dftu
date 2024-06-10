@@ -110,7 +110,7 @@ class Config:
         os.environ['VASP_PP_PATH'] = self.vasp_pp_path
         self.dry_run = vasp_env_params.get('dry_run', False)
         self.dftu_only = vasp_env_params.get('dftu_only', False)
-        self.get_optimal_band = vasp_env_params.get('get_optimal_band', False)
+        self.get_optimal_band = vasp_env_params.get('get_optimal_band', True)
 
         # K-path parameters
         self.num_kpts = data['structure_info']['num_kpts']
