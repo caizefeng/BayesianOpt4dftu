@@ -54,6 +54,7 @@ class Config:
         self.alpha_gap = bo_params.get('alpha_gap', 0.25)
         self.alpha_band = bo_params.get('alpha_band', 0.75)
         self.alpha_mag = bo_params.get('alpha_mag', 0.0)
+        self.mag_axis = bo_params.get('mag_axis', 'all')
         if self.alpha_mag:
             self.include_mag = True
         else:

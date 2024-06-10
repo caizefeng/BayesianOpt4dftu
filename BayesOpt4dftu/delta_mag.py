@@ -33,8 +33,8 @@ class DeltaMag:
     def compute_delta_mag(self, component='all', mode='total'):
 
         # Does not matter if collinear
-        assert component in ['x', 'y', 'z', 'all'], 'Unsupported magnetization component.'
-        axis_map = dict(zip(['x', 'y', 'z', 'all'], [-1, 0, 1, 2]))
+        assert component in ['all', 'x', 'y', 'z'], 'Unsupported magnetization component.'
+        axis_map = dict(zip(['all', 'x', 'y', 'z'], [-1, 0, 1, 2]))
         axis = axis_map[component]
 
         assert mode in ['orbit', 'total'], 'Unsupported magnetization mode.'
@@ -66,7 +66,7 @@ class DeltaMag:
         return False
 
     @staticmethod
-    def mag2array(mag, noncollinear=True, axis=2, mode='total') -> NDArray:
+    def mag2array(mag, noncollinear=True, axis=-1, mode='total') -> NDArray:
         num_ions = len(mag)
 
         orbits = mag[0].keys()

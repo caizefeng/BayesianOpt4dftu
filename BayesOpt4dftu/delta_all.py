@@ -32,7 +32,7 @@ class DeltaAll:
         self.dg.compute_delta_gap()
         self.db.compute_delta_band()
         if self._config.include_mag:
-            self.dm.compute_delta_mag()
+            self.dm.compute_delta_mag(component=self._config.mag_axis)
 
     def write_delta(self, na_padding=False):
         # U values

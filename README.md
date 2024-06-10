@@ -136,6 +136,10 @@ Before running the program, configure the `input.json` file. It contains:
         - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `alpha_mag` of `0` will exclude Δmagnetization from the loss function.
         - Default: `"alpha_mag": 0.0`
 
+    - **`mag_axis`**:
+        - Description: Specifies the Cartesian component of the magnetic moment used to calculate Δmagnetization. Available options are `"x"`, `"y"`, `"z"`, and `"all"`(all 3 components)
+        - Default: `"mag_axis": "all"`
+
     - **`threshold`**:
         - Description: Specifies the accuracy (difference in objective function between two consecutive iterations) at which you'd like to stop the BO process. 
           A `threshold` of `0.0` (and `threshold_opt_u` of `0.0` as well) will disable the convergence assessment based, meaning the BO will exit only upon reaching the maximum iterations.

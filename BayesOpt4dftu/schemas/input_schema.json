@@ -79,6 +79,15 @@
                     "type": "number",
                     "minimum": 0
                 },
+                "mag_axis": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "x",
+                        "y",
+                        "z"
+                    ]
+                },
                 "threshold": {
                     "type": "number",
                     "minimum": 0
