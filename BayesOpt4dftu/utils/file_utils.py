@@ -1,26 +1,5 @@
 import os
 import shutil
-import sys
-import time
-import warnings
-from contextlib import contextmanager
-
-
-@contextmanager
-def task_timer(label, logger):
-    logger.info(f"{label} begins.")
-    start = time.perf_counter()
-    try:
-        yield
-    finally:
-        end = time.perf_counter()
-        elapsed_time = end - start
-        hours, rem = divmod(elapsed_time, 3600)
-        minutes, seconds = divmod(rem, 60)
-        hours_text = f"{int(hours)} Hour{'s' if hours != 1 else ''}"
-        minutes_text = f"{int(minutes)} Minute{'s' if minutes != 1 else ''}"
-        seconds_text = f"{seconds:.2f} Second{'s' if seconds != 1 else ''}"
-        logger.info(f"{label} completed in {hours_text} {minutes_text} {seconds_text}.")
 
 
 def modify_last_line_before_newline(file_path, additional_string):
@@ -44,16 +23,6 @@ def modify_last_line_before_newline(file_path, additional_string):
 
             # Write all lines back to the file
             file.writelines(lines)
-
-
-class SuppressPrints:
-    def __enter__(self):
-        self._original_stdout = sys.stdout
-        sys.stdout = open(os.devnull, 'w')
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.stdout.close()
-        sys.stdout = self._original_stdout
 
 
 def find_and_readlines_first(directory, file_list, logger, extra_message=''):
@@ -98,9 +67,36 @@ def error_handled_copy(source_path, target_path, logger, error_cause_message):
         raise  # Re-raise the caught exception to halt the program
 
 
-def deprecated(func):
-    def wrapper(*args, **kwargs):
-        warnings.warn(f"{func.__name__} is deprecated", DeprecationWarning, stacklevel=2)
-        return func(*args, **kwargs)
+def format_log_file(input_file, output_file, decimals, width=15):
+    with open(input_file, 'r') as infile:
+        lines = infile.readlines()
 
-    return wrapper  # noqa
+    formatted_lines = []
+    for line in lines:
+        # Split line into components
+        components = line.split()
+        formatted_components = []
+
+        for comp in components:
+            try:
+                # Try to convert to float and format, preserving scientific notation if needed
+                num = float(comp)
+                if 'e' in comp or 'E' in comp:
+                    formatted_comp = f"{num:.{decimals}e}"
+                else:
+                    formatted_comp = f"{num:.{decimals}f}"
+            except ValueError:
+                # If conversion fails, just use the original component (e.g., for "N/A")
+                formatted_comp = comp
+
+            # Pad the formatted component to the specified width
+            formatted_components.append(formatted_comp.ljust(width))
+
+        # Join the formatted components back into a line
+        formatted_line = ' '.join(formatted_components).strip()
+        formatted_lines.append(formatted_line)
+
+    with open(output_file, 'w') as outfile:
+        outfile.write('\n'.join(formatted_lines))
+
+    print(f"Formatted log file saved to {output_file}")

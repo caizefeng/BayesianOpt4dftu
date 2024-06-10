@@ -9,10 +9,11 @@ from ase import Atoms, Atom
 from ase.calculators.vasp import Vasp
 from pymatgen.io.vasp import Incar, Poscar
 
-from BayesOpt4dftu.configuration import Config
-from BayesOpt4dftu.io_utils import deprecated, recreate_path_as_directory, error_handled_copy
-from BayesOpt4dftu.k_path import BoBandPath
-from BayesOpt4dftu.logging import BoLoggerGenerator
+from BayesOpt4dftu.common.configuration import Config
+from BayesOpt4dftu.common.logger import BoLoggerGenerator
+from BayesOpt4dftu.core.k_path import BoBandPath
+from BayesOpt4dftu.utils.decorator_utils import deprecated
+from BayesOpt4dftu.utils.file_utils import recreate_path_as_directory, error_handled_copy
 
 
 class VaspInit:

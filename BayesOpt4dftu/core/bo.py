@@ -12,9 +12,10 @@ matplotlib.use('Agg')  # Set the backend to 'Agg' for non-interactive plotting  
 from matplotlib import cm, gridspec
 from matplotlib import pyplot as plt
 
-from BayesOpt4dftu.configuration import Config
-from BayesOpt4dftu.io_utils import SuppressPrints, modify_last_line_before_newline
-from BayesOpt4dftu.logging import BoLoggerGenerator
+from BayesOpt4dftu.common.configuration import Config
+from BayesOpt4dftu.common.logger import BoLoggerGenerator
+from BayesOpt4dftu.utils.context_utils import SuppressPrints
+from BayesOpt4dftu.utils.file_utils import modify_last_line_before_newline
 
 
 class OptimizerGenerator:

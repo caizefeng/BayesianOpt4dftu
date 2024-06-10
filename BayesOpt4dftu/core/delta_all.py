@@ -2,11 +2,11 @@ import os
 
 from pymatgen.io.vasp import Incar
 
-from BayesOpt4dftu.configuration import Config
-from BayesOpt4dftu.delta_band import DeltaBand
-from BayesOpt4dftu.delta_gap import DeltaGap
-from BayesOpt4dftu.delta_mag import DeltaMag
-from BayesOpt4dftu.logging import BoLoggerGenerator
+from BayesOpt4dftu.common.configuration import Config
+from BayesOpt4dftu.common.logger import BoLoggerGenerator
+from BayesOpt4dftu.core.delta_band import DeltaBand
+from BayesOpt4dftu.core.delta_gap import DeltaGap
+from BayesOpt4dftu.core.delta_mag import DeltaMag
 
 
 class DeltaAll:

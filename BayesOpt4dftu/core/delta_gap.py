@@ -1,8 +1,8 @@
 import numpy as np
 from vaspvis.utils import BandGap
 
-from BayesOpt4dftu.configuration import Config
-from BayesOpt4dftu.logging import BoLoggerGenerator
+from BayesOpt4dftu.common.configuration import Config
+from BayesOpt4dftu.common.logger import BoLoggerGenerator
 
 
 class DeltaGap:

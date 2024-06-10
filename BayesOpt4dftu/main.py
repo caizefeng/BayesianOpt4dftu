@@ -1,18 +1,16 @@
-import argparse
-
-from BayesOpt4dftu import __version__, __package_name__
-from BayesOpt4dftu.bo import *
-from BayesOpt4dftu.configuration import Config, TempFileManager
-from BayesOpt4dftu.delta_all import DeltaAll
-from BayesOpt4dftu.dft import VaspInit, DftManager
-from BayesOpt4dftu.io_utils import task_timer
-from BayesOpt4dftu.logging import BoLoggerGenerator
+from BayesOpt4dftu import __package_name__, __version__
+from BayesOpt4dftu.cli.main_cli import parse_args
+from BayesOpt4dftu.common.configuration import Config
+from BayesOpt4dftu.common.logger import BoLoggerGenerator
+from BayesOpt4dftu.core.bo import BoDftuIterator
+from BayesOpt4dftu.core.delta_all import DeltaAll
+from BayesOpt4dftu.core.dft import VaspInit, DftManager
+from BayesOpt4dftu.core.temp_file_manager import TempFileManager
+from BayesOpt4dftu.utils.context_utils import task_timer
 
 
 def main():
-    parser = argparse.ArgumentParser(description=f'{__package_name__} CLI tool. Use "./input.json" as the config file.')
-    parser.add_argument('--version', action='version', version=f"{__package_name__} {__version__}")
-    _ = parser.parse_args()  # This will print version and exit if --version is provided
+    _ = parse_args()  # This will print version and exit if --version is provided
 
     driver_logger = BoLoggerGenerator.get_logger("Driver")
     driver_logger.info(f"{__package_name__}, Version: {__version__}")

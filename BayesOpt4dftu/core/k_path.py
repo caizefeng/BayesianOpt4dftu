@@ -7,8 +7,8 @@ from ase import Atoms
 from ase.dft.kpoints import get_special_points
 from pymatgen.io.vasp import Kpoints
 
-from BayesOpt4dftu.io_utils import find_and_readlines_first
-from BayesOpt4dftu.logging import BoLoggerGenerator
+from BayesOpt4dftu.common.logger import BoLoggerGenerator
+from BayesOpt4dftu.utils.file_utils import find_and_readlines_first
 
 
 class BoBandPath:
