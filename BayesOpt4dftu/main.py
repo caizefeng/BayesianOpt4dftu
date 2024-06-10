@@ -54,10 +54,9 @@ def main():
 
                 # Print baseline band gap for reference
                 if i == 0:
-                    if config.baseline == 'hse':
-                        driver_logger.info(f"Band gap from hybrid DFT calculation: {delta.dg.get_baseline_gap()} eV")
-                    elif config.baseline == 'gw':
-                        driver_logger.info(f"Band gap from GW calculation: {delta.dg.get_baseline_gap()} eV")
+                    delta.report_baseline_gap()
+                    if config.include_mag:
+                        delta.report_baseline_magnetization()
 
                 bo_iterator.next()
                 if bo_iterator.converge():
@@ -76,6 +75,9 @@ def main():
                 delta.write_delta(na_padding=True)
                 driver_logger.info("An additional DFT+U calculation using optimal U values performed and logged at "
                                    "the end.")
+                delta.report_optimal_dftu_gap()
+                if config.include_mag:
+                    delta.report_optimal_dftu_magnetization()
 
             dft_manager.finalize()
             bo_iterator.finalize()

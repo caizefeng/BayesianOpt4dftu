@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -26,9 +26,17 @@ class DeltaMag:
         }
         self._noncollinear: bool = DeltaMag.read_lnoncollinear(self._outcar_with_mag[self._config.baseline])
         self._delta_mag: float = 0.0
+        self._baseline_mag: Optional[NDArray] = None
+        self._dftu_mag: Optional[NDArray] = None
 
     def get_delta_mag(self):
         return self._delta_mag
+
+    def get_baseline_mag(self):
+        return self._baseline_mag
+
+    def get_dftu_mag(self):
+        return self._dftu_mag
 
     def compute_delta_mag(self, component='all', mode='total'):
 
@@ -45,10 +53,10 @@ class DeltaMag:
         mag_dftu = outcar_dftu.magnetization
         mag_baseline = outcar_baseline.magnetization
 
-        mag_array_dftu = DeltaMag.mag2array(mag_dftu, noncollinear=self._noncollinear, axis=axis, mode=mode)
-        mag_array_gw = DeltaMag.mag2array(mag_baseline, noncollinear=self._noncollinear, axis=axis, mode=mode)
+        self._dftu_mag = DeltaMag.mag2array(mag_dftu, noncollinear=self._noncollinear, axis=axis, mode=mode)
+        self._baseline_mag = DeltaMag.mag2array(mag_baseline, noncollinear=self._noncollinear, axis=axis, mode=mode)
 
-        self._delta_mag = np.sqrt(np.mean((mag_array_dftu - mag_array_gw) ** 2))  # RMSE
+        self._delta_mag = np.sqrt(np.mean((self._dftu_mag - self._baseline_mag) ** 2))  # RMSE
 
     @staticmethod
     def read_lnoncollinear(outcar_path):

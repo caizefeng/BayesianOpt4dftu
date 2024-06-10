@@ -59,3 +59,23 @@ class DeltaAll:
 
         with open(self._config.tmp_u_path, 'a') as f:
             f.write(output + '\n')
+
+    def report_baseline_gap(self):
+        self._logger.info(
+            f"Band gap from "
+            f"{self._config.method_name_dict[self._config.baseline]} calculation: {self.dg.get_baseline_gap()} eV")
+
+    def report_baseline_magnetization(self):
+        self._logger.info(
+            f"Magnetic moment ('{self._config.mag_axis}' component) from "
+            f"{self._config.method_name_dict[self._config.baseline]} calculation: {self.dm.get_baseline_mag()}")
+
+    def report_optimal_dftu_gap(self):
+        self._logger.info(
+            f"Band gap from "
+            f"optimal DFT+U calculation: {self.dg.get_dftu_gap()} eV")
+
+    def report_optimal_dftu_magnetization(self):
+        self._logger.info(
+            f"Magnetic moment ('{self._config.mag_axis}' component) from "
+            f"optimal DFT+U calculation: {self.dm.get_dftu_mag()}")

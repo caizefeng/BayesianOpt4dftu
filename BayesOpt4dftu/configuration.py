@@ -99,6 +99,9 @@ class Config:
                              'obj_func': 'obj_func',
                              'd_obj': 'd_obj'}
 
+        self.method_name_dict = {'hse': 'hybrid DFT',
+                                 'gw': 'GW'}
+
         # VASP parameters
         vasp_env_params = data['vasp_env']
         # Command to run VASP executable.

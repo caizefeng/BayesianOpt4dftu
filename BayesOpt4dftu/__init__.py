@@ -1,2 +1,2 @@
-__version__ = "1.4.0"
+__version__ = "1.5.2"
 __package_name__ = "BayesOpt4dftu"
