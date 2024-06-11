@@ -114,3 +114,7 @@ class DeltaMag:
                         mag_array[i] = mag[i][orb]
 
         return mag_array
+
+    @staticmethod
+    def mag2string(mag_array: NDArray):
+        return np.array2string(mag_array.reshape(-1), formatter={'float_kind': lambda x: "%.4f" % x}, separator=',')

@@ -1,6 +1,5 @@
 import os
 
-import numpy as np
 from pymatgen.io.vasp import Incar
 
 from BayesOpt4dftu.common.configuration import Config
@@ -55,9 +54,8 @@ class DeltaAll:
 
         # Magnetic moment
         if self._config.print_magmom:
-            magmom_string = np.array2string(self.dm.get_dftu_mag().reshape(-1),
-                                            formatter={'float_kind':lambda x: "%.4f" % x})
-            u.append(f'"{magmom_string}"')
+            magmom_string = self.dm.mag2string(self.dm.get_dftu_mag())
+            u.append(magmom_string)
 
         if na_padding:
             output = " ".join(str(x) for x in u) + " N/A" * (len(self._config.headers) - len(u))
@@ -75,7 +73,7 @@ class DeltaAll:
     def report_baseline_magnetization(self):
         self._logger.info(
             f"Magnetic moment ('{self._config.mag_axis}' component) from "
-            f"{self._config.method_name_dict[self._config.baseline]} calculation: {self.dm.get_baseline_mag()}")
+            f"{self._config.method_name_dict[self._config.baseline]} calculation: {self.dm.mag2string(self.dm.get_baseline_mag())}")
 
     def report_optimal_dftu_gap(self):
         self._logger.info(
@@ -85,4 +83,4 @@ class DeltaAll:
     def report_optimal_dftu_magnetization(self):
         self._logger.info(
             f"Magnetic moment ('{self._config.mag_axis}' component) from "
-            f"optimal DFT+U calculation: {self.dm.get_dftu_mag()}")
+            f"optimal DFT+U calculation: {self.dm.mag2string(self.dm.get_dftu_mag())}")
