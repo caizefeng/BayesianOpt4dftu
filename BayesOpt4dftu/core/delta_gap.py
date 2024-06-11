@@ -29,12 +29,12 @@ class DeltaGap:
         return self._dftu_gap
 
     def compute_delta_gap(self):
-        self._dftu_gap = BandGap(folder=self._config.combined_path_dict['dftu']['band'],
-                                 method=1, spin='both').bg
+        self._dftu_gap = float(BandGap(folder=self._config.combined_path_dict['dftu']['band'],
+                                       method=1, spin='both').bg)
 
         if self._config.baseline == 'hse':
-            self._baseline_gap = BandGap(folder=self._config.combined_path_dict['hse']['band'],
-                                         method=1, spin='both').bg
+            self._baseline_gap = float(BandGap(folder=self._config.combined_path_dict['hse']['band'],
+                                               method=1, spin='both').bg)
 
         # TODO: band gap from GW calc
         # Now we only deal with metals in GW calc so it's fine
