@@ -1,7 +1,7 @@
 import argparse
 
 from BayesOpt4dftu import __package_name__
-from BayesOpt4dftu.utils.file_utils import format_log_file, format_log_file_pd
+from BayesOpt4dftu.utils.file_utils import format_log_file_pd
 
 
 def parse_args():

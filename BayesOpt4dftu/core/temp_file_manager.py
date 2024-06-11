@@ -44,7 +44,7 @@ class TempFileManager:
     def clean_up(self):
         shutil.move(self._config.tmp_u_path, self._config.u_path)
         format_log_file_pd(input_file=self._config.u_path, output_file=self._config.formatted_u_path,
-                           decimals=4, width=15)
+                           decimals=4, width=15, logger=self._logger)
         os.remove(self._config.tmp_config_path)
 
         self._logger.info("Temporary files removed.")

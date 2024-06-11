@@ -69,7 +69,7 @@ def error_handled_copy(source_path, target_path, logger, error_cause_message):
         raise  # Re-raise the caught exception to halt the program
 
 
-def format_log_file(input_file, output_file, decimals, width=15):
+def format_log_file(input_file, output_file, decimals, width, logger=None):
     with open(input_file, 'r') as infile:
         lines = infile.readlines()
 
@@ -101,10 +101,13 @@ def format_log_file(input_file, output_file, decimals, width=15):
     with open(output_file, 'w') as outfile:
         outfile.write('\n'.join(formatted_lines))
 
-    print(f"Formatted log file saved to {output_file}")
+    if logger:
+        logger.info(f"Formatted log file saved to {output_file}")
+    else:
+        print(f"Formatted log file saved to {output_file}")
 
 
-def format_log_file_pd(input_file, output_file, decimals, width=15):
+def format_log_file_pd(input_file, output_file, decimals, width, logger=None):
     # Load the data into a DataFrame
     with open(input_file, 'r') as infile:
         df = pd.read_csv(infile, delim_whitespace=True)
@@ -128,4 +131,7 @@ def format_log_file_pd(input_file, output_file, decimals, width=15):
     with open(output_file, 'w') as outfile:
         outfile.write(formatted_data)
 
-    print(f"Formatted log file saved to {output_file}")
+    if logger:
+        logger.info(f"Formatted log file saved to {output_file}")
+    else:
+        print(f"Formatted log file saved to {output_file}")
