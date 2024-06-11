@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 from pymatgen.io.vasp import Incar
 
 from BayesOpt4dftu.common.configuration import Config
@@ -52,8 +53,14 @@ class DeltaAll:
         if self._config.include_mag:
             u.append(self.dm.get_delta_mag())
 
+        # Magnetic moment
+        if self._config.print_magmom:
+            magmom_string = np.array2string(self.dm.get_dftu_mag().reshape(-1),
+                                            formatter={'float_kind':lambda x: "%.4f" % x})
+            u.append(f'"{magmom_string}"')
+
         if na_padding:
-            output = " ".join(str(x) for x in u) + " N/A" * 2
+            output = " ".join(str(x) for x in u) + " N/A" * (len(self._config.headers) - len(u))
         else:
             output = " ".join(str(x) for x in u)
 

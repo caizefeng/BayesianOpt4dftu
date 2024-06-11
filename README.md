@@ -1,6 +1,6 @@
 # BayesianOpt4dftu #
 
-![version](https://img.shields.io/badge/version-2.0.0-blue)
+![version](https://img.shields.io/badge/version-2.1.0-blue)
 
 Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization approach.
 
@@ -169,6 +169,9 @@ Before running the program, configure the `input.json` file. It contains:
           It can be the sole convergence criterion or work together with `threshold`.
         - Default: `"threshold_opt_u": 0.0`
 
+    - **`print_magmom`**:
+        - Description: Specifies whether to print the magnetic moment at each iteration.
+        - Default: `"print_magmom": false`
 
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,
   etc.) of the target materials.

@@ -115,6 +115,9 @@
                 "threshold_opt_u": {
                     "type": "number",
                     "minimum": 0
+                },
+                "print_magmom": {
+                    "type": "boolean"
                 }
             },
             "required": [

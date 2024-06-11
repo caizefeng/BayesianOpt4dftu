@@ -67,6 +67,7 @@ class Config:
         self.baseline = bo_params.get('baseline', 'hse')
         self.report_optimum_interval = bo_params.get('report_optimum_interval', 10)
         self.threshold_opt_u = bo_params.get('threshold_opt_u', 0.0)
+        self.print_magmom = bo_params.get('print_magmom', False)
 
         # File paths
         self.root_dir = './'
@@ -91,12 +92,27 @@ class Config:
 
         self.eigen_cache_file_name = 'eigenvalues.npy'
 
+        # Log file headers
         self.column_names = {'band_gap': 'band_gap',
                              'delta_gap': 'delta_gap',
                              'delta_band': 'delta_band',
                              'delta_mag': 'delta_mag',
+                             'mag_moment': 'mag_moment',
                              'obj_func': 'obj_func',
                              'd_obj': 'd_obj'}
+
+        self.headers = []
+        for i, u in enumerate(self.which_u):
+            self.headers.append(f"U_ele_{str(i + 1)}")
+        self.headers.append(self.column_names['band_gap'])
+        self.headers.append(self.column_names['delta_gap'])
+        self.headers.append(self.column_names['delta_band'])
+        if self.include_mag:
+            self.headers.append(self.column_names['delta_mag'])
+        if self.print_magmom:
+            self.headers.append(self.column_names['mag_moment'])
+        self.headers.append(self.column_names['obj_func'])
+        self.headers.append(self.column_names['d_obj'])
 
         self.method_name_dict = {'hse': 'hybrid DFT',
                                  'gw': 'GW'}

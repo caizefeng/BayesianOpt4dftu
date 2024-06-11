@@ -32,30 +32,11 @@ class TempFileManager:
             shutil.copyfile(self._config.config_path, self._config.tmp_config_path)
 
             # Temporary Bayesian Optimization log
-            header = []
-            for i, u in enumerate(self._config.which_u):
-                header.append(f"U_ele_{str(i + 1)}")
-
             if os.path.exists(self._config.tmp_u_path):
                 os.remove(self._config.tmp_u_path)
 
-            if self._config.alpha_mag:
-                with open(self._config.tmp_u_path, 'w+') as f:
-                    f.write(f"{(' '.join(header))} "
-                            f"{self._config.column_names['band_gap']} "
-                            f"{self._config.column_names['delta_gap']} "
-                            f"{self._config.column_names['delta_band']} "
-                            f"{self._config.column_names['delta_mag']} "
-                            f"{self._config.column_names['obj_func']} "
-                            f"{self._config.column_names['d_obj']} \n")
-            else:
-                with open(self._config.tmp_u_path, 'w+') as f:
-                    f.write(f"{(' '.join(header))} "
-                            f"{self._config.column_names['band_gap']} "
-                            f"{self._config.column_names['delta_gap']} "
-                            f"{self._config.column_names['delta_band']} "
-                            f"{self._config.column_names['obj_func']} "
-                            f"{self._config.column_names['d_obj']} \n")
+            with open(self._config.tmp_u_path, 'w+') as f:
+                f.write(f"{(' '.join(self._config.headers))} \n")
 
             self._logger.info("Temporary files initiated.")
 

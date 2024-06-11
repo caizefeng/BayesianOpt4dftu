@@ -136,7 +136,7 @@ class BoStepExecutor(OptimizerGenerator):
 
             self._optimizer._gp.fit(x_obs, y_obs)
             mu, sigma = self._optimizer._gp.predict(x, return_std=True)
-            self._optimal = OptimizerGenerator.retrieve_optimal(x, mu)
+            self._optimal = self.retrieve_optimal(x, mu)
 
             if generate_plot_data:
                 self._plot_data = {'mu': mu,
@@ -159,7 +159,7 @@ class BoStepExecutor(OptimizerGenerator):
 
             self._optimizer._gp.fit(obs, y_obs)
             mu, sigma = self._optimizer._gp.predict(x_mesh, return_std=True)
-            self._optimal = OptimizerGenerator.retrieve_optimal(x_mesh, mu)
+            self._optimal = self.retrieve_optimal(x_mesh, mu)
 
             if generate_plot_data:
                 self._plot_data = {'mu': mu,
@@ -188,7 +188,7 @@ class BoStepExecutor(OptimizerGenerator):
             # Fit and predict
             self._optimizer._gp.fit(obs, y_obs)
             mu, sigma = self._optimizer._gp.predict(x_mesh, return_std=True)
-            self._optimal = OptimizerGenerator.retrieve_optimal(x_mesh, mu)
+            self._optimal = self.retrieve_optimal(x_mesh, mu)
 
             # Plot data is set to None for dimensions >= 3
             if generate_plot_data:
@@ -280,8 +280,8 @@ class BoDftuIterator(BoStepExecutor):
                          self._config.elements)
         self._logger.info("Bayesian Optimization begins.")
         self._i_step: int = 0
-        self._obj_current: Optional[float] = None
-        self._obj_next: Optional[float] = None
+        self._obj_last: Optional[float] = None
+        self._obj: Optional[float] = None
         self._d_obj: Optional[float] = None
         self._exit_converged: bool = False
 
@@ -289,8 +289,8 @@ class BoDftuIterator(BoStepExecutor):
         self._opt_u_so_far_last: Optional[NDArray] = None
 
     def next(self):
-        self._obj_current = self._obj_next
-        next_point_to_probe, self._obj_next = self.advance_step()
+        self._obj_last = self._obj
+        next_point_to_probe, self._obj = self.advance_step()
         u_next = list(next_point_to_probe.values())
         self.update_u_config(u_next)
         self._i_step += 1
@@ -315,14 +315,14 @@ class BoDftuIterator(BoStepExecutor):
 
     def converge(self):
         # Criteria #1: objective function
-        if self._obj_current is not None:  # Can't be the 1st step
-            self._d_obj = abs(self._obj_next - self._obj_current)
+        if self._obj_last is not None:  # Can't be the 1st step
+            self._d_obj = abs(self._obj - self._obj_last)
             is_converged = (self._config.threshold != 0 and self._d_obj <= self._config.threshold)
             # add objective function and its difference to the end of the log file
-            modify_last_line_before_newline(self._config.tmp_u_path, " ".join((str(self._obj_next), str(self._d_obj))))
+            modify_last_line_before_newline(self._config.tmp_u_path, " ".join((str(self._obj), str(self._d_obj))))
         else:
             is_converged = False
-            modify_last_line_before_newline(self._config.tmp_u_path, str(self._obj_next))
+            modify_last_line_before_newline(self._config.tmp_u_path, " ".join((str(self._obj), "N/A")))
 
         if is_converged:
             self._logger.info(f"Convergence (objective function) reached at iteration {self._i_step}, exiting.")
