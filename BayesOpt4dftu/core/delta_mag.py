@@ -21,7 +21,7 @@ class DeltaMag:
     def __init__(self):
         self._outcar_with_mag: Dict[str, str] = {
             'dftu': os.path.join(self._config.combined_path_dict['dftu']['scf'], 'OUTCAR'),
-            'hse': os.path.join(self._config.combined_path_dict['hse']['band'], 'OUTCAR'),
+            'hse': os.path.join(self._config.combined_path_dict['hse']['scf'], 'OUTCAR'),
             'gw': os.path.join(self._config.combined_path_dict['gw']['scf'], 'OUTCAR')
         }
         self._noncollinear: bool = DeltaMag.read_lnoncollinear(self._outcar_with_mag[self._config.baseline])
