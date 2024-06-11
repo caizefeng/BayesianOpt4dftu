@@ -68,9 +68,11 @@ class DeltaMag:
         """
         with open(outcar_path, 'r') as file:
             for line in file:
-                if 'LNONCOLLINEAR' in line:
+                if 'LNONCOLLINEAR' in line and 'T' in line.split():
                     # Check if LNONCOLLINEAR is followed by T
-                    return 'T' in line.split()
+                    return True
+                else:
+                    continue
         return False
 
     @staticmethod
@@ -117,4 +119,4 @@ class DeltaMag:
 
     @staticmethod
     def mag2string(mag_array: NDArray):
-        return np.array2string(mag_array.reshape(-1), formatter={'float_kind': lambda x: "%.4f" % x}, separator=',')
+        return np.array2string(mag_array.reshape(-1), formatter={'float_kind': lambda x: "%.3f" % x}, separator=',')
