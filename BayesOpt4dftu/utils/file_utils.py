@@ -1,6 +1,8 @@
 import os
 import shutil
 
+import pandas as pd
+
 
 def modify_last_line_before_newline(file_path, additional_string):
     """
@@ -98,5 +100,32 @@ def format_log_file(input_file, output_file, decimals, width=15):
 
     with open(output_file, 'w') as outfile:
         outfile.write('\n'.join(formatted_lines))
+
+    print(f"Formatted log file saved to {output_file}")
+
+
+def format_log_file_pd(input_file, output_file, decimals, width=15):
+    # Load the data into a DataFrame
+    with open(input_file, 'r') as infile:
+        df = pd.read_csv(infile, delim_whitespace=True)
+
+    # Function to format values to a fixed number of decimal points
+    def format_value(val):
+        try:
+            num = float(val)
+            return f"{num:.{decimals}e}" if 'e' in str(val) else f"{num:.{decimals}f}"
+        except (ValueError, TypeError):
+            return val
+
+    # Apply formatting to all columns
+    for col in df.columns:
+        df[col] = df[col].apply(format_value)
+
+    # Increase spacing between columns
+    formatted_data = df.to_string(index=False, justify='right', col_space=width)
+
+    # Write formatted data to the output file
+    with open(output_file, 'w') as outfile:
+        outfile.write(formatted_data)
 
     print(f"Formatted log file saved to {output_file}")

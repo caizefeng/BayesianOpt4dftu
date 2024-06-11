@@ -89,6 +89,7 @@ class Config:
         self.tmp_config_path = os.path.join(self.root_dir, self.tmp_config_file_name)
         self.u_path = os.path.join(self.root_dir, self.u_file_name)
         self.tmp_u_path = os.path.join(self.root_dir, self.tmp_u_file_name)
+        self.formatted_u_path = os.path.join(self.root_dir, f"formatted_{self.u_file_name}")
 
         self.eigen_cache_file_name = 'eigenvalues.npy'
 
