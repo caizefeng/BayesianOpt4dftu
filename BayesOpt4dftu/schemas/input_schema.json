@@ -172,7 +172,7 @@
                                 "maxItems": 3
                             },
                             {
-                                "anyOf": [
+                                "oneOf": [
                                     {
                                         "type": "array",
                                         "items": {
@@ -215,7 +215,7 @@
                     "maxItems": 3
                 },
                 "num_kpts": {
-                    "anyOf": [
+                    "oneOf": [
                         {
                             "type": "integer",
                             "minimum": 1
@@ -231,6 +231,16 @@
                 "kpath": {
                     "type": "string",
                     "pattern": "^(.+?)(\\s+.+?)+$"
+                },
+                "custom_POTCAR_path": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
                 }
             },
             "required": [

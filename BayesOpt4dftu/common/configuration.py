@@ -155,6 +155,9 @@ class Config:
             self._logger.error("Unsupported `num_kpts` type: only positive integers or 'auto' are accepted.")
             raise ValueError
 
+        # Path to custom POTCAR
+        self.custom_POTCAR_path = data['structure_info'].get('custom_POTCAR_path', None)
+
         self._logger.info(f"Configuration loaded from file {self.config_file_name}.")
 
 

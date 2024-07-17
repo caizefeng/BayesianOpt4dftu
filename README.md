@@ -1,6 +1,6 @@
 # BayesianOpt4dftu #
 
-![version](https://img.shields.io/badge/version-2.3.6-blue)
+![version](https://img.shields.io/badge/version-2.4.1-blue)
 
 Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization approach.
 
@@ -75,103 +75,103 @@ Before running the program, configure the `input.json` file. It contains:
 - **`vasp_env`**: Environment settings for VASP.
 
     - **`vasp_run_command`**:
-        - Description: Running command for VASP executable.
-        - Example: `"vasp_run_command": "mpirun -np 64 /path/to/vasp/executable"`
+        - **Description**: Running command for VASP executable.
+        - **Example**: `"vasp_run_command": "mpirun -np 64 /path/to/vasp/executable"`
 
     - **`out_file_name`**:
-        - Description: The desired name of the VASP output file.
-        - Example: `"out_file_name": "slurm-vasp.out"`
+        - **Description**: The desired name of the VASP output file.
+        - **Example**: `"out_file_name": "slurm-vasp.out"`
 
     - **`vasp_pp_path`**:
-        - Description: Path directing to the VASP pseudopotential. It should be the directory containing
+        - **Description**: Path directing to the VASP pseudopotential. It should be the directory containing
           the `potpaw_PBE` folder.
-        - Example: `"vasp_pp_path": "/path/to/pseudopotentials/"`
+        - **Example**: `"vasp_pp_path": "/path/to/pseudopotentials/"`
 
     - **`dry_run`**:
-        - Description: Specifies if the run is a dry run (generating files only without actual computation) or not.
-        - Default: `"dry_run": false`
+        - **Description**: Specifies if the run is a dry run (generating files only without actual computation) or not.
+        - **Default**: `"dry_run": false`
 
     - **`dftu_only`**:
-        - Description: Indicates whether only DFT+U is performed. If set to true, completed baseline calculations should be placed in the `<working dir>/<baseline>` directory.
-        - Default: `"dftu_only": false`
+        - **Description**: Indicates whether only DFT+U is performed. If set to true, completed baseline calculations should be placed in the `<working dir>/<baseline>` directory.
+        - **Default**: `"dftu_only": false`
           
     - **`get_optimal_band`**:
-        - Description: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization. 
+        - **Description**: Indicate if an additional DFT+U using optimal U values is performed after Bayesian optimization. 
           The results of this calculation will be appended to the end of the log file.
-        - Default: `"get_optimal_band": true`
+        - **Default**: `"get_optimal_band": true`
 
 
 - **`bo`**: Settings specific to Bayesian Optimization.
     - **`resume_checkpoint`**:
-        - Description: Determines whether the Bayesian Optimization resumes from a saved checkpoint, as defined by `u_tmp.txt` and `input_tmp.json`.
-        - Default: `"resume_checkpoint": false`
+        - **Description**: Determines whether the Bayesian Optimization resumes from a saved checkpoint, as defined by `u_tmp.txt` and `input_tmp.json`.
+        - **Default**: `"resume_checkpoint": false`
 
     - **`baseline`**:
-        - Description: Specifies the baseline calculation for Bayesian Optimization. Currently, only `"hse"` and `"gw"` are supported. `"gw"` must be executed separately, meaning it is only supported when `"dftu_only": true`.
-        - Default: `"baseline": "hse"`
+        - **Description**: Specifies the baseline calculation for Bayesian Optimization. Currently, only `"hse"` and `"gw"` are supported. `"gw"` must be executed separately, meaning it is only supported when `"dftu_only": true`.
+        - **Default**: `"baseline": "hse"`
 
     - **`which_u`**:
-        - Description: Specifies which element you'd like to optimize the U for.
+        - **Description**: Specifies which element you'd like to optimize the U for.
         - Format: For a unary substance, it has to be `[1,]`. For
           compounds with over 2 elements, you can set each element to `0` or `1` to switch off/on the optimization for that
           element.
-        - Example: For InAs, when optimizing for both In and As, it should be set as `"which_u": [1, 1]`
+        - **Example**: For InAs, when optimizing for both In and As, it should be set as `"which_u": [1, 1]`
 
     - **`br`**:
-        - Description: Specifies the band range you'd like to include in your Δband.
+        - **Description**: Specifies the band range you'd like to include in your Δband.
         - Format: A list of two integers, defining the number of valence bands and conduction bands from the Fermi
           level.
-        - Default: `"br": [5, 5]`
+        - **Default**: `"br": [5, 5]`
 
     - **`kappa`**:
-        - Description: Controls the balance between exploration and exploitation when the acquisition function samples the next points.
+        - **Description**: Controls the balance between exploration and exploitation when the acquisition function samples the next points.
           A lower value (nearing `0`) indicates a preference for exploitation. A higher value (approaching `10`) indicates a preference for exploration.
-        - Default: `"kappa": 5`
+        - **Default**: `"kappa": 5`
 
     - **`alpha_gap`** and **`alpha_band`**:
-        - Description: Specifies the weight coefficients of Δgap and Δband respectively. So far, there are no constraints on the choice of `alpha`s, meaning they can be arbitrary positive real numbers.
-        - Default: `"alpha_gap": 0.25` and `"alpha_band": 0.75`
+        - **Description**: Specifies the weight coefficients of Δgap and Δband respectively. So far, there are no constraints on the choice of `alpha`s, meaning they can be arbitrary positive real numbers.
+        - **Default**: `"alpha_gap": 0.25` and `"alpha_band": 0.75`
 
     - **`alpha_mag`**:
-        - Description: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `alpha_mag` of `0` will exclude Δmagnetization from the loss function.
-        - Default: `"alpha_mag": 0.0`
+        - **Description**: Specifies the weight coefficients of Δmagnetization. `LORBIT` must be set in all `INCAR` files. A `alpha_mag` of `0` will exclude Δmagnetization from the loss function.
+        - **Default**: `"alpha_mag": 0.0`
 
     - **`mag_axis`**:
-        - Description: Specifies the Cartesian component of the magnetic moment used to calculate Δmagnetization. Available options are `"x"`, `"y"`, `"z"`, and `"all"`(all 3 components)
-        - Default: `"mag_axis": "all"`
+        - **Description**: Specifies the Cartesian component of the magnetic moment used to calculate Δmagnetization. Available options are `"x"`, `"y"`, `"z"`, and `"all"`(all 3 components)
+        - **Default**: `"mag_axis": "all"`
 
     - **`threshold`**:
-        - Description: Specifies the accuracy (difference in objective function between two consecutive iterations) at which you'd like to stop the BO process. 
+        - **Description**: Specifies the accuracy (difference in objective function between two consecutive iterations) at which you'd like to stop the BO process. 
           A `threshold` of `0.0` (and `threshold_opt_u` of `0.0` as well) will disable the convergence assessment based, meaning the BO will exit only upon reaching the maximum iterations.
-        - Default: `"threshold": 0.0001`
+        - **Default**: `"threshold": 0.0001`
 
     - **`urange`**:
-        - Description: Specifies the U parameter range for optimization. The unit is eV. Defining different U ranges for separate
+        - **Description**: Specifies the U parameter range for optimization. The unit is eV. Defining different U ranges for separate
           elements is currently unsupported. 
-        - Default: `"urange": [-10, 10]`
+        - **Default**: `"urange": [-10, 10]`
 
     - **`elements`**:
-        - Description: Lists the elements in your system. This is used for plotting the BO results. If it's a
+        - **Description**: Lists the elements in your system. This is used for plotting the BO results. If it's a
           unary substance, it has to be `["ele",]`.
-        - Example: `"elements": ["In", "As"]`
+        - **Example**: `"elements": ["In", "As"]`
 
     - **`iteration`**:
-        - Description: Sets the maximum iterations that BO will perform.
-        - Default: `"iteration": 50`
+        - **Description**: Sets the maximum iterations that BO will perform.
+        - **Default**: `"iteration": 50`
 
     - **`report_optimum_interval`**:
-        - Description: Sets the interval (in iterations) at which the optimal Hubbard U values are calculated and logged.
-        - Default: `"report_optimum_interval": 10`
+        - **Description**: Sets the interval (in iterations) at which the optimal Hubbard U values are calculated and logged.
+        - **Default**: `"report_optimum_interval": 10`
      
     - **`threshold_opt_u`**:
-        - Description: Specifies the accuracy (difference in optimal Hubbard U values between two iterations, intervalled by `report_optimum_interval`) at which you'd like to stop the BO process. 
+        - **Description**: Specifies the accuracy (difference in optimal Hubbard U values between two iterations, intervalled by `report_optimum_interval`) at which you'd like to stop the BO process. 
           A `threshold_opt_u` of `0.0` will disable this optimal Hubbard U-based convergence assessment.
           It can be the sole convergence criterion or work together with `threshold`.
-        - Default: `"threshold_opt_u": 0.0`
+        - **Default**: `"threshold_opt_u": 0.0`
 
     - **`print_magmom`**:
-        - Description: Specifies whether to print the magnetic moment at each iteration.
-        - Default: `"print_magmom": false`
+        - **Description**: Specifies whether to print the magnetic moment at each iteration.
+        - **Default**: `"print_magmom": false`
 
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,
   etc.) of the target materials.
@@ -200,7 +200,7 @@ Before running the program, configure the `input.json` file. It contains:
         }
         ```
 
-    - **`atoms`**: Specify the atomic positions of each atom in your system and the initial magnetic moment if there is
+    - **`atoms`**: Specifies the atomic positions of each atom in your system and the initial magnetic moment if there is
       any.
 
       Non-collinear magnetism:
@@ -269,14 +269,17 @@ Before running the program, configure the `input.json` file. It contains:
       otherwise, it's a (3,) array, with each element representing the initial moment in a specific direction. 
       To avoid omission error in the ASE package, the initial moment should be set to a small, non-zero number if it is intended to be 0.
     - **`kgrid_hse`** and **`kgrid_pbe`**:
-        - Description: Set the self-consistent k-point grid for HSE and PBE+U calculations, respectively.
-        - Example: `"kgrid_pbe": [7, 7, 7]` specifies a 7x7x7 k-point grid for PBE+U calculation.
+        - **Description**: Set the self-consistent k-point grid for HSE and PBE+U calculations, respectively.
+        - **Example**: `"kgrid_pbe": [7, 7, 7]` specifies a 7x7x7 k-point grid for PBE+U calculation.
     - **`num_kpts`** and **`kpath`**:
-        - Description: Specify the non-self-consistent (non-SC) k-point path for band structure calculations.
+        - **Description**: Specify the non-self-consistent (non-SC) k-point path for band structure calculations.
           `num_kpts` can be either an integer or a string "auto".
-        - Example: `"num_kpts": 50` and `"kpath": "G X W L G K"` set the k-point path to `G-X-W-L-G-K` and the number of k-points per path segment to 50. Important: In this mode, contributions to Δband are weighted to achieve an approximately uniform density of sampling along the path.
+        - **Example**: `"num_kpts": 50` and `"kpath": "G X W L G K"` set the k-point path to `G-X-W-L-G-K` and the number of k-points per path segment to 50. Important: In this mode, contributions to Δband are weighted to achieve an approximately uniform density of sampling along the path.
          `"num_kpts": "auto"` automatically determines the path and number of k-points based on the HSE or GW baseline calculation.
                     
+    - **`custom_POTCAR_path`**:
+        - **Description**: Specifies the path to the custom POTCAR file.
+        - **Example**: `"custom_POTCAR_path": null` (the default) or `"custom_POTCAR_path": "./POTCAR_Pb_sv_Te_sv"`
 
 - **`general_flags`**: General INCAR tags required in all VASP calculations.
 - **`scf`**: INCAR tags that will only be added in SCF calculations.

@@ -94,6 +94,14 @@ class VaspInit:
         if method == 'pbe':
             self.rewrite_ldau(directory)
 
+        # Replace POTCAR if `custom_POTCAR_path` is given
+        if self._config.custom_POTCAR_path is not None:
+            error_handled_copy(self._config.custom_POTCAR_path,
+                               os.path.join(directory, "POTCAR"),
+                               self._logger,
+                               error_cause_message=None)
+
+
     def rewrite_ldau(self, directory):
 
         # Load the JSON data

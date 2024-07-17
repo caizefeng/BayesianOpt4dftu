@@ -48,13 +48,14 @@ def recreate_path_as_directory(path):
     os.makedirs(path, exist_ok=True)
 
 
-def error_handled_copy(source_path, target_path, logger, error_cause_message):
+def error_handled_copy(source_path, target_path, logger, error_cause_message=None):
     try:
         # Check if the file is empty
         if os.path.getsize(source_path) == 0:
             # Log an error for the empty file
             logger.error(f"The file at {source_path}, required for subsequent calculations, is empty.")
-            logger.error(f"This issue is likely because {error_cause_message}.")
+            if error_cause_message is not None:
+                logger.error(f"This issue is likely because {error_cause_message}.")
             raise ValueError(f"Empty file error at {source_path}.")
 
         # Proceed with the copy if the file is not empty
@@ -62,7 +63,8 @@ def error_handled_copy(source_path, target_path, logger, error_cause_message):
 
     except FileNotFoundError:
         logger.error(f"The file at {source_path}, required for subsequent calculations, is missing.")
-        logger.error(f"This issue is likely because {error_cause_message}.")
+        if error_cause_message is not None:
+            logger.error(f"This issue is likely because {error_cause_message}.")
         raise  # Re-raise the FileNotFoundError to halt the program
     except Exception as e:
         logger.error(f"An error occurred while copying from {source_path} to {target_path}. Error details: {e}.")
