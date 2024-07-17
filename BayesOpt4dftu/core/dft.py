@@ -54,7 +54,7 @@ class VaspInit:
             self._k_path = BoBandPath(is_auto=False,
                                       num_kpoints=self._struct_info['num_kpts'],
                                       k_labels=self._struct_info['kpath'],
-                                      custom_kpoints=False)
+                                      custom_kpoints=self._config.custom_kpoints)
         self._k_path.set_atoms(self._atoms)
         self._k_path.generate()
 

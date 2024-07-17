@@ -232,6 +232,24 @@
                     "type": "string",
                     "pattern": "^(.+?)(\\s+.+?)+$"
                 },
+                "custom_kpoints": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                },
+                                "minItems": 3,
+                                "maxItems": 3
+                            }
+                        }
+                    ]
+                },
                 "custom_POTCAR_path": {
                     "oneOf": [
                         {

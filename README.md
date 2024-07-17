@@ -1,6 +1,6 @@
 # BayesianOpt4dftu #
 
-![version](https://img.shields.io/badge/version-2.4.1-blue)
+![version](https://img.shields.io/badge/version-2.6.0-blue)
 
 Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization approach.
 
@@ -276,7 +276,9 @@ Before running the program, configure the `input.json` file. It contains:
           `num_kpts` can be either an integer or a string "auto".
         - **Example**: `"num_kpts": 50` and `"kpath": "G X W L G K"` set the k-point path to `G-X-W-L-G-K` and the number of k-points per path segment to 50. Important: In this mode, contributions to Δband are weighted to achieve an approximately uniform density of sampling along the path.
          `"num_kpts": "auto"` automatically determines the path and number of k-points based on the HSE or GW baseline calculation.
-                    
+    - **`custom_kpoints`**:
+        - **Description**: Specifies the custom reciprocal coordinates for certain k-points in `kpath`.  
+        - **Example**: `"custom_kpoints": null` (the default) or `"custom_kpoints": {"H": [0.5, -0.5, 0.5],  "F": [0.5, 0.5, 0]}`
     - **`custom_POTCAR_path`**:
         - **Description**: Specifies the path to the custom POTCAR file.
         - **Example**: `"custom_POTCAR_path": null` (the default) or `"custom_POTCAR_path": "./POTCAR_Pb_sv_Te_sv"`

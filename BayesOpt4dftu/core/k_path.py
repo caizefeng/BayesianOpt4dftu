@@ -1,5 +1,6 @@
 import os.path
 import re
+import threading
 from typing import Optional, List, Dict, Any
 
 import numpy as np
@@ -13,17 +14,21 @@ from BayesOpt4dftu.utils.file_utils import find_and_readlines_first
 
 class BoBandPath:
     _logger = BoLoggerGenerator.get_logger("BoBandPath")
+    _kpoints_missing_warning_logged = False  # Class-level flag
+    _lock = threading.Lock()  # Class-level lock for thread safety
 
     def __init__(self, is_auto=True, baseline_type=None, baseline_path=None, num_kpoints=None, k_labels=None,
-                 custom_kpoints=False):
+                 custom_kpoints=None):
         self._is_auto: bool = is_auto
         self._baseline_path: Optional[str] = baseline_path
         self._baseline_type: Optional[str] = baseline_type
         self._num_kpoints: Optional[int] = num_kpoints
         self._k_labels: Optional[str] = k_labels
-        self._custom_kpoints: bool = custom_kpoints
+        self._custom_kpoints: Optional[Dict[str, Any]] = custom_kpoints
+
         self._atoms: Optional[Atoms] = None
         self._k_labels_list: Optional[List[str]] = None
+        self._k_labels_list_filtered: Optional[List[str]] = None
         self._special_kpoints: Optional[Dict[str, Any]] = None
 
         self._k_path: Optional[Kpoints] = None
@@ -34,10 +39,9 @@ class BoBandPath:
 
     def generate(self):
         if not self._is_auto:
-            if self._custom_kpoints:
-                self._special_kpoints = special_kpoints_dict
-            else:
-                self._special_kpoints = get_special_points(self._atoms.cell)
+            self._special_kpoints = get_special_points(self._atoms.cell)
+            if self._custom_kpoints is not None:
+                self._special_kpoints.update(self._custom_kpoints)
             self._k_labels_list = re.split(r'\s+', self._k_labels)
             self._k_path = self.from_line_mode()
         else:
@@ -58,15 +62,31 @@ class BoBandPath:
             self._k_path.write_file(os.path.join(directory, 'KPOINTS'))
 
     def from_line_mode(self):
-        kptset = list()
-        lbs = list()
-        for i in range(len(self._k_labels_list)):
-            if self._k_labels_list[i] in self._special_kpoints.keys():
-                kptset.append(self._special_kpoints[self._k_labels_list[i]])
-                lbs.append(self._k_labels_list[i])
-                if i in range(1, len(self._k_labels_list) - 1):
-                    kptset.append(self._special_kpoints[self._k_labels_list[i]])
-                    lbs.append(self._k_labels_list[i])
+        self._k_labels_list_filtered = []
+        k_labels_list_excluded = []
+        for label in self._k_labels_list:
+            if label in self._special_kpoints.keys():
+                self._k_labels_list_filtered.append(label)
+            else:
+                k_labels_list_excluded.append(label)
+
+        with self.__class__._lock:
+            if not self.__class__._kpoints_missing_warning_logged:
+                for label in k_labels_list_excluded:
+                    self._logger.warning(
+                        f"Skipped the k-point '{label}' as it's neither on the common high-symmetry path nor specified in `custom_kpoints`. "
+                        f"(This warning message will only be logged once)"
+                    )
+            self.__class__._kpoints_missing_warning_logged = True
+
+        kptset = []
+        lbs = []
+        for i in range(len(self._k_labels_list_filtered)):
+            kptset.append(self._special_kpoints[self._k_labels_list_filtered[i]])
+            lbs.append(self._k_labels_list_filtered[i])
+            if i in range(1, len(self._k_labels_list_filtered) - 1):  # appears twice if in the middle of the kpath
+                kptset.append(self._special_kpoints[self._k_labels_list_filtered[i]])
+                lbs.append(self._k_labels_list_filtered[i])
 
         return Kpoints(comment="BayesOpt4dftu: K-path from user input",
                        kpts=kptset,
