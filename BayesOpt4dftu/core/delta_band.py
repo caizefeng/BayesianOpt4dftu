@@ -186,7 +186,7 @@ class DeltaBand:
             weighted_delta_band_k_2d[:, 1:-1] *= self._slice_weight[:, np.newaxis]
 
             # Trim duplicated high symmetry points, @formatter:off
-            weighted_delta_band_k = np.delete(
+            weighted_delta_band_k = np.delete(  # noqa
                 weighted_delta_band_k_2d,
                 np.s_[
                     self._num_kpts_each_slice - 1:
@@ -228,8 +228,8 @@ class DeltaBand:
 
         if nbands_hse != nbands_dftu:
             self._logger.warning(
-                "The number of bands for HSE and DFT+U calculations do not match, "
-                "likely due to differing parallelization settings between those two."
+                f"The number of bands for HSE and DFT+U do not match ({nbands_hse} and {nkpts_dftu}, respectively), "
+                f"likely due to differing parallelization settings between those two."
             )
             self._logger.warning("The results may still be usable.")
 
@@ -239,11 +239,11 @@ class DeltaBand:
             if line.split()[3] != '0':
                 kpts_diff += 1
         if nkpts_hse - kpts_diff != nkpts_dftu:
-            self._logger.error("The kpoints number of HSE and DFT+U do not match.")
+            self._logger.error(f"The number of k-points along the high-symmetry path for HSE and DFT+U do not match ({nkpts_hse - kpts_diff} and {nkpts_dftu}, respectively).")
             raise RuntimeError
 
         if ispin_hse != ispin_dftu:
-            self._logger.error("The spin number of HSE and DFT+U do not match.")
+            self._logger.error(f"The spin number of HSE and DFT+U do not match ({ispin_hse} and {ispin_dftu}, respectively).")
             raise RuntimeError
 
     def access_eigen_gw(self, gw_band_dir, ispin):
