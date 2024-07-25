@@ -236,7 +236,7 @@ class DeltaBand:
 
         if nbands_hse != nbands_dftu:
             self._logger.warning(
-                f"The number of bands for HSE and DFT+U do not match ({nbands_hse} and {nkpts_dftu}, respectively), "
+                f"The number of bands for HSE and DFT+U do not match ({nbands_hse} and {nbands_dftu}, respectively), "
                 f"likely due to differing parallelization settings between those two."
             )
             self._logger.warning("The results may still be usable.")
