@@ -30,8 +30,10 @@ class DeltaBand:
         self._baseline: str = self._config.baseline
 
         self._hse_band_path: str = self._config.combined_path_dict['hse']['band']
-        self._dftu_band_path: str = self._config.combined_path_dict['dftu']['band']
+        self._gw_scf_path: str = self._config.combined_path_dict['gw']['scf']
         self._gw_band_path: str = self._config.combined_path_dict['gw']['band']
+        self._dftu_scf_path: str = self._config.combined_path_dict['dftu']['scf']
+        self._dftu_band_path: str = self._config.combined_path_dict['dftu']['band']
         self._vasprun_hse: str = os.path.join(self._hse_band_path, 'vasprun.xml')
         self._kpoints_hse: str = os.path.join(self._hse_band_path, 'KPOINTS')
         self._vasprun_dftu: str = os.path.join(self._dftu_band_path, 'vasprun.xml')
@@ -67,6 +69,7 @@ class DeltaBand:
                 interpolate=self._interpolate,
                 new_n=new_n,
                 projected=False,
+                efermi_folder=self._dftu_scf_path
             )  # Shifted to E-fermi = 0 by default
             eigenvalues_dftu = self.access_eigen(band_dftu, interpolate=self._interpolate)
             shifted_dftu = self.locate_and_shift_bands(eigenvalues_dftu)
@@ -79,11 +82,12 @@ class DeltaBand:
                     interpolate=self._interpolate,
                     new_n=new_n,
                     projected=False,
+                    efermi_folder=None  # HSE band are always calculated using 0-weight SCF procedure
                 )
                 eigenvalues_hse = self.access_eigen(band_hse, interpolate=self._interpolate)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_hse)
             elif self._baseline == 'gw':
-                eigenvalues_gw = self.access_eigen_gw(self._gw_band_path, ispin=ispin_dftu)
+                eigenvalues_gw = self.access_eigen_gw(self._gw_band_path, ispin=ispin_dftu, gw_scf_dir=self._gw_scf_path)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_gw)
             else:
                 self._logger.error("Unsupported baseline calculation: only 'hse' or 'gw' are accepted.")
@@ -97,7 +101,8 @@ class DeltaBand:
                 spin='up',
                 interpolate=self._interpolate,
                 new_n=new_n,
-                projected=False
+                projected=False,
+                efermi_folder=self._dftu_scf_path
             )
             band_dftu_down = Band(
                 folder=self._dftu_band_path,
@@ -105,6 +110,7 @@ class DeltaBand:
                 interpolate=self._interpolate,
                 new_n=new_n,
                 projected=False,
+                efermi_folder=self._dftu_scf_path
             )
             eigenvalues_dftu_up = self.access_eigen(band_dftu_up, interpolate=self._interpolate)
             eigenvalues_dftu_down = self.access_eigen(band_dftu_down, interpolate=self._interpolate)
@@ -120,6 +126,7 @@ class DeltaBand:
                     interpolate=self._interpolate,
                     new_n=new_n,
                     projected=False,
+                    efermi_folder=None
                 )
                 band_hse_down = Band(
                     folder=self._hse_band_path,
@@ -127,6 +134,7 @@ class DeltaBand:
                     interpolate=self._interpolate,
                     new_n=new_n,
                     projected=False,
+                    efermi_folder=None
                 )
                 eigenvalues_hse_up = self.access_eigen(band_hse_up, interpolate=self._interpolate)
                 eigenvalues_hse_down = self.access_eigen(band_hse_down, interpolate=self._interpolate)
@@ -135,7 +143,7 @@ class DeltaBand:
 
             elif self._baseline == 'gw':
                 eigenvalues_gw_up, eigenvalues_gw_down = self.access_eigen_gw(
-                    self._gw_band_path, ispin=ispin_dftu)
+                    self._gw_band_path, ispin=ispin_dftu, gw_scf_dir=self._gw_scf_path)
                 shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_gw_up)
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_gw_down)
             else:
@@ -246,9 +254,8 @@ class DeltaBand:
             self._logger.error(f"The spin number of HSE and DFT+U do not match ({ispin_hse} and {ispin_dftu}, respectively).")
             raise RuntimeError
 
-    def access_eigen_gw(self, gw_band_dir, ispin):
-        # TODO: Accurate E-fermi for METAL should be from fine-grid SCF calculation
-        efermi_gw = Outcar(os.path.join(gw_band_dir, 'OUTCAR')).efermi
+    def access_eigen_gw(self, gw_band_dir, ispin, gw_scf_dir=None):
+        efermi_gw = Outcar(os.path.join(gw_scf_dir or gw_band_dir, 'OUTCAR')).efermi
         win = open(os.path.join(gw_band_dir, 'wannier90.win'), 'r+').readlines()
 
         nbands: int = 0
