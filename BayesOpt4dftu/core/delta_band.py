@@ -164,7 +164,7 @@ class DeltaBand:
         eigenvalues = b.eigenvalues
 
         if not self._auto_kpath:
-            wave_vectors = b._get_k_distance()
+            wave_vectors = np.array(b._get_k_distance())
 
             # Compute k-space length and corresponding weight of each slice
             if self._line_mode_kpath and self._is_first_run:
@@ -215,7 +215,7 @@ class DeltaBand:
         above_index = np.where(band_mean >= 0)[0]
 
         vbm = np.max(eigenvalues[below_index])
-        cbm = np.min(eigenvalues[above_index])
+        cbm = np.min(eigenvalues[above_index])  # For metals, vbm = cbm = 0
 
         if cbm < vbm:
             vbm = 0.0
