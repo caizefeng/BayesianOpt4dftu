@@ -237,7 +237,7 @@ class DftManager:
                                    self._logger,
                                    error_cause)
         elif method == 'hse':
-            for filename in ["IBZKPT"]:
+            for filename in ["IBZKPT", "WAVECAR"]:
                 error_cause = ("the prior PBE calculation needed for HSE calculations "
                                "has failed or been interrupted")
                 error_handled_copy(os.path.join(self._config.combined_path_dict[method]['scf'], filename),
