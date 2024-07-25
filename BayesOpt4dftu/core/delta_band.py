@@ -47,11 +47,18 @@ class DeltaBand:
         self._slice_weight: Optional[NDArray] = None
         self._num_slices: int = 0
         self._num_kpts_each_slice: int = 0
+        self._is_metal_from_baseline: bool = False  # Determines whether to discard the offset w.r.t. VBM/CBM.
 
     def get_delta_band(self):
         return self._delta_band
 
-    def compute_delta_band(self):
+    def compute_delta_band(self, baseline_band_gap):
+        if self._is_first_run:
+            if baseline_band_gap > 0.0:
+                self._is_metal_from_baseline = False
+            else:
+                self._is_metal_from_baseline = True
+
         ispin_dftu, nbands_dftu, nkpts_dftu = DeltaBand.read_ispin_nbands_nkpts(self._vasprun_dftu)
 
         if self._is_first_run and self._baseline == 'hse':
@@ -214,12 +221,12 @@ class DeltaBand:
         below_index = np.where(band_mean < 0)[0]
         above_index = np.where(band_mean >= 0)[0]
 
-        vbm = np.max(eigenvalues[below_index])
-        cbm = np.min(eigenvalues[above_index])  # For metals, vbm = cbm = 0
-
-        if cbm < vbm:
-            vbm = 0.0
-            cbm = 0.0
+        # If it's metal/semimetal, then no offset w.r.t. CBM/VBM, use absolute eigenvalues directly
+        if self._is_metal_from_baseline:
+            vbm = cbm = 0.0
+        else:
+            vbm = np.max(eigenvalues[below_index])
+            cbm = np.min(eigenvalues[above_index])
 
         valence_bands = eigenvalues[below_index[-self._br_vb:]]
         conduction_bands = eigenvalues[above_index[:self._br_cb]]
@@ -237,9 +244,10 @@ class DeltaBand:
         if nbands_hse != nbands_dftu:
             self._logger.warning(
                 f"The number of bands for HSE and DFT+U do not match ({nbands_hse} and {nbands_dftu}, respectively), "
-                f"likely due to differing parallelization settings between those two."
+                f"likely due to differing parallelization settings between those two. "
+                f"The results may still be usable. "
+                f"(This warning message will only be logged once)"
             )
-            self._logger.warning("The results may still be usable.")
 
         kpoints = [line for line in open(self._kpoints_hse) if line.strip()]
         kpts_diff = 0
