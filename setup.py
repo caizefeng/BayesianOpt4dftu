@@ -1,44 +1,45 @@
-import codecs
 import os
+from typing import List
 
 import setuptools
 
 
 # Helper Functions
 
-def get_required_packages():
-    """Retrieve the list of required packages from requirements.txt."""
-    with open('requirements.txt', 'r') as f:
-        return f.read().splitlines()
-
-
-def read(rel_path):
+def read_file(rel_path: str) -> str:
     """Read the content of a file at a relative path."""
     here = os.path.abspath(os.path.dirname(__file__))
-    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
-        return fp.read()
+    abs_path = os.path.join(here, rel_path)
+    try:
+        with open(abs_path, 'r', encoding='utf-8') as fp:
+            return fp.read()
+    except FileNotFoundError:
+        raise RuntimeError(f"Unable to find the file at {abs_path}.")
+    except IOError as e:
+        raise RuntimeError(f"An error occurred while reading the file at {abs_path}: {e}")
 
 
-def get_version(rel_path):
+def get_required_packages(file_path: str = 'requirements.txt') -> List[str]:
+    """Retrieve the list of required packages from a requirements file."""
+    return read_file(file_path).splitlines()
+
+
+def get_version(rel_path: str) -> str:
     """Extract the version string from a Python file."""
-    for line in read(rel_path).splitlines():
+    for line in read_file(rel_path).splitlines():
         if line.startswith('__version__'):
             delim = '"' if '"' in line else "'"
             return line.split(delim)[1]
-    else:
-        raise RuntimeError("Unable to find version string.")
+    raise RuntimeError("Unable to find version string.")
 
 
 # Setup Configuration
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
 
 setuptools.setup(
     name='BayesOpt4dftu',
     version=get_version("BayesOpt4dftu/__init__.py"),
     description='Bayesian Optimization toolkit for DFT+U',
-    long_description=long_description,
+    long_description=read_file("README.md"),
     long_description_content_type="text/markdown",
     author='Maituo Yu',
     maintainer='Zefeng Cai',
