@@ -6,16 +6,28 @@ Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization appr
 
 ## Prerequisites
 
-1. Python 3.8 or higher
-2. NumPy
-3. Pandas
-4. ASE (https://wiki.fysik.dtu.dk/ase)
-5. pymatgen (https://pymatgen.org)
-6. bayesian-optimization (https://github.com/fmfn/BayesianOptimization)
-7. Vienna Ab initio Simulation Package (VASP) (https://www.vasp.at)
-8. Vaspvis (https://github.com/DerekDardzinski/vaspvis)
+### Python Version
+
+- Python 3.8 or higher
+
+### Python Dependencies
+These will be installed automatically when you install the package via pip:
+
+- [`numpy`](https://numpy.org)
+- [`pandas`](https://pandas.pydata.org)
+- [`ase`](https://wiki.fysik.dtu.dk/ase)
+- [`pymatgen`](https://pymatgen.org)
+- [`bayesian-optimization`](https://github.com/fmfn/BayesianOptimization)
+- [`vaspvis`](https://github.com/DerekDardzinski/vaspvis)
+
+### Other Dependencies
+These dependencies need to be installed manually:
+
+- [Vienna Ab initio Simulation Package (VASP)](https://www.vasp.at)
 
 ## Installation
+
+To install `BayesianOpt4dftu`, use the following command:
 
 ```shell
 pip install git+https://github.com/caizefeng/BayesianOpt4dftu.git
@@ -50,7 +62,7 @@ bo_dftu
 
 Upon reaching the threshold or maximum iterations, two output files are generated:
 
-- `u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetizaion (optional) for each iteration.
+- `u_xxx.txt`/`formatted_u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetizaion (optional) for each iteration.
 - `1D_xxx.png` or `2D_xxx.png`: Provides a visual representation of the Gaussian process predicted mean and acquisition function. 
    This file will be omitted if you set three or more optimizable U parameters.
 
