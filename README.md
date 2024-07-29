@@ -62,7 +62,7 @@ bo_dftu
 
 Upon reaching the threshold or maximum iterations, two output files are generated:
 
-- `u_xxx.txt`/`formatted_u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetizaion (optional) for each iteration.
+- `u_xxx.txt`/`formatted_u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetization (optional) for each iteration.
 - `1D_xxx.png` or `2D_xxx.png`: Provides a visual representation of the Gaussian process predicted mean and acquisition function. 
    This file will be omitted if you set three or more optimizable U parameters.
 
@@ -274,11 +274,12 @@ Before running the program, configure the `input.json` file. It contains:
         }
         ```
 
-      So in this case, there are two atoms in the primitive cell at positions `(0,0,0)`
-      and `(0.75, 0.75, 0.75)`. The second term under each atom specifies the initial magnetic moment. 
-      For calculations excluding non-collinear magnetization or spin-orbit coupling, this is an integer; 
-      otherwise, it's a (3,) array, with each element representing the initial moment in a specific direction. 
-      To avoid omission error in the ASE package, the initial moment should be set to a small, non-zero number if it is intended to be 0.
+      In this case, there are two atoms in the primitive cell at positions `[0, 0, 0]`
+      and `[0.75, 0.75, 0.75]`. 
+      The second term under each atom specifies the initial magnetic moment. 
+      For calculations excluding non-collinear magnetization or spin-orbit coupling, this is an integer (or it could be a one-dimensional array with one element).
+      Otherwise, it's a one-dimensional array with three elements, each representing the initial moment in a specific Cartesian direction.
+      To avoid omission errors in the `ASE` package, the initial moment should be set to a small, non-zero number if it is intended to be 0.
     - **`kgrid_hse`** and **`kgrid_pbe`**:
         - **Description**: Set the self-consistent k-point grid for HSE and PBE+U calculations, respectively.
         - **Example**: `"kgrid_pbe": [7, 7, 7]` specifies a 7x7x7 k-point grid for PBE+U calculation.
