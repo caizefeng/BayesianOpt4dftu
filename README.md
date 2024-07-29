@@ -149,12 +149,12 @@ Before running the program, configure the `input.json` file. It contains:
         - **Default**: `"alpha_mag": 0.0`
 
     - **`mag_axis`**:
-        - **Description**: Specifies the Cartesian component of the magnetic moment used to calculate Δmagnetization. Available options are `"x"`, `"y"`, `"z"`, and `"all"`(all 3 components)
+        - **Description**: Specifies the Cartesian component of the non-collinear magnetic moment used to calculate Δmagnetization. Available options are `"x"`, `"y"`, `"z"`, and `"all"`(all 3 components). This parameter is only applicable to non-collinear calculations and has no effect on collinear calculations (when `LNONCOLLINEAR=.FALSE.` and `LSORBIT=.FALSE.`).
         - **Default**: `"mag_axis": "all"`
 
     - **`threshold`**:
-        - **Description**: Specifies the accuracy (difference in objective function between two consecutive iterations) at which you'd like to stop the BO process. 
-          A `threshold` of `0.0` (and `threshold_opt_u` of `0.0` as well) will disable the convergence assessment based, meaning the BO will exit only upon reaching the maximum iterations.
+        - **Description**: Specifies the desired accuracy for the objective function, measured as the difference between values from two consecutive iterations, at which you'd like to stop the BO process. 
+          A `threshold` of `0.0` (and `threshold_opt_u` of `0.0` as well) will disable the convergence assessment, meaning the BO will exit only upon reaching the maximum iterations.
         - **Default**: `"threshold": 0.0001`
 
     - **`urange`**:
@@ -176,9 +176,8 @@ Before running the program, configure the `input.json` file. It contains:
         - **Default**: `"report_optimum_interval": 10`
      
     - **`threshold_opt_u`**:
-        - **Description**: Specifies the accuracy (difference in optimal Hubbard U values between two iterations, intervalled by `report_optimum_interval`) at which you'd like to stop the BO process. 
-          A `threshold_opt_u` of `0.0` will disable this optimal Hubbard U-based convergence assessment.
-          It can be the sole convergence criterion or work together with `threshold`.
+        - **Description**: This criterion supplements the original `threshold` parameter and can be used as the sole convergence criterion or in conjunction with `threshold`. Specifies the desired accuracy for the optimal Hubbard U values, measured as the difference between values from two iterations separated by `report_optimum_interval`. 
+        A `threshold_opt_u` of `0.0` will disable this optimal U-based convergence assessment.
         - **Default**: `"threshold_opt_u": 0.0`
 
     - **`print_magmom`**:
