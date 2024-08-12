@@ -4,7 +4,7 @@
         "out_file_name": "slurm-vasp.out",
         "vasp_pp_path": "/trace/home/zefengc/soft/Pseudopotentials/",
         "dry_run": false,
-        "dftu_only": false,
+        "dftu_only": true,
         "get_optimal_band": false
     },
     "bo": {
@@ -21,6 +21,7 @@
         "alpha_gap": 0.5,
         "alpha_band": 0.5,
         "alpha_mag": 0.0,
+        "mag_axis": "all",
         "threshold": 0.0001,
         "urange": [
             -10.0,
@@ -31,7 +32,8 @@
         ],
         "iteration": 50,
         "report_optimum_interval": 10,
-        "threshold_opt_u": 0.0
+        "threshold_opt_u": 0.0,
+        "print_magmom": false
     },
     "structure_info": {
         "lattice_param": 5.633,
@@ -91,7 +93,9 @@
             6
         ],
         "num_kpts": 50,
-        "kpath": "L G X"
+        "kpath": "L G X",
+        "custom_kpoints": null,
+        "custom_POTCAR_path": null
     },
     "general_flags": {
         "encut": 450,

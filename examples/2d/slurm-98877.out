@@ -1,0 +1,191 @@
+              total        used        free      shared  buff/cache   available
+Mem:          2.0Ti        16Gi       1.9Ti       462Mi       5.1Gi       1.9Ti
+Swap:          88Gi          0B        88Gi
+tmpfs               tmpfs    1008G  254M 1008G   1% /dev/shm
+
+{
+    "vasp_env": {
+        "vasp_run_command": "mpirun -np 54 /trace/home/zefengc/soft/vasp.5.4.4.optcell/bin/vasp_ncl",
+        "out_file_name": "slurm-vasp.out",
+        "vasp_pp_path": "/trace/home/zefengc/soft/Pseudopotentials/",
+        "dry_run": false,
+        "dftu_only": true,
+        "get_optimal_band": true
+    },
+    "bo": {
+        "resume_checkpoint": false,
+        "baseline": "hse",
+        "which_u": [
+            1,
+            1
+        ],
+        "br": [
+            5,
+            5
+        ],
+        "kappa": 5,
+        "alpha_gap": 0.25,
+        "alpha_band": 0.75,
+        "alpha_mag": 0.0,
+        "mag_axis": "all",
+        "threshold": 0.0001,
+        "urange": [
+            -10.0,
+            10.0
+        ],
+        "elements": [
+            "In",
+            "As"
+        ],
+        "iteration": 200,
+        "report_optimum_interval": 10,
+        "threshold_opt_u": 0.0,
+        "print_magmom": false
+    },
+    "structure_info": {
+        "lattice_param": 6.0584,
+        "cell": [
+            [
+                0.0,
+                0.5,
+                0.5
+            ],
+            [
+                0.5,
+                0.0,
+                0.5
+            ],
+            [
+                0.5,
+                0.5,
+                0.0
+            ]
+        ],
+        "atoms": [
+            [
+                "In",
+                [
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    1e-06
+                ]
+            ],
+            [
+                "As",
+                [
+                    0.75,
+                    0.75,
+                    0.75
+                ],
+                [
+                    0,
+                    0,
+                    1e-06
+                ]
+            ]
+        ],
+        "kgrid_hse": [
+            7,
+            7,
+            7
+        ],
+        "kgrid_pbe": [
+            7,
+            7,
+            7
+        ],
+        "num_kpts": 50,
+        "kpath": "G X W L G K",
+        "custom_kpoints": null,
+        "custom_POTCAR_path": null
+    },
+    "general_flags": {
+        "encut": 400,
+        "sigma": 0.05,
+        "ediff": 1e-05,
+        "prec": "N",
+        "algo": "D",
+        "lsorbit": true,
+        "saxis": [
+            0,
+            0,
+            1
+        ],
+        "nbands": 21,
+        "kpar": 6,
+        "ncore": 3,
+        "bmix": 3,
+        "amin": 0.01,
+        "lorbit": 11,
+        "lmaxmix": 4
+    },
+    "scf": {
+        "icharg": 2,
+        "istart": 0,
+        "xc": "pbe"
+    },
+    "band": {
+        "icharg": 11,
+        "lcharg": false,
+        "lwave": false
+    },
+    "pbe": {
+        "xc": "pbe",
+        "ldau": true,
+        "ldau_luj": {
+            "In": {
+                "L": 1,
+                "U": 0.0,
+                "J": 0.0
+            },
+            "As": {
+                "L": 1,
+                "U": 0.0,
+                "J": 0.0
+            }
+        }
+
+    },
+    "hse": {
+        "istart": 0,
+        "icharg": 2,
+        "xc": "hse06",
+        "aexx": 0.25,
+        "time": 0.4,
+        "ldiag": true,
+        "precfock": "Fast"
+    }
+}
+
+[2024-08-12 11:13:05 - BayesOpt4dftu.Driver - INFO]: BayesOpt4dftu, Version: 2.6.5
+[2024-08-12 11:13:05 - BayesOpt4dftu.Driver - INFO]: Task begins.
+[2024-08-12 11:13:05 - BayesOpt4dftu.Config - INFO]: Loading configuration ...
+[2024-08-12 11:13:05 - BayesOpt4dftu.Config - INFO]: JSON schema validation successful.
+[2024-08-12 11:13:05 - BayesOpt4dftu.Config - INFO]: K-path for band manually set.
+[2024-08-12 11:13:05 - BayesOpt4dftu.Config - INFO]: Configuration loaded from file input.json.
+[2024-08-12 11:13:05 - BayesOpt4dftu.DftManager - INFO]: DFT calculations begin.
+[2024-08-12 11:13:05 - BayesOpt4dftu.Driver - INFO]: Dry run set to False.
+[2024-08-12 11:13:05 - BayesOpt4dftu.TempFileManager - INFO]: Temporary files initiated.
+[2024-08-12 11:13:05 - BayesOpt4dftu.BoDftuIterator - INFO]: Bayesian Optimization begins.
+[2024-08-12 11:13:05 - BayesOpt4dftu.DftManager - INFO]: Consecutive DFT+U calculations begin.
+[2024-08-12 11:13:30 - BayesOpt4dftu.DeltaAll - INFO]: Band gap from hybrid DFT calculation: 0.3809649999999998 eV
+[2024-08-12 11:17:11 - BayesOpt4dftu.BoDftuIterator - INFO]: Iteration 10 of Bayesian Optimization loop completed. Optimal Hubbard U so far: [-0.39039039 -4.99499499]
+[2024-08-12 11:21:00 - BayesOpt4dftu.BoDftuIterator - INFO]: Iteration 20 of Bayesian Optimization loop completed. Optimal Hubbard U so far: [-1.65165165 -4.57457457]
+[2024-08-12 11:24:46 - BayesOpt4dftu.BoDftuIterator - INFO]: Iteration 30 of Bayesian Optimization loop completed. Optimal Hubbard U so far: [-4.01401401 -3.93393393]
+[2024-08-12 11:28:32 - BayesOpt4dftu.BoDftuIterator - INFO]: Iteration 40 of Bayesian Optimization loop completed. Optimal Hubbard U so far: [-3.69369369 -4.01401401]
+[2024-08-12 11:32:18 - BayesOpt4dftu.BoDftuIterator - INFO]: Iteration 50 of Bayesian Optimization loop completed. Optimal Hubbard U so far: [-4.19419419 -3.61361361]
+[2024-08-12 11:34:11 - BayesOpt4dftu.BoDftuIterator - INFO]: Convergence (objective function) reached at iteration 55, exiting.
+[2024-08-12 11:34:16 - BayesOpt4dftu.Driver - INFO]: Optimal Hubbard U: [-4.19419419 -3.61361361]
+[2024-08-12 11:34:16 - BayesOpt4dftu.Driver - INFO]: Optimal objective function: -0.07442151340622552
+[2024-08-12 11:34:38 - BayesOpt4dftu.Driver - INFO]: An additional DFT+U calculation using optimal U values performed and logged at the end.
+[2024-08-12 11:34:38 - BayesOpt4dftu.DeltaAll - INFO]: Band gap from optimal DFT+U calculation: 0.16222899999999996 eV
+[2024-08-12 11:34:38 - BayesOpt4dftu.DftManager - INFO]: All DFT calculations finished.
+[2024-08-12 11:34:38 - BayesOpt4dftu.BoDftuIterator - INFO]: Bayesian Optimization finished.
+[2024-08-12 11:34:38 - BayesOpt4dftu.TempFileManager - INFO]: Formatted log file saved to ./formatted_u_kappa_5.0_ag_0.25_ab_0.75_am_0.0.txt
+[2024-08-12 11:34:38 - BayesOpt4dftu.TempFileManager - INFO]: Temporary files removed.
+[2024-08-12 11:34:38 - BayesOpt4dftu.Driver - INFO]: Task completed in 0 Hours 21 Minutes 32.96 Seconds.
