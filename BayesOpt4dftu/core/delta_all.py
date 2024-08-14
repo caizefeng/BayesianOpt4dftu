@@ -19,19 +19,19 @@ class DeltaAll:
             cls._config = config
         DeltaGap.init_config(config)
         DeltaBand.init_config(config)
-        if DeltaAll._config.include_mag:
+        if DeltaAll._config.include_mag or DeltaAll._config.print_magmom:
             DeltaMag.init_config(config)
 
     def __init__(self):
         self.dg = DeltaGap()
         self.db = DeltaBand()
-        if self._config.include_mag:
+        if self._config.include_mag or self._config.print_magmom:
             self.dm = DeltaMag()
 
     def compute_delta(self):
         self.dg.compute_delta_gap()
         self.db.compute_delta_band(baseline_band_gap=self.dg.get_baseline_gap())
-        if self._config.include_mag:
+        if self._config.include_mag or self._config.print_magmom:
             self.dm.compute_delta_mag(component=self._config.mag_axis)
 
     def write_delta(self, na_padding=False):

@@ -53,7 +53,7 @@ def main():
                 # Print baseline band gap for reference
                 if i == 0:
                     delta.report_baseline_gap()
-                    if config.include_mag:
+                    if config.include_mag or config.print_magmom:
                         delta.report_baseline_magnetization()
 
                 bo_iterator.next()
@@ -74,7 +74,7 @@ def main():
                 driver_logger.info("An additional DFT+U calculation using optimal U values performed and logged at "
                                    "the end.")
                 delta.report_optimal_dftu_gap()
-                if config.include_mag:
+                if config.include_mag or config.print_magmom:
                     delta.report_optimal_dftu_magnetization()
 
             dft_manager.finalize()
