@@ -8,6 +8,8 @@ from bayes_opt import BayesianOptimization
 from bayes_opt import UtilityFunction
 from numpy.typing import NDArray
 
+from BayesOpt4dftu.core.objectives import objective_function_v1
+
 matplotlib.use('Agg')  # Set the backend to 'Agg' for non-interactive plotting  # noqa
 from matplotlib import cm, gridspec
 from matplotlib import pyplot as plt
@@ -32,10 +34,6 @@ class OptimizerGenerator:
         self._column_names: Dict[Any, str] = column_names
         self._n_obs: Optional[int] = None
         self._data: Optional[pd.DataFrame] = None
-
-    def objective_function(self, delta_gap=0.0, delta_band=0.0, delta_mag=0.0,
-                           alpha_gap=0.5, alpha_band=0.5, alpha_mag=0.0):
-        return -alpha_gap * delta_gap ** 2 - alpha_band * delta_band ** 2 - alpha_mag * delta_mag ** 2
 
     def set_bounds(self):
         # Set up the indices of variables that are going to be optimized.
@@ -75,17 +73,17 @@ class OptimizerGenerator:
                 params[variable] = value
 
             if self._alpha_mag:
-                target = self.objective_function(delta_gap=self._data.iloc[i][self._column_names['delta_gap']],
-                                                 delta_band=self._data.iloc[i][self._column_names['delta_band']],
-                                                 delta_mag=self._data.iloc[i][self._column_names['delta_mag']],
-                                                 alpha_gap=self._alpha_gap,
-                                                 alpha_band=self._alpha_band,
-                                                 alpha_mag=self._alpha_mag)
+                target = objective_function_v1(delta_gap=self._data.iloc[i][self._column_names['delta_gap']],
+                                               delta_band=self._data.iloc[i][self._column_names['delta_band']],
+                                               delta_mag=self._data.iloc[i][self._column_names['delta_mag']],
+                                               alpha_gap=self._alpha_gap,
+                                               alpha_band=self._alpha_band,
+                                               alpha_mag=self._alpha_mag)
             else:
-                target = self.objective_function(delta_gap=self._data.iloc[i][self._column_names['delta_gap']],
-                                                 delta_band=self._data.iloc[i][self._column_names['delta_band']],
-                                                 alpha_gap=self._alpha_gap,
-                                                 alpha_band=self._alpha_band)
+                target = objective_function_v1(delta_gap=self._data.iloc[i][self._column_names['delta_gap']],
+                                               delta_band=self._data.iloc[i][self._column_names['delta_band']],
+                                               alpha_gap=self._alpha_gap,
+                                               alpha_band=self._alpha_band)
 
             # Suppress non-unique data point registration messages
             with SuppressPrints():
