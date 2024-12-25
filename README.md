@@ -8,7 +8,7 @@ Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization appr
 
 ### Python Version
 
-- Python 3.8 or higher
+- Tested on Python 3.8
 
 ### Python Dependencies
 These will be installed automatically when you install the package via pip:
