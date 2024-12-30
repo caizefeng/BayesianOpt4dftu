@@ -74,7 +74,7 @@ class Config:
         self.abs_root_dir = os.path.abspath(self.root_dir)
 
         self.step_dir_dict = {'scf': 'scf', 'band': 'band'}
-        self.method_dir_dict = {'dftu': 'dftu', 'hse': 'hse', 'gw': 'gw'}
+        self.method_dir_dict = {'dftu': 'dftu', 'hse': 'hse', 'gw': 'gw', 'dft': 'dft'}
         self.combined_path_dict = {}
         for key in self.method_dir_dict:
             self.combined_path_dict[key] = {k: os.path.join(self.root_dir, key, v)
@@ -116,7 +116,8 @@ class Config:
         self.headers.append(self.column_names['d_obj'])
 
         self.method_name_dict = {'hse': 'hybrid DFT',
-                                 'gw': 'GW'}
+                                 'gw': 'GW',
+                                 'dft': 'DFT'}
 
         # VASP parameters
         vasp_env_params = data['vasp_env']

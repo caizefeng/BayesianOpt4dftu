@@ -68,7 +68,8 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'bo_dftu=BayesOpt4dftu.main:main',
-            'bo_formatter=BayesOpt4dftu.cli.formatter_cli:main'
+            'bo_formatter=BayesOpt4dftu.cli.formatter_cli:main',
+            'bo_calculator=BayesOpt4dftu.cli.calculator_cli:main'
         ],
     },
 )

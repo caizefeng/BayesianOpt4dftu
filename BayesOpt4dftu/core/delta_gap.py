@@ -41,8 +41,12 @@ class DeltaGap:
         elif self._config.baseline == 'gw':
             self._baseline_gap = 0.0
 
+        elif self._config.baseline == 'dft':
+            self._baseline_gap = float(BandGap(folder=self._config.combined_path_dict['dft']['band'],
+                                               method=1, spin='both').bg)
+
         else:
-            self._logger.error("Unsupported baseline calculation: only 'hse' or 'gw' are accepted.")
+            self._logger.error("Unsupported baseline calculation: only 'hse', 'gw' or 'dft' are accepted.")
             raise ValueError
 
         self._delta_gap = np.sqrt(np.mean((self._dftu_gap - self._baseline_gap) ** 2))

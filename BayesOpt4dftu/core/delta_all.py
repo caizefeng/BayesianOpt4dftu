@@ -7,6 +7,7 @@ from BayesOpt4dftu.common.logger import BoLoggerGenerator
 from BayesOpt4dftu.core.delta_band import DeltaBand
 from BayesOpt4dftu.core.delta_gap import DeltaGap
 from BayesOpt4dftu.core.delta_mag import DeltaMag
+from BayesOpt4dftu.core.objectives import objective_function_v1
 
 
 class DeltaAll:
@@ -34,7 +35,7 @@ class DeltaAll:
         if self._config.include_mag or self._config.print_magmom:
             self.dm.compute_delta_mag(component=self._config.mag_axis)
 
-    def write_delta(self, na_padding=False):
+    def write_delta(self, na_padding=False, to_stdout=False):
         # U values
         incar = Incar.from_file(os.path.join(self._config.combined_path_dict['dftu']['band'], 'INCAR'))
         u = incar['LDAUU']
@@ -62,8 +63,26 @@ class DeltaAll:
         else:
             output = " ".join(str(x) for x in u)
 
-        with open(self._config.tmp_u_path, 'a') as f:
-            f.write(output + '\n')
+        if not to_stdout:
+            with open(self._config.tmp_u_path, 'a') as f:
+                f.write(output + '\n')
+        else:
+            if self._config.include_mag:
+                obj = objective_function_v1(delta_gap=self.dg.get_delta_gap(),
+                                            delta_band=self.db.get_delta_band(),
+                                            delta_mag=self.dm.get_delta_mag(),
+                                            alpha_gap=self._config.alpha_gap,
+                                            alpha_band=self._config.alpha_band,
+                                            alpha_mag=self._config.alpha_mag)
+            else:
+                obj = objective_function_v1(delta_gap=self.dg.get_delta_gap(),
+                                            delta_band=self.db.get_delta_band(),
+                                            alpha_gap=self._config.alpha_gap,
+                                            alpha_band=self._config.alpha_band)
+
+            self._logger.info("Results:")
+            self._logger.info((' '.join(self._config.headers[:-1])))
+            self._logger.info(" ".join((output, str(obj))))
 
     def report_baseline_gap(self):
         self._logger.info(

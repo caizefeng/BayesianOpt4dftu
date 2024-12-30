@@ -40,7 +40,8 @@
                     "type": "string",
                     "enum": [
                         "hse",
-                        "gw"
+                        "gw",
+                        "dft"
                     ]
                 },
                 "which_u": {

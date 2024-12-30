@@ -32,6 +32,8 @@ class DeltaBand:
         self._hse_band_path: str = self._config.combined_path_dict['hse']['band']
         self._gw_scf_path: str = self._config.combined_path_dict['gw']['scf']
         self._gw_band_path: str = self._config.combined_path_dict['gw']['band']
+        self._dft_scf_path: str = self._config.combined_path_dict['dft']['scf']
+        self._dft_band_path: str = self._config.combined_path_dict['dft']['band']
         self._dftu_scf_path: str = self._config.combined_path_dict['dftu']['scf']
         self._dftu_band_path: str = self._config.combined_path_dict['dftu']['band']
         self._vasprun_hse: str = os.path.join(self._hse_band_path, 'vasprun.xml')
@@ -96,8 +98,19 @@ class DeltaBand:
             elif self._baseline == 'gw':
                 eigenvalues_gw = self.access_eigen_gw(self._gw_band_path, ispin=ispin_dftu, gw_scf_dir=self._gw_scf_path)
                 shifted_baseline = self.locate_and_shift_bands(eigenvalues_gw)
+            elif self._baseline == 'dft':
+                band_dft = Band(
+                    folder=self._dft_band_path,
+                    spin='up',
+                    interpolate=self._interpolate,
+                    new_n=new_n,
+                    projected=False,
+                    efermi_folder=self._dft_scf_path
+                )
+                eigenvalues_dft = self.access_eigen(band_dft, interpolate=self._interpolate)
+                shifted_baseline = self.locate_and_shift_bands(eigenvalues_dft)
             else:
-                self._logger.error("Unsupported baseline calculation: only 'hse' or 'gw' are accepted.")
+                self._logger.error("Unsupported baseline calculation: only 'hse', 'gw' or 'dft' are accepted.")
                 raise ValueError
 
             self._delta_band = self.scale_delta_band(n, shifted_baseline, shifted_dftu)
@@ -153,8 +166,31 @@ class DeltaBand:
                     self._gw_band_path, ispin=ispin_dftu, gw_scf_dir=self._gw_scf_path)
                 shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_gw_up)
                 shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_gw_down)
+
+            elif self._baseline == 'dft':
+                band_dft_up = Band(
+                    folder=self._dft_band_path,
+                    spin='up',
+                    interpolate=self._interpolate,
+                    new_n=new_n,
+                    projected=False,
+                    efermi_folder=self._dft_scf_path
+                )
+                band_dft_down = Band(
+                    folder=self._dft_band_path,
+                    spin='down',
+                    interpolate=self._interpolate,
+                    new_n=new_n,
+                    projected=False,
+                    efermi_folder=self._dft_scf_path
+                )
+                eigenvalues_dft_up = self.access_eigen(band_dft_up, interpolate=self._interpolate)
+                eigenvalues_dft_down = self.access_eigen(band_dft_down, interpolate=self._interpolate)
+                shifted_baseline_up = self.locate_and_shift_bands(eigenvalues_dft_up)
+                shifted_baseline_down = self.locate_and_shift_bands(eigenvalues_dft_down)
+
             else:
-                self._logger.error("Unsupported baseline calculation: only 'hse' or 'gw' are accepted.")
+                self._logger.error("Unsupported baseline calculation: only 'hse', 'gw' or 'dft' are accepted.")
                 raise ValueError
 
             delta_band_up = self.scale_delta_band(n_up, shifted_baseline_up, shifted_dftu_up)
