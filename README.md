@@ -1,6 +1,6 @@
 # BayesianOpt4dftu #
 
-![version](https://img.shields.io/badge/version-2.6.6-blue)
+![version](https://img.shields.io/badge/version-2.7.1-blue)
 
 Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization approach.
 
