@@ -2,6 +2,7 @@ import importlib.resources as resources
 import json
 import os
 
+import numpy as np
 from jsonschema import validate, ValidationError
 
 from BayesOpt4dftu.common.logger import BoLoggerGenerator
@@ -157,6 +158,8 @@ class Config:
             raise ValueError
 
         self.custom_kpoints = data['structure_info'].get('custom_kpoints', None)
+        if self.custom_kpoints is not None and isinstance(self.custom_kpoints, dict):
+            self.custom_kpoints = {key: np.array(value) for key, value in self.custom_kpoints.items()}  # convert to numpy array
 
         # Path to custom POTCAR
         self.custom_POTCAR_path = data['structure_info'].get('custom_POTCAR_path', None)
