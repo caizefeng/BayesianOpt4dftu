@@ -298,8 +298,8 @@ class DeltaBand:
             self._logger.error(f"The spin number of HSE and DFT+U do not match ({ispin_hse} and {ispin_dftu}, respectively).")
             raise RuntimeError
 
-    def access_eigen_gw(self, gw_band_dir, ispin, gw_scf_dir=None):
-        efermi_gw = Outcar(os.path.join(gw_scf_dir or gw_band_dir, 'OUTCAR')).efermi
+    def access_eigen_gw(self, gw_band_dir, ispin, gw_scf_dir):
+        efermi_gw = Outcar(os.path.join(gw_scf_dir, 'OUTCAR')).efermi
         win = open(os.path.join(gw_band_dir, 'wannier90.win'), 'r+').readlines()
 
         nbands: int = 0
