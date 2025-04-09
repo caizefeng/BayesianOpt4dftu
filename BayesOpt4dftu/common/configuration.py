@@ -127,11 +127,20 @@ class Config:
         # Define the name for output file.
         self.out_file_name = os.path.expanduser(vasp_env_params.get('out_file_name', 'vasp.out'))
         # Define the path directing to the VASP pseudopotential.
-        self.vasp_pp_path = os.path.expanduser(vasp_env_params.get('vasp_pp_path', '/home/maituoy/pp_vasp/'))
+        self.vasp_pp_path = os.path.expanduser(vasp_env_params.get('vasp_pp_path', '/home/xxx/pseudopotentials/'))
         os.environ['VASP_PP_PATH'] = self.vasp_pp_path
         self.dry_run = vasp_env_params.get('dry_run', False)
         self.dftu_only = vasp_env_params.get('dftu_only', False)
         self.get_optimal_band = vasp_env_params.get('get_optimal_band', True)
+
+        # Additional messages to users
+        if self.baseline == 'gw':
+            self._logger.info("Detected baseline calculation setting: GW.")
+            self._logger.info("Ensure an OUTCAR file with ACCURATE E-fermi and magnetic moment, obtained using high-precision BZ integration, is placed in the `gw/scf` folder.")
+        elif self.baseline == 'hse':
+            self._logger.info("Detected baseline calculation setting: HSE.")
+        elif self.baseline == 'dft':
+            self._logger.info("Detected baseline calculation setting: Semi-local DFT.")
 
         # K-path parameters
         self.num_kpts = data['structure_info']['num_kpts']
