@@ -36,10 +36,9 @@ class DeltaGap:
             self._baseline_gap = float(BandGap(folder=self._config.combined_path_dict['hse']['band'],
                                                method=1, spin='both').bg)
 
-        # TODO: band gap from GW calc
-        # Now we only deal with metals in GW calc so it's fine
         elif self._config.baseline == 'gw':
-            self._baseline_gap = 0.0
+            self._baseline_gap = float(BandGap(folder=self._config.combined_path_dict['gw']['band'],
+                                               method=1, spin='both', is_gw=True).bg)
 
         elif self._config.baseline == 'dft':
             self._baseline_gap = float(BandGap(folder=self._config.combined_path_dict['dft']['band'],

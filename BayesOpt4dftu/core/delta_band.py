@@ -1,12 +1,12 @@
 import inspect
-import os
-from typing import Optional
-from xml.etree import ElementTree as ET
-
 import numpy as np
+import os
 from numpy.typing import NDArray
 from pymatgen.io.vasp import Outcar
+from typing import Optional
 from vaspvis import Band
+from vaspvis.utils import clean_wannier_data
+from xml.etree import ElementTree as ET
 
 from BayesOpt4dftu.common.configuration import Config
 from BayesOpt4dftu.common.logger import BoLoggerGenerator
@@ -311,7 +311,7 @@ class DeltaBand:
         if ispin == 1:
             data = open(os.path.join(gw_band_dir, 'wannier90_band.dat'), 'r+').readlines()
             concatenated_k_e = []
-            DeltaBand.clean_wannier_data(data, concatenated_k_e)
+            clean_wannier_data(data, concatenated_k_e)
 
             eigenvalues = np.array(concatenated_k_e).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
 
@@ -325,8 +325,8 @@ class DeltaBand:
             data_dn = open(os.path.join(gw_band_dir, 'wannier90.2_band.dat'), 'r+').readlines()
             concatenated_k_e_up = []
             concatenated_k_e_down = []
-            DeltaBand.clean_wannier_data(data_up, concatenated_k_e_up)
-            DeltaBand.clean_wannier_data(data_dn, concatenated_k_e_down)
+            clean_wannier_data(data_up, concatenated_k_e_up)
+            clean_wannier_data(data_dn, concatenated_k_e_down)
 
             eigenvalues_up = np.array(concatenated_k_e_up).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
             eigenvalues_down = np.array(concatenated_k_e_down).reshape((nbands, -1, 2))[:, :, 1] - efermi_gw
@@ -382,13 +382,3 @@ class DeltaBand:
         nkpts = len(root.findall('./kpoints/varray/.[@name="kpointlist"]/v'))
 
         return ispin, nbands, nkpts
-
-    @staticmethod
-    def clean_wannier_data(raw_data, concatenated_k_e):
-        for line in raw_data:
-            split_line = line.split('\n')[:-1][0].split(' ')
-            filter_line = list(filter(None, split_line))
-            if not filter_line:
-                continue
-            else:
-                concatenated_k_e.append([float(x) for x in filter_line])
