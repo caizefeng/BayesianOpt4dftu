@@ -148,6 +148,21 @@ class VaspInit:
         return errorcode
 
     @staticmethod
+    def check_convergence(directory):
+        """
+        Return True if the VASP SCF in `directory` reached electronic convergence.
+        VASP writes 'aborting loop because EDIFF is reached' to OUTCAR upon convergence.
+        """
+        outcar_path = os.path.join(directory, 'OUTCAR')
+        if not os.path.isfile(outcar_path):
+            return False
+        with open(outcar_path, 'r') as f:
+            for line in f:
+                if 'aborting loop because EDIFF is reached' in line:
+                    return True
+        return False
+
+    @staticmethod
     def modify_poscar_direct(path='./'):
         with open(path + '/POSCAR', 'r') as f:
             poscar = f.readlines()
@@ -185,7 +200,12 @@ class DftManager:
         self._logger.info("DFT calculations begin.")
         self._dftu_task_counter: int = 0
 
-    def run_task(self, method: str):
+    def run_task(self, method: str) -> bool:
+        """
+        Run SCF + band calculations for the given method.
+        Returns True if the SCF converged (or if method is 'hse'), False otherwise.
+        For DFT+U, if SCF does not converge the band calculation is skipped and False is returned.
+        """
         # Logging
         if not self._config.dry_run:
             if method == 'hse':
@@ -222,10 +242,19 @@ class DftManager:
                 self._logger.info(
                     "No actual DFT+U calculations were performed. Review the input files before proceeding.")
             self._logger.info("Dry run executed.")
-            return
+            return True
 
         # Calc in `scf` dir
         errorcode_scf = calc.run_vasp(self._config.combined_path_dict[method]['scf'])
+
+        # For DFT+U, check SCF convergence before proceeding to band calculation
+        if method == 'dftu':
+            scf_dir = self._config.combined_path_dict[method]['scf']
+            if not VaspInit.check_convergence(scf_dir):
+                self._logger.warning(
+                    f"DFT+U SCF did not converge (EDIFF not reached). "
+                    f"Skipping band calculation for this iteration.")
+                return False
 
         # Copy necessary files from `scf` to `band`
         if method == 'dftu':
@@ -251,6 +280,8 @@ class DftManager:
 
         if method == 'hse':
             self._logger.info("Baseline hybrid DFT calculation finished.")
+
+        return True
 
     def finalize(self):
         self._logger.info("All DFT calculations finished.")

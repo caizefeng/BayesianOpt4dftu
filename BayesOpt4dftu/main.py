@@ -46,15 +46,22 @@ def main():
             bo_iterator = BoDftuIterator()
             delta = DeltaAll()
             for i in range(config.iteration):  # the main BO loop
-                dft_manager.run_task(method='dftu')
-                delta.compute_delta()
-                delta.write_delta()
+                is_converged = dft_manager.run_task(method='dftu')
 
-                # Print baseline band gap for reference
-                if i == 0:
-                    delta.report_baseline_gap()
-                    if config.include_mag or config.print_magmom:
-                        delta.report_baseline_magnetization()
+                if not is_converged:
+                    driver_logger.warning(
+                        f"Iteration {i + 1}: DFT+U SCF did not converge. "
+                        f"Writing penalty values and continuing.")
+                    delta.write_penalty()
+                else:
+                    delta.compute_delta()
+                    delta.write_delta()
+
+                    # Print baseline band gap for reference
+                    if i == 0:
+                        delta.report_baseline_gap()
+                        if config.include_mag or config.print_magmom:
+                            delta.report_baseline_magnetization()
 
                 bo_iterator.next()
                 if bo_iterator.converge():
