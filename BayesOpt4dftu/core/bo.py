@@ -64,7 +64,12 @@ class OptimizerGenerator:
         v_strings = list(pbounds.keys())
         opt_index = [int(v.split('_')[1]) for v in v_strings]
 
+        target = 0.0  # fallback if all rows are NaN
         for i in range(self._n_obs):
+            # Skip rows from unconverged SCF iterations (delta values are NaN)
+            if pd.isna(self._data.iloc[i][self._column_names['delta_band']]):
+                continue
+
             values = list()
             for j in opt_index:
                 values.append(self._data.iloc[i][j])

@@ -35,29 +35,30 @@ class DeltaAll:
         if self._config.include_mag or self._config.print_magmom:
             self.dm.compute_delta_mag(component=self._config.mag_axis)
 
-    def write_penalty(self, penalty=999.0):
+    def write_penalty(self):
         """
-        Write a penalty data row when DFT+U SCF does not converge.
-        Large delta values produce a strongly negative objective, steering BO away from this U region.
+        Write a placeholder row when DFT+U SCF does not converge.
+        NaN delta values signal to get_optimizer() to skip this row entirely,
+        so it does not contaminate the Gaussian Process model.
         """
         incar = Incar.from_file(os.path.join(self._config.combined_path_dict['dftu']['scf'], 'INCAR'))
         u = incar['LDAUU']
 
-        u.append(penalty)   # band_gap (placeholder)
-        u.append(penalty)   # delta_gap
-        u.append(penalty)   # delta_band
+        u.append(float('nan'))   # band_gap (placeholder)
+        u.append(float('nan'))   # delta_gap
+        u.append(float('nan'))   # delta_band
 
         if self._config.include_mag:
-            u.append(penalty)   # delta_mag
+            u.append(float('nan'))   # delta_mag
 
         if self._config.print_magmom:
-            u.append('N/A')     # mag moment not available
+            u.append('N/A')          # mag moment not available
 
         output = " ".join(str(x) for x in u)
         with open(self._config.tmp_u_path, 'a') as f:
             f.write(output + '\n')
 
-        self._logger.warning(f"Penalty values ({penalty}) written to log for this iteration.")
+        self._logger.warning("SCF did not converge: NaN row written, this iteration will be excluded from the GP.")
 
     def write_delta(self, na_padding=False, to_stdout=False):
         # U values
