@@ -107,9 +107,10 @@ class BoStepExecutor(OptimizerGenerator):
     _logger = BoLoggerGenerator.get_logger("BoStepExecutor")
 
     def __init__(self, utxt_path, column_names, opt_u_index, u_range, alpha_gap, alpha_band, alpha_mag, kappa,
-                 elements):
+                 elements, zoom_threshold=2.0):
         super().__init__(utxt_path, column_names, opt_u_index, u_range, alpha_gap, alpha_band, alpha_mag, kappa)
         self._elements: List[str] = elements
+        self._zoom_threshold: float = zoom_threshold
         self._optimizer: Optional[BayesianOptimization] = None
         self._target: Optional[float] = None
         self._optimal: Optional[Tuple[Any, Any]] = None
@@ -201,59 +202,104 @@ class BoStepExecutor(OptimizerGenerator):
             opt_eles = [ele for i, ele in enumerate(self._elements) if self._opt_u_index[i]]
             d = self._plot_data
             if self._dim == 1:
-                fig = plt.figure()
-                gs = gridspec.GridSpec(2, 1)
-                axis = plt.subplot(gs[0])
-                acq = plt.subplot(gs[1])
-                axis.plot(d['x_obs'].flatten(), d['y_obs'], 'D', markersize=8, label=u'Observations', color='r')
-                axis.plot(d['x'], d['mu'], '--', color='k', label='Prediction')
-                axis.fill(np.concatenate([d['x'], d['x'][::-1]]),
-                          np.concatenate([d['mu'] - 1.9600 * d['sigma'], (d['mu'] + 1.9600 * d['sigma'])[::-1]]),
-                          alpha=.6, fc='c', ec='None', label='95% confidence interval')
-
-                axis.set_xlim(self._u_range)
-                axis.set_ylim((None, None))
-                axis.set_ylabel('f(x)')
-
                 utility = self._utility_function.utility(d['x'], self._optimizer._gp, 0)
-                acq.plot(d['x'], utility, label='Acquisition Function', color='purple')
-                acq.plot(d['x'][np.argmax(utility)], np.max(utility), '*', markersize=15,
-                         label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
-                acq.set_xlim(self._u_range)
-                acq.set_ylim((np.min(utility) - 0.5, np.max(utility) + 0.5))
-                acq.set_ylabel('Acquisition')
-                acq.set_xlabel('U (eV)')
-                axis.legend(loc=4, borderaxespad=0.)
-                acq.legend(loc=4, borderaxespad=0.)
+                base = f"1D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}"
+                x_obs_flat = d['x_obs'].flatten()
+                y_obs = d['y_obs']
 
-                plt.savefig(
-                    f"1D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}.png",
-                    dpi=400)
+                # Decide whether to produce zoom plot
+                if y_obs.max() - y_obs.min() > self._zoom_threshold:
+                    # Zoom: x-range of obs within 0.3 of best, y-range of those obs
+                    cutoff = y_obs.max() - 0.3
+                    good_mask = y_obs >= cutoff
+                    good_x = x_obs_flat[good_mask]
+                    good_y = y_obs[good_mask]
+                    span = max(good_x.max() - good_x.min(), 1.0)
+                    zoom_xlim = (float(good_x.min() - 0.1 * span), float(good_x.max() + 0.1 * span))
+                    y_pad = max(0.1 * (good_y.max() - good_y.min()), 0.05)
+                    zoom_ylim = (float(good_y.min() - y_pad), float(good_y.max() + y_pad))
+                    plot_configs = [
+                        (f"{base}_full.png", tuple(self._u_range), None),
+                        (f"{base}_zoom.png", zoom_xlim, zoom_ylim),
+                    ]
+                else:
+                    plot_configs = [(f"{base}.png", tuple(self._u_range), None)]
+
+                acq_ylim = (np.min(utility) - 0.5, np.max(utility) + 0.5)
+                for fname, xlim, fx_ylim in plot_configs:
+                    fig = plt.figure()
+                    gs = gridspec.GridSpec(2, 1)
+                    axis = plt.subplot(gs[0])
+                    acq = plt.subplot(gs[1])
+                    axis.plot(x_obs_flat, y_obs, 'D', markersize=8, label=u'Observations', color='r')
+                    axis.plot(d['x'], d['mu'], '--', color='k', label='Prediction')
+                    axis.fill(np.concatenate([d['x'], d['x'][::-1]]),
+                              np.concatenate([d['mu'] - 1.9600 * d['sigma'], (d['mu'] + 1.9600 * d['sigma'])[::-1]]),
+                              alpha=.6, fc='c', ec='None', label='95% confidence interval')
+                    axis.set_xlim(xlim)
+                    if fx_ylim is not None:
+                        axis.set_ylim(fx_ylim)
+                    axis.set_ylabel('f(x)')
+
+                    acq.plot(d['x'], utility, label='Acquisition Function', color='purple')
+                    acq.plot(d['x'][np.argmax(utility)], np.max(utility), '*', markersize=15,
+                             label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
+                    acq.set_xlim(xlim)
+                    acq.set_ylim(acq_ylim)
+                    acq.set_ylabel('Acquisition')
+                    acq.set_xlabel('U (eV)')
+                    axis.legend(loc=4, borderaxespad=0.)
+                    acq.legend(loc=4, borderaxespad=0.)
+
+                    plt.savefig(fname, dpi=400)
+                    plt.close(fig)
 
             elif self._dim == 2:
-                fig, axis = plt.subplots(1, 2, figsize=(15, 5))
-                plt.subplots_adjust(wspace=0.2)
-
-                axis[0].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
-                axis[0].set_title('Gaussian Process Predicted Mean', pad=10)
-                im1 = axis[0].hexbin(d['x'], d['y'], C=d['mu'], cmap=cm.jet, bins=None)
-                axis[0].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
-                axis[0].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
-                axis[0].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
-                cbar1 = plt.colorbar(im1, ax=axis[0])
-
                 utility = self._utility_function.utility(d['X'], self._optimizer._gp, self._optimizer.max)
-                axis[1].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
-                axis[1].set_title('Acquisition Function', pad=10)
-                axis[1].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
-                axis[1].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
-                im2 = axis[1].hexbin(d['x'], d['y'], C=utility, cmap=cm.jet, bins=None)
-                axis[1].axis([d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()])
-                cbar2 = plt.colorbar(im2, ax=axis[1])
+                base = f"2D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}"
+                x1_obs = d['x1_obs'].flatten()
+                x2_obs = d['x2_obs'].flatten()
+                y_obs_2d = np.array([res["target"] for res in self._optimizer.res])
+                full_axis = [d['x'].min(), d['x'].max(), d['y'].min(), d['y'].max()]
 
-                plt.savefig(
-                    f"2D_kappa_{self._kappa}_ag_{self._alpha_gap}_ab_{self._alpha_band}_am_{self._alpha_mag}.png",
-                    dpi=400)
+                if y_obs_2d.max() - y_obs_2d.min() > self._zoom_threshold:
+                    cutoff_2d = y_obs_2d.max() - 0.3
+                    good_2d = y_obs_2d >= cutoff_2d
+                    span_x = max(x1_obs[good_2d].max() - x1_obs[good_2d].min(), 1.0)
+                    span_y = max(x2_obs[good_2d].max() - x2_obs[good_2d].min(), 1.0)
+                    zoom_axis = [float(x1_obs[good_2d].min() - 0.1 * span_x),
+                                 float(x1_obs[good_2d].max() + 0.1 * span_x),
+                                 float(x2_obs[good_2d].min() - 0.1 * span_y),
+                                 float(x2_obs[good_2d].max() + 0.1 * span_y)]
+                    plot_configs_2d = [
+                        (f"{base}_full.png", full_axis),
+                        (f"{base}_zoom.png", zoom_axis),
+                    ]
+                else:
+                    plot_configs_2d = [(f"{base}.png", full_axis)]
+
+                for fname, ax_range in plot_configs_2d:
+                    fig, axis = plt.subplots(1, 2, figsize=(15, 5))
+                    plt.subplots_adjust(wspace=0.2)
+
+                    axis[0].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
+                    axis[0].set_title('Gaussian Process Predicted Mean', pad=10)
+                    im1 = axis[0].hexbin(d['x'], d['y'], C=d['mu'], cmap=cm.jet, bins=None)
+                    axis[0].axis(ax_range)
+                    axis[0].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
+                    axis[0].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
+                    plt.colorbar(im1, ax=axis[0])
+
+                    axis[1].plot(d['x1_obs'], d['x2_obs'], 'D', markersize=4, color='k', label='Observations')
+                    axis[1].set_title('Acquisition Function', pad=10)
+                    axis[1].set_xlabel(r'U_%s (eV)' % opt_eles[0], labelpad=5)
+                    axis[1].set_ylabel(r'U_%s (eV)' % opt_eles[1], labelpad=10, va='center')
+                    im2 = axis[1].hexbin(d['x'], d['y'], C=utility, cmap=cm.jet, bins=None)
+                    axis[1].axis(ax_range)
+                    plt.colorbar(im2, ax=axis[1])
+
+                    plt.savefig(fname, dpi=400)
+                    plt.close(fig)
 
         else:
             self._logger.info("Figure generation omitted for U value optimization with dimensions >= 3.")
@@ -276,7 +322,7 @@ class BoDftuIterator(BoStepExecutor):
         super().__init__(upath, self._config.column_names,
                          self._config.which_u, self._config.urange,
                          self._config.alpha_gap, self._config.alpha_band, self._config.alpha_mag, self._config.k,
-                         self._config.elements)
+                         self._config.elements, self._config.zoom_threshold)
         self._logger.info("Bayesian Optimization begins.")
         self._i_step: int = 0
         self._obj_last: Optional[float] = None

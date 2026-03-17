@@ -69,6 +69,7 @@ class Config:
         self.report_optimum_interval = bo_params.get('report_optimum_interval', 10)
         self.threshold_opt_u = bo_params.get('threshold_opt_u', 0.0)
         self.print_magmom = bo_params.get('print_magmom', False)
+        self.zoom_threshold = bo_params.get('zoom_threshold', 2.0)
 
         # File paths
         self.root_dir = './'
