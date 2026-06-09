@@ -4,9 +4,9 @@ import os
 from numpy.typing import NDArray
 from pymatgen.io.vasp import Outcar
 from typing import Optional
-from vaspvis import Band
-from vaspvis.utils import clean_wannier_data
 from xml.etree import ElementTree as ET
+
+from BayesOpt4dftu.core.band_io import Band, clean_wannier_data
 
 from BayesOpt4dftu.common.configuration import Config
 from BayesOpt4dftu.common.logger import BoLoggerGenerator

@@ -1,5 +1,6 @@
 import numpy as np
-from vaspvis.utils import BandGap
+
+from BayesOpt4dftu.core.band_io import BandGap
 
 from BayesOpt4dftu.common.configuration import Config
 from BayesOpt4dftu.common.logger import BoLoggerGenerator
