@@ -1,4 +1,3 @@
-import importlib.resources as resources
 import json
 import os
 
@@ -6,6 +5,17 @@ import numpy as np
 from jsonschema import validate, ValidationError
 
 from BayesOpt4dftu.common.logger import BoLoggerGenerator
+
+try:  # Python 3.9+: modern importlib.resources API (avoids the deprecated path())
+    from importlib.resources import as_file, files
+
+    def _input_schema_ctx():
+        return as_file(files("BayesOpt4dftu.schemas").joinpath("input_schema.json"))
+except ImportError:  # Python 3.8 fallback
+    from importlib.resources import path as _resource_path
+
+    def _input_schema_ctx():
+        return _resource_path("BayesOpt4dftu.schemas", "input_schema.json")
 
 
 class Config:
@@ -18,7 +28,7 @@ class Config:
 
             cls._instance._logger.info("Loading configuration ...")
 
-            with resources.path("BayesOpt4dftu.schemas", "input_schema.json") as schema_path:
+            with _input_schema_ctx() as schema_path:
                 cls._instance._validate_config(config_file, str(schema_path))
 
             cls._instance._load_config(config_file)

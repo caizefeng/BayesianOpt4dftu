@@ -112,7 +112,7 @@ def format_log_file(input_file, output_file, decimals, width, logger=None):
 def format_log_file_pd(input_file, output_file, decimals, width, logger=None):
     # Load the data into a DataFrame
     with open(input_file, 'r') as infile:
-        df = pd.read_csv(infile, delim_whitespace=True)
+        df = pd.read_csv(infile, sep=r"\s+")
 
     # Function to format values to a fixed number of decimal points
     def format_value(val):

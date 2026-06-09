@@ -112,7 +112,7 @@ class BoBandPath:
                 kpoints_contents.append(' '.join(map(str, k_next)) + ' 0\n')
             kpoints_contents.append(' '.join(map(str, k_tail)) + ' 0 ' + self._k_labels_list[i + 1] + '\n')
 
-        self._k_path_with_scf_grid = Kpoints.from_string(''.join(kpoints_contents))
+        self._k_path_with_scf_grid = Kpoints.from_str(''.join(kpoints_contents))
         self._k_path_with_scf_grid.comment = "BayesOpt4dftu: Kpoints from user input and scf K-grid"
 
     def from_baseline_reciprocal(self):

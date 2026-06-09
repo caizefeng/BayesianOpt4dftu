@@ -67,7 +67,7 @@ class OptimizerGenerator:
         for i in range(self._n_obs):
             values = list()
             for j in opt_index:
-                values.append(self._data.iloc[i][j])
+                values.append(self._data.iloc[i, j])
             params = {}
             for (value, variable) in zip(values, v_strings):
                 params[variable] = value
