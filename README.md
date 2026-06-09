@@ -65,8 +65,14 @@ bo_dftu
 Upon reaching the threshold or maximum iterations, two output files are generated:
 
 - `u_xxx.txt`/`formatted_u_xxx.txt`: Contains U parameters, band gap, Δgap, Δband, and Δmagnetization (optional) for each iteration.
-- `1D_xxx.png` or `2D_xxx.png`: Provides a visual representation of the Gaussian process predicted mean and acquisition function. 
+- `1D_xxx.png` or `2D_xxx.png`: Provides a visual representation of the Gaussian process predicted mean and acquisition function.
    This file will be omitted if you set three or more optimizable U parameters.
+
+**Automatic zoom plot**: When the range of observed objective values exceeds `zoom_threshold` (default: `2.0`), two plots are generated instead of one:
+- `1D_xxx_full.png` / `2D_xxx_full.png`: Full U range, identical to the original single plot.
+- `1D_xxx_zoom.png` / `2D_xxx_zoom.png`: Automatically cropped to the region of well-converged observations (within 0.3 of the best objective value), with the y-axis scaled to that region. This is useful when some BO iterations explore U values where DFT+U fails to open a band gap, producing strongly negative objective values that compress the full plot and make the converged region hard to read.
+
+If all observations are well-behaved (objective range ≤ `zoom_threshold`), only the original single plot is produced.
 
 **Example of BO plots**:
 
@@ -185,6 +191,10 @@ Before running the program, configure the `input.json` file. It contains:
     - **`print_magmom`**:
         - **Description**: Specifies whether to print the magnetic moment at each iteration.
         - **Default**: `"print_magmom": false`
+
+    - **`zoom_threshold`**:
+        - **Description**: When the range of observed objective values (max − min) exceeds this value, an additional zoom plot (`*_zoom.png`) is generated alongside the full plot (`*_full.png`). The zoom plot crops the x-axis to observations within 0.3 of the best objective value and scales the y-axis to that region. Set to `0.0` to always produce zoom plots, or to a very large value to disable them.
+        - **Default**: `"zoom_threshold": 2.0`
 
 - **`structure_info`** : Includes geometry information (such as lattice parameter, lattice vectors, atomic position,
   etc.) of the target materials.
