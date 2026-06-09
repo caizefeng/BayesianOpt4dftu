@@ -55,11 +55,15 @@ setuptools.setup(
         'Development Status :: 4 - Beta',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
     packages=setuptools.find_packages(),
     install_requires=get_required_packages(),
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     package_data={
         'BayesOpt4dftu': ['schemas/*.json']
     },

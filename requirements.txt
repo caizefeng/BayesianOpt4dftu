@@ -1,13 +1,14 @@
-ruamel.yaml==0.17.32
-ase==3.22.0
-monty==2022.1.12.1
-vtk==9.3.0
-pyvista==0.37.0
-pyprocar==5.6.6
-bayesian-optimization==1.4.2
-pymatgen==2023.8.10
-vaspvis>=1.3.2
-jsonschema
+# Direct dependencies of BayesOpt4dftu.
+#
+# Bounds are intentionally loose so pip installs the newest version compatible with the running
+# interpreter (verified on CPython 3.9-3.13; 3.8 also still works). The VASP band/eigenvalue
+# parsing formerly provided by vaspvis is vendored in BayesOpt4dftu/core/band_io.py, so neither
+# vaspvis nor its heavy visualization stack (pyprocar/pychemia/pyvista/vtk) is required.
 numpy
-matplotlib
+scipy
 pandas
+matplotlib
+ase>=3.22.0
+pymatgen>=2023.8.10
+bayesian-optimization>=1.4.2,<2.0  # 2.0 removed UtilityFunction / suggest(util) / utility(); keep the 1.x API
+jsonschema
