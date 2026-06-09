@@ -1,6 +1,6 @@
 # BayesianOpt4dftu #
 
-![version](https://img.shields.io/badge/version-2.7.3-blue)
+![version](https://img.shields.io/badge/version-2.8.0-blue)
 
 Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization approach.
 
@@ -8,17 +8,19 @@ Determine the Hubbard U parameters in DFT+U using the Bayesian Optimization appr
 
 ### Python Version
 
-- Tested on Python 3.8
+- Requires Python ≥ 3.9 (tested on Python 3.9–3.13)
 
 ### Python Dependencies
 These will be installed automatically when you install the package via pip:
 
 - [`numpy`](https://numpy.org)
+- [`scipy`](https://scipy.org)
 - [`pandas`](https://pandas.pydata.org)
+- [`matplotlib`](https://matplotlib.org)
 - [`ase`](https://wiki.fysik.dtu.dk/ase)
 - [`pymatgen`](https://pymatgen.org)
-- [`bayesian-optimization`](https://github.com/fmfn/BayesianOptimization)
-- [`vaspvis`](https://github.com/DerekDardzinski/vaspvis)
+- [`bayesian-optimization`](https://github.com/bayesian-optimization/BayesianOptimization)
+- [`jsonschema`](https://github.com/python-jsonschema/jsonschema)
 
 ### Other Dependencies
 These dependencies need to be installed manually:
